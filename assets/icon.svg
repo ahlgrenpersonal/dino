@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Dino icon">
+  <rect width="512" height="512" rx="88" fill="#8ed4ed"/>
+  <circle cx="398" cy="96" r="48" fill="#ffe68a"/>
+  <path d="M0 338c54-34 112-46 174-36 50 8 92 34 142 42 62 10 124-8 196-52v220H0Z" fill="#8ccf82"/>
+  <path d="M133 303c0-78 60-137 137-137 62 0 112 35 129 88l46 11c20 5 35 23 35 44 0 25-20 45-45 45h-50c-26 34-67 56-114 56-78 0-138-59-138-107Z" fill="#2f9f74"/>
+  <path d="M372 259h63c21 0 38 17 38 38s-17 38-38 38h-72Z" fill="#2f9f74"/>
+  <path d="M151 307 73 284l-9 40 85 18Z" fill="#238c65"/>
+  <circle cx="411" cy="277" r="13" fill="#183633"/>
+  <path d="M398 321c16 18 39 18 54 0" fill="none" stroke="#183633" stroke-width="12" stroke-linecap="round"/>
+  <path d="M221 398v45M303 394v49" stroke="#1e6d54" stroke-width="28" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#2f6f67">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Dino">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Dino</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="assets/icon-192.png">
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="game-shell" aria-label="Dino game">
+      <section class="stage" aria-live="polite">
+        <div class="sky">
+          <div class="cloud cloud-one"></div>
+          <div class="cloud cloud-two"></div>
+        </div>
+        <button class="dino-button" type="button" aria-label="Make the dinosaur hop">
+          <span class="dino" aria-hidden="true">
+            <span class="dino-eye"></span>
+            <span class="dino-smile"></span>
+          </span>
+        </button>
+        <div class="ground"></div>
+      </section>
+
+      <section class="hud" aria-label="Game score">
+        <div>
+          <p class="label">Taps</p>
+          <p class="score" id="score">0</p>
+        </div>
+        <button class="reset-button" type="button" id="resetButton">Reset</button>
+      </section>
+    </main>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
