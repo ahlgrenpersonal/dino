@@ -277,6 +277,8 @@ button {
   animation: clubSwingDown 260ms ease-out;
   transform-origin: 50% 92%;
   z-index: 12;
+  height: 82%;
+  width: 26%;
 }
 
 .hero.is-popping::after {
@@ -303,6 +305,22 @@ button {
 
 .hero.is-swinging.swing-left .club {
   animation-name: clubSwingLeft;
+}
+
+.hero.facing-right.is-swinging .club {
+  left: auto;
+  right: -35%;
+  top: 0;
+  width: 30%;
+  height: 92%;
+}
+
+.hero.facing-left.is-swinging .club {
+  left: -35%;
+  right: auto;
+  top: 0;
+  width: 30%;
+  height: 92%;
 }
 
 .hero-sprite {
@@ -1184,57 +1202,73 @@ button {
 
 @keyframes clubSwingDown {
   0% {
-    transform: rotate(30deg);
+    transform: translate(0, 0) rotate(30deg) scale(1);
   }
 
   45% {
-    transform: translateY(18%) rotate(84deg);
+    transform: translate(8%, 54%) rotate(118deg) scale(1.18);
+  }
+
+  68% {
+    transform: translate(0, 74%) rotate(102deg) scale(1.12);
   }
 
   100% {
-    transform: rotate(30deg);
+    transform: translate(0, 0) rotate(30deg) scale(1);
   }
 }
 
 @keyframes clubSwingUp {
   0% {
-    transform: rotate(148deg);
+    transform: translate(0, 0) rotate(148deg) scale(1);
   }
 
   45% {
-    transform: translateY(-18%) rotate(105deg);
+    transform: translate(-8%, -58%) rotate(72deg) scale(1.18);
+  }
+
+  68% {
+    transform: translate(0, -76%) rotate(88deg) scale(1.12);
   }
 
   100% {
-    transform: rotate(148deg);
+    transform: translate(0, 0) rotate(148deg) scale(1);
   }
 }
 
 @keyframes clubSwingRight {
   0% {
-    transform: rotate(-34deg);
+    transform: translate(0, 0) rotate(-34deg) scale(1);
   }
 
   45% {
-    transform: translateX(24%) rotate(-92deg);
+    transform: translate(78%, 8%) rotate(-118deg) scale(1.18);
+  }
+
+  68% {
+    transform: translate(96%, 0) rotate(-104deg) scale(1.12);
   }
 
   100% {
-    transform: rotate(-34deg);
+    transform: translate(0, 0) rotate(-34deg) scale(1);
   }
 }
 
 @keyframes clubSwingLeft {
   0% {
-    transform: rotate(34deg);
+    transform: translate(0, 0) rotate(34deg) scale(1);
   }
 
   45% {
-    transform: translateX(-24%) rotate(92deg);
+    transform: translate(-78%, 8%) rotate(118deg) scale(1.18);
+  }
+
+  68% {
+    transform: translate(-96%, 0) rotate(104deg) scale(1.12);
   }
 
   100% {
-    transform: rotate(34deg);
+    transform: translate(0, 0) rotate(34deg) scale(1);
   }
 }
 
