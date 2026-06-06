@@ -660,7 +660,7 @@ function animateClub() {
   window.setTimeout(() => {
     hero.classList.remove("is-swinging");
     hero.classList.remove("swing-up", "swing-right", "swing-down", "swing-left");
-  }, 260);
+  }, 420);
 }
 
 function swingClub() {
