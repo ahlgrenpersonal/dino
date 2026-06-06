@@ -277,7 +277,7 @@ button {
   animation: clubSwingDown 260ms ease-out;
   transform-origin: 50% 92%;
   z-index: 12;
-  height: 82%;
+  height: 90%;
   width: 26%;
 }
 
@@ -309,18 +309,18 @@ button {
 
 .hero.facing-right.is-swinging .club {
   left: auto;
-  right: -35%;
+  right: -18%;
   top: 0;
-  width: 30%;
-  height: 92%;
+  width: 28%;
+  height: 112%;
 }
 
 .hero.facing-left.is-swinging .club {
-  left: -35%;
+  left: -18%;
   right: auto;
   top: 0;
-  width: 30%;
-  height: 92%;
+  width: 28%;
+  height: 112%;
 }
 
 .hero-sprite {
@@ -1206,11 +1206,11 @@ button {
   }
 
   45% {
-    transform: translate(8%, 54%) rotate(118deg) scale(1.18);
+    transform: translate(2%, 22%) rotate(118deg) scale(1.14);
   }
 
   68% {
-    transform: translate(0, 74%) rotate(102deg) scale(1.12);
+    transform: translate(0, 32%) rotate(102deg) scale(1.1);
   }
 
   100% {
@@ -1224,11 +1224,11 @@ button {
   }
 
   45% {
-    transform: translate(-8%, -58%) rotate(72deg) scale(1.18);
+    transform: translate(-2%, -22%) rotate(72deg) scale(1.14);
   }
 
   68% {
-    transform: translate(0, -76%) rotate(88deg) scale(1.12);
+    transform: translate(0, -32%) rotate(88deg) scale(1.1);
   }
 
   100% {
@@ -1242,11 +1242,11 @@ button {
   }
 
   45% {
-    transform: translate(78%, 8%) rotate(-118deg) scale(1.18);
+    transform: translate(4%, 2%) rotate(104deg) scale(1.14);
   }
 
   68% {
-    transform: translate(96%, 0) rotate(-104deg) scale(1.12);
+    transform: translate(7%, 0) rotate(88deg) scale(1.1);
   }
 
   100% {
@@ -1260,11 +1260,11 @@ button {
   }
 
   45% {
-    transform: translate(-78%, 8%) rotate(118deg) scale(1.18);
+    transform: translate(-4%, 2%) rotate(-104deg) scale(1.14);
   }
 
   68% {
-    transform: translate(-96%, 0) rotate(104deg) scale(1.12);
+    transform: translate(-7%, 0) rotate(-88deg) scale(1.1);
   }
 
   100% {
