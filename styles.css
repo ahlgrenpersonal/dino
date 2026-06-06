@@ -309,18 +309,18 @@ button {
 
 .hero.facing-right.is-swinging .club {
   left: auto;
-  right: -18%;
+  right: -2%;
   top: 0;
   width: 28%;
-  height: 112%;
+  height: 125%;
 }
 
 .hero.facing-left.is-swinging .club {
-  left: -18%;
+  left: -2%;
   right: auto;
   top: 0;
   width: 28%;
-  height: 112%;
+  height: 125%;
 }
 
 .hero-sprite {
@@ -561,13 +561,14 @@ button {
 }
 
 .hero.facing-right .club {
-  left: -2%;
-  right: auto;
+  left: auto;
+  right: -2%;
   transform: rotate(-34deg);
 }
 
 .hero.facing-left .club {
-  right: -2%;
+  left: -2%;
+  right: auto;
   transform: rotate(34deg);
 }
 
@@ -737,6 +738,20 @@ button {
   border-radius: 999px;
   background: #7f5131;
   transform: translateX(-50%);
+}
+
+.hero.is-swinging .club::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 17px;
+  height: 17px;
+  border: 3px solid #1e6d54;
+  border-radius: 50%;
+  background: #2f9f74;
+  transform: translateX(-50%);
+  z-index: 2;
 }
 
 .item-button {
