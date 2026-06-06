@@ -1,14 +1,15 @@
-const CACHE_NAME = "dino-v28";
+const CACHE_NAME = "dino-v29";
 const ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=world9",
-  "./app.js?v=world9",
+  "./styles.css?v=world10",
+  "./app.js?v=world10",
   "./manifest.webmanifest",
   "./assets/icon.svg",
   "./assets/icon-192.png",
   "./assets/icon-512.png"
 ];
+const INDEX_FALLBACK = "./index.html";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -29,6 +30,12 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") {
     return;
@@ -39,10 +46,13 @@ self.addEventListener("fetch", (event) => {
       fetch(event.request)
         .then((response) => {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put("./", copy));
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put("./", copy.clone());
+            cache.put(INDEX_FALLBACK, copy);
+          });
           return response;
         })
-        .catch(() => caches.match("./"))
+        .catch(() => caches.match(INDEX_FALLBACK).then((match) => match || caches.match("./")))
     );
     return;
   }
