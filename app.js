@@ -918,16 +918,44 @@ function renderRoom() {
   renderEnemies();
 }
 
-room.addEventListener("pointerdown", (event) => {
-  if (event.target.closest("button")) {
+function edgeMoveFromPointer(clientX, clientY, roomBounds) {
+  const edgePaddingX = Math.max(18, roomBounds.width * 0.08);
+  const edgePaddingY = Math.max(18, (roomBounds.height - 104) * 0.06);
+  const playfieldBottom = roomBounds.bottom - 104;
+
+  if (heroPosition.x === 0 && clientX <= roomBounds.left + edgePaddingX) {
+    return { x: -1, y: 0 };
+  }
+
+  if (heroPosition.x === screenGrid.columns - 1 && clientX >= roomBounds.right - edgePaddingX) {
+    return { x: 1, y: 0 };
+  }
+
+  if (heroPosition.y === 0 && clientY <= roomBounds.top + edgePaddingY) {
+    return { x: 0, y: -1 };
+  }
+
+  if (heroPosition.y === screenGrid.rows - 1 && clientY >= playfieldBottom - edgePaddingY) {
+    return { x: 0, y: 1 };
+  }
+
+  return null;
+}
+
+function moveFromPointer(clientX, clientY) {
+  const roomBounds = room.getBoundingClientRect();
+  const edgeMove = edgeMoveFromPointer(clientX, clientY, roomBounds);
+
+  if (edgeMove) {
+    moveHero(edgeMove.x, edgeMove.y);
     return;
   }
 
   const heroBounds = hero.getBoundingClientRect();
   const heroCenterX = heroBounds.left + heroBounds.width / 2;
   const heroCenterY = heroBounds.top + heroBounds.height / 2;
-  const distanceX = event.clientX - heroCenterX;
-  const distanceY = event.clientY - heroCenterY;
+  const distanceX = clientX - heroCenterX;
+  const distanceY = clientY - heroCenterY;
 
   if (Math.abs(distanceX) > Math.abs(distanceY)) {
     moveHero(Math.sign(distanceX), 0);
@@ -935,6 +963,35 @@ room.addEventListener("pointerdown", (event) => {
   }
 
   moveHero(0, Math.sign(distanceY));
+}
+
+room.addEventListener("pointerdown", (event) => {
+  if (event.target.closest("button")) {
+    return;
+  }
+
+  moveFromPointer(event.clientX, event.clientY);
+});
+
+window.addEventListener("keydown", (event) => {
+  const moves = {
+    ArrowUp: { x: 0, y: -1 },
+    ArrowRight: { x: 1, y: 0 },
+    ArrowDown: { x: 0, y: 1 },
+    ArrowLeft: { x: -1, y: 0 },
+    w: { x: 0, y: -1 },
+    d: { x: 1, y: 0 },
+    s: { x: 0, y: 1 },
+    a: { x: -1, y: 0 }
+  };
+  const move = moves[event.key];
+
+  if (!move) {
+    return;
+  }
+
+  event.preventDefault();
+  moveHero(move.x, move.y);
 });
 
 attackButton.addEventListener("click", swingClub);

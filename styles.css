@@ -275,6 +275,8 @@ button {
 .hero.is-swinging .club {
   filter: brightness(1.16);
   animation: clubSwingDown 260ms ease-out;
+  transform-origin: 50% 92%;
+  z-index: 12;
 }
 
 .hero.is-popping::after {
