@@ -296,6 +296,8 @@ for (let y = 0; y < worldRows; y += 1) {
   }
 }
 
+ensureHeroOnFreeCell();
+
 function loadCollectedItems() {
   try {
     const saved = JSON.parse(localStorage.getItem(itemStorageKey) || "[]");
@@ -473,6 +475,25 @@ function findEntryPosition(preferredPosition, direction) {
   );
 }
 
+function findFirstFreeCell() {
+  const centerFirst = [startPosition];
+  const cells = [];
+
+  for (let y = 0; y < screenGrid.rows; y += 1) {
+    for (let x = 0; x < screenGrid.columns; x += 1) {
+      cells.push({ x, y });
+    }
+  }
+
+  return [...centerFirst, ...cells].find((candidate) => !isBlockedCell(candidate));
+}
+
+function ensureHeroOnFreeCell() {
+  if (isBlockedCell(heroPosition)) {
+    heroPosition = findFirstFreeCell() || { x: 0, y: 0 };
+  }
+}
+
 function moveToNextScreen(direction) {
   const vector = directionVectors[direction];
   const nextScreen = {
@@ -491,7 +512,7 @@ function moveToNextScreen(direction) {
   }
 
   currentScreen = nextScreen;
-  heroPosition = findEntryPosition(wrapPosition(direction), direction) || startPosition;
+  heroPosition = findEntryPosition(wrapPosition(direction), direction) || findFirstFreeCell() || startPosition;
   status(currentRoom().name);
 }
 
