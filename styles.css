@@ -219,11 +219,11 @@ button {
 }
 
 .eye-left {
-  left: 34%;
+  left: 22%;
 }
 
 .eye-right {
-  right: 34%;
+  right: 22%;
 }
 
 .hero-smile {
@@ -520,7 +520,7 @@ button {
 .hero.facing-left .hero-eye,
 .hero.facing-right .hero-eye {
   top: 20%;
-  right: 1%;
+  right: 0;
   width: 11px;
   height: 11px;
   box-shadow: 0 0 0 3px #2f9f74;
