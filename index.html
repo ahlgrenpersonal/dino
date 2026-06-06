@@ -11,7 +11,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="apple-touch-icon" href="assets/icon-192.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=room13">
+    <link rel="stylesheet" href="styles.css?v=enemies2">
   </head>
   <body>
     <main class="game-shell" aria-label="Dino game">
@@ -29,6 +29,8 @@
           <span class="berry berry-three" aria-hidden="true"></span>
           <span class="item-glow" aria-hidden="true"></span>
         </div>
+
+        <div class="enemy-layer" id="enemyLayer" aria-label="Enemies"></div>
 
         <div class="hero facing-down" aria-label="Dino explorer">
           <span class="hero-sprite" aria-hidden="true">
@@ -54,10 +56,11 @@
           <p class="score" id="berryCount">0</p>
         </div>
         <p class="status" id="statusText">Ready</p>
+        <button class="attack-button" type="button" id="attackButton" aria-label="Swing club">Club</button>
         <button class="reset-button" type="button" id="resetButton" aria-label="Reset room">Reset</button>
       </section>
     </main>
 
-    <script src="app.js?v=room13" defer></script>
+    <script src="app.js?v=enemies2" defer></script>
   </body>
 </html>
