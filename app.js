@@ -1,20 +1,23 @@
-const berryCountEl = document.querySelector("#berryCount");
+const bombCountEl = document.querySelector("#bombCount");
+const findCountEl = document.querySelector("#findCount");
 const enemyLayer = document.querySelector("#enemyLayer");
 const itemButton = document.querySelector("#itemButton");
 const room = document.querySelector("#room");
 const terrainLayer = document.querySelector("#terrainLayer");
 const hero = document.querySelector(".hero");
 const attackButton = document.querySelector("#attackButton");
+const bombButton = document.querySelector("#bombButton");
 const resetButton = document.querySelector("#resetButton");
 const statusText = document.querySelector("#statusText");
 
 const itemStorageKey = "dino-collected-items";
+const inventoryStorageKey = "dino-inventory";
 const oldItemStorageKey = "dino-boom-berries-collected";
 const worldColumns = 5;
 const worldRows = 20;
 const screenGrid = {
   columns: 10,
-  rows: 21
+  rows: 18
 };
 const startScreen = { x: 2, y: 10 };
 const startPosition = { x: 4, y: 10 };
@@ -105,6 +108,7 @@ const enemyTypes = {
 
 let currentScreen = { ...startScreen };
 let enemiesByScreen = new Map();
+let inventory = loadInventory();
 let collectedItems = loadCollectedItems();
 let heroPosition = { ...startPosition };
 let heroFacing = "down";
@@ -165,11 +169,31 @@ function isReservedCell(position) {
   );
 }
 
+function findOpenCell(random, blockedCells, occupiedCells = []) {
+  for (let attempt = 0; attempt < 80; attempt += 1) {
+    const candidate = {
+      x: 1 + Math.floor(random() * (screenGrid.columns - 2)),
+      y: 1 + Math.floor(random() * (screenGrid.rows - 2))
+    };
+
+    if (
+      !isReservedCell(candidate) &&
+      !blockedCells.has(cellKey(candidate)) &&
+      !occupiedCells.some((cell) => isSameCell(cell, candidate))
+    ) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
 function createScreen(screenX, screenY) {
   const seed = 1009 + screenX * 9176 + screenY * 1319;
   const random = createRandom(seed);
   const water = [];
   const bridges = [];
+  const ponds = [];
   const rocks = [];
   const trees = [];
   const enemies = [];
@@ -202,16 +226,25 @@ function createScreen(screenX, screenY) {
     }
   }
 
-  const blockedForScenery = new Set([...water.map(cellKey), ...bridges.map(cellKey)]);
+  const pondCount = screenX === startScreen.x && screenY === startScreen.y ? 0 : Math.floor(random() * 3);
+  const reservedWater = new Set([...water.map(cellKey), ...bridges.map(cellKey)]);
+
+  for (let index = 0; index < pondCount; index += 1) {
+    const pond = findOpenCell(random, reservedWater, ponds);
+
+    if (pond) {
+      ponds.push(pond);
+      reservedWater.add(cellKey(pond));
+    }
+  }
+
+  const blockedForScenery = new Set([...water.map(cellKey), ...bridges.map(cellKey), ...ponds.map(cellKey)]);
   const rockCount = 4 + Math.floor(random() * 5);
 
   for (let index = 0; index < rockCount; index += 1) {
-    const rock = {
-      x: 1 + Math.floor(random() * (screenGrid.columns - 2)),
-      y: 2 + Math.floor(random() * (screenGrid.rows - 4))
-    };
+    const rock = findOpenCell(random, blockedForScenery, rocks);
 
-    if (!blockedForScenery.has(cellKey(rock)) && !isReservedCell(rock)) {
+    if (rock) {
       rocks.push(rock);
       blockedForScenery.add(cellKey(rock));
     }
@@ -220,18 +253,17 @@ function createScreen(screenX, screenY) {
   const treeCount = 3 + Math.floor(random() * 4);
 
   for (let index = 0; index < treeCount; index += 1) {
-    const tree = {
-      x: 1 + Math.floor(random() * (screenGrid.columns - 2)),
-      y: 1 + Math.floor(random() * (screenGrid.rows - 3))
-    };
+    const tree = findOpenCell(random, blockedForScenery, trees);
 
-    if (!blockedForScenery.has(cellKey(tree)) && !isReservedCell(tree)) {
+    if (tree) {
       trees.push(tree);
       blockedForScenery.add(cellKey(tree));
     }
   }
 
-  const enemyCount = screenX === startScreen.x && screenY === startScreen.y ? 1 : Math.floor(random() * 4);
+  const enemyCount = screenX === startScreen.x && screenY === startScreen.y
+    ? 1
+    : 1 + Math.floor(random() * 4);
   const distanceFromStart = Math.abs(screenX - startScreen.x) + Math.abs(screenY - startScreen.y);
   const enemyChoices = distanceFromStart > 9
     ? ["fodder", "fodder", "raptor", "tank", "giant", "trex"]
@@ -253,6 +285,29 @@ function createScreen(screenX, screenY) {
     }
   }
 
+  const itemRoll = random();
+  let item = screenX === startScreen.x && screenY === startScreen.y
+    ? { id: "start-pop-seeds", type: "bomb", count: 3, x: 6, y: 8, hidden: false }
+    : null;
+
+  if (!item && itemRoll < 0.3) {
+    const hidden = ponds.length > 0 && random() < 0.6;
+    const itemPosition = hidden
+      ? ponds[Math.floor(random() * ponds.length)]
+      : findOpenCell(random, blockedForScenery, enemies);
+
+    if (itemPosition) {
+      item = {
+        id: `item-${screenX}-${screenY}`,
+        type: random() < 0.75 ? "bomb" : "treasure",
+        count: 1 + Math.floor(random() * 3),
+        x: itemPosition.x,
+        y: itemPosition.y,
+        hidden
+      };
+    }
+  }
+
   return {
     x: screenX,
     y: screenY,
@@ -260,11 +315,12 @@ function createScreen(screenX, screenY) {
     theme,
     water,
     bridges,
+    ponds,
     rocks,
     trees,
     obstacles: [...rocks, ...trees],
     enemies,
-    item: screenX === startScreen.x && screenY === startScreen.y ? { id: "start-berries", x: 6, y: 8 } : null
+    item
   };
 }
 
@@ -303,14 +359,27 @@ function loadCollectedItems() {
     const saved = JSON.parse(localStorage.getItem(itemStorageKey) || "[]");
     const collected = new Set(Array.isArray(saved) ? saved : []);
 
-    if (localStorage.getItem(oldItemStorageKey) === "true") {
-      collected.add("start-berries");
-    }
-
     return collected;
   } catch {
     return new Set();
   }
+}
+
+function loadInventory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(inventoryStorageKey) || "{}");
+
+    return {
+      bombs: Number.isFinite(saved.bombs) ? saved.bombs : 0,
+      treasures: Number.isFinite(saved.treasures) ? saved.treasures : 0
+    };
+  } catch {
+    return { bombs: 0, treasures: 0 };
+  }
+}
+
+function saveInventory() {
+  localStorage.setItem(inventoryStorageKey, JSON.stringify(inventory));
 }
 
 function saveCollectedItems() {
@@ -353,6 +422,10 @@ function gridToPercent(position, max) {
   return `${((position + 0.5) / max) * 100}%`;
 }
 
+function gridToYPosition(position) {
+  return `calc(${(position + 0.5) / screenGrid.rows} * (100% - var(--play-bottom)))`;
+}
+
 function isSameCell(a, b) {
   return a.x === b.x && a.y === b.y;
 }
@@ -386,6 +459,10 @@ function isBridgeCell(position) {
 
 function isWaterCell(position) {
   return makeCellSet(currentRoom().water).has(cellKey(position));
+}
+
+function isPondCell(position) {
+  return makeCellSet(currentRoom().ponds).has(cellKey(position));
 }
 
 function isObstacleCell(position) {
@@ -517,8 +594,6 @@ function moveToNextScreen(direction) {
 }
 
 function moveHero(deltaX, deltaY) {
-  setHeroFacing(deltaX, deltaY);
-
   const direction = directionBetween(heroPosition, {
     x: heroPosition.x + deltaX,
     y: heroPosition.y + deltaY
@@ -527,6 +602,21 @@ function moveHero(deltaX, deltaY) {
     x: heroPosition.x + deltaX,
     y: heroPosition.y + deltaY
   };
+  const targetEnemy = enemyAt(nextPosition);
+
+  if (targetEnemy) {
+    if (heroFacing !== direction) {
+      setHeroFacing(deltaX, deltaY);
+      status("Ready");
+      renderRoom();
+      return;
+    }
+
+    swingClub();
+    return;
+  }
+
+  setHeroFacing(deltaX, deltaY);
 
   if (
     nextPosition.x < 0 ||
@@ -562,10 +652,19 @@ function staggerHero(direction, steps) {
   }
 }
 
-function swingClub() {
+function animateClub() {
   hero.classList.remove("is-swinging");
+  hero.classList.remove("swing-up", "swing-right", "swing-down", "swing-left");
   requestAnimationFrame(() => hero.classList.add("is-swinging"));
-  window.setTimeout(() => hero.classList.remove("is-swinging"), 180);
+  hero.classList.add(`swing-${heroFacing}`);
+  window.setTimeout(() => {
+    hero.classList.remove("is-swinging");
+    hero.classList.remove("swing-up", "swing-right", "swing-down", "swing-left");
+  }, 260);
+}
+
+function swingClub() {
+  animateClub();
 
   const vector = directionVectors[heroFacing];
   const targetPosition = {
@@ -599,6 +698,36 @@ function swingClub() {
     status(`${type.name} bonked`);
   } else {
     status(`${type.name} dizzy`);
+  }
+
+  renderRoom();
+}
+
+function useBomb() {
+  if (inventory.bombs <= 0) {
+    status("No seeds");
+    renderRoom();
+    return;
+  }
+
+  const beforeCount = enemiesForCurrentScreen().length;
+  const blastRadius = 2;
+  const survivors = enemiesForCurrentScreen().filter((enemy) =>
+    distanceBetween(enemy, heroPosition) > blastRadius
+  );
+  const removedCount = beforeCount - survivors.length;
+
+  inventory.bombs -= 1;
+  saveInventory();
+  hero.classList.remove("is-popping");
+  requestAnimationFrame(() => hero.classList.add("is-popping"));
+  window.setTimeout(() => hero.classList.remove("is-popping"), 340);
+
+  if (removedCount > 0) {
+    setEnemiesForCurrentScreen(survivors);
+    status("Pop");
+  } else {
+    status("Boom");
   }
 
   renderRoom();
@@ -709,6 +838,7 @@ function renderTerrain() {
 
   screen.water.forEach((cell) => renderTerrainCell(cell, "terrain-cell terrain-water"));
   screen.bridges.forEach((cell) => renderTerrainCell(cell, "terrain-cell terrain-bridge"));
+  screen.ponds.forEach((cell) => renderTerrainCell(cell, "terrain-cell terrain-pond"));
   screen.rocks.forEach((cell) => renderTerrainCell(cell, "terrain-cell terrain-rock"));
   screen.trees.forEach((cell) => renderTerrainCell(cell, "terrain-cell terrain-tree"));
 }
@@ -728,7 +858,7 @@ function renderEnemies() {
       now < enemy.dizzyUntil ? "is-dizzy" : ""
     ].filter(Boolean).join(" ");
     enemyEl.style.setProperty("--enemy-left", gridToPercent(enemy.x, screenGrid.columns));
-    enemyEl.style.setProperty("--enemy-top", gridToPercent(enemy.y, screenGrid.rows));
+    enemyEl.style.setProperty("--enemy-top", gridToYPosition(enemy.y));
     enemyEl.style.setProperty("--hp-ratio", String(enemy.hp / enemy.maxHp));
     enemyEl.setAttribute("aria-label", type.name);
     enemyEl.innerHTML = `
@@ -747,20 +877,30 @@ function renderEnemies() {
 function renderItem() {
   const item = currentRoom().item;
   const hasItem = item && !collectedItems.has(item.id);
+  const visibleItem = hasItem && !item.hidden;
 
-  itemButton.hidden = !hasItem;
+  itemButton.hidden = !visibleItem;
+  itemButton.classList.toggle("item-bomb", Boolean(item && item.type === "bomb"));
+  itemButton.classList.toggle("item-treasure", Boolean(item && item.type === "treasure"));
 
   if (!hasItem) {
     return;
   }
 
   room.style.setProperty("--item-left", gridToPercent(item.x, screenGrid.columns));
-  room.style.setProperty("--item-top", gridToPercent(item.y, screenGrid.rows));
+  room.style.setProperty("--item-top", gridToYPosition(item.y));
 
   if (heroPosition.x === item.x && heroPosition.y === item.y) {
     collectedItems.add(item.id);
+    if (item.type === "bomb") {
+      inventory.bombs += item.count;
+      status(item.hidden || isPondCell(heroPosition) ? "Found seeds" : "Seeds");
+    } else {
+      inventory.treasures += 1;
+      status(item.hidden || isPondCell(heroPosition) ? "Found" : "Treasure");
+    }
     saveCollectedItems();
-    status("Found");
+    saveInventory();
     itemButton.hidden = true;
   }
 }
@@ -768,10 +908,12 @@ function renderItem() {
 function renderRoom() {
   renderTerrain();
   room.style.setProperty("--hero-left", gridToPercent(heroPosition.x, screenGrid.columns));
-  room.style.setProperty("--hero-top", gridToPercent(heroPosition.y, screenGrid.rows));
-  hero.className = `hero facing-${heroFacing}`;
+  room.style.setProperty("--hero-top", gridToYPosition(heroPosition.y));
+  hero.classList.remove("facing-up", "facing-right", "facing-down", "facing-left");
+  hero.classList.add(`facing-${heroFacing}`);
   renderItem();
-  berryCountEl.textContent = String(collectedItems.size);
+  bombCountEl.textContent = String(inventory.bombs);
+  findCountEl.textContent = String(inventory.treasures);
   statusText.textContent = roomStatus;
   renderEnemies();
 }
@@ -796,11 +938,14 @@ room.addEventListener("pointerdown", (event) => {
 });
 
 attackButton.addEventListener("click", swingClub);
+bombButton.addEventListener("click", useBomb);
 
 resetButton.addEventListener("click", () => {
   enemiesByScreen = new Map();
+  inventory = { bombs: 0, treasures: 0 };
   collectedItems = new Set();
   localStorage.removeItem(itemStorageKey);
+  localStorage.removeItem(inventoryStorageKey);
   localStorage.removeItem(oldItemStorageKey);
   currentScreen = { ...startScreen };
   heroPosition = { ...startPosition };
