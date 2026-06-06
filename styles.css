@@ -162,24 +162,7 @@ button {
 .hero-sprite {
   position: absolute;
   inset: 0;
-  transform-origin: 50% 50%;
   transition: transform 120ms ease;
-}
-
-.hero.facing-up .hero-sprite {
-  transform: rotate(180deg);
-}
-
-.hero.facing-right .hero-sprite {
-  transform: rotate(-90deg);
-}
-
-.hero.facing-down .hero-sprite {
-  transform: rotate(0deg);
-}
-
-.hero.facing-left .hero-sprite {
-  transform: rotate(90deg);
 }
 
 .hero-body {
@@ -265,6 +248,163 @@ button {
   z-index: 3;
 }
 
+.hero.facing-up .hero-body {
+  inset: 13% 17% 17%;
+  border-radius: 38% 38% 48% 48%;
+  box-shadow:
+    inset 0 16px 0 rgb(255 255 255 / 0.06),
+    inset -12px -16px 0 rgb(0 0 0 / 0.1),
+    0 12px 0 #1e6d54;
+}
+
+.hero.facing-up .hero-eye,
+.hero.facing-up .hero-smile {
+  display: none;
+}
+
+.hero.facing-up .hero-crest {
+  top: 13%;
+  height: 44%;
+  background: #1f7d5a;
+  box-shadow:
+    -18px 8px 0 -4px #1f7d5a,
+    18px 8px 0 -4px #1f7d5a;
+}
+
+.hero.facing-left .hero-body,
+.hero.facing-right .hero-body {
+  inset: 24% 10% 18%;
+  border-radius: 52% 42% 40% 48%;
+}
+
+.hero.facing-left .hero-body {
+  transform: scaleX(-1);
+}
+
+.hero.facing-left .hero-body::before,
+.hero.facing-right .hero-body::before {
+  left: -9%;
+  top: 54%;
+  width: 28%;
+  height: 13%;
+  border-radius: 999px 0 0 999px;
+  background: #238c65;
+}
+
+.hero.facing-left .hero-body::after,
+.hero.facing-right .hero-body::after {
+  right: -13%;
+  top: 18%;
+  width: 36%;
+  height: 35%;
+  border-radius: 46% 52% 42% 38%;
+  box-shadow: inset -6px -6px 0 rgb(0 0 0 / 0.08);
+}
+
+.hero.facing-left .hero-eye,
+.hero.facing-right .hero-eye {
+  top: 25%;
+  right: 2%;
+  left: auto;
+}
+
+.hero.facing-left .eye-left,
+.hero.facing-right .eye-left {
+  display: none;
+}
+
+.hero.facing-left .hero-smile,
+.hero.facing-right .hero-smile {
+  left: auto;
+  right: -2%;
+  top: 45%;
+  width: 24px;
+  height: 13px;
+}
+
+.hero.facing-left .hero-crest,
+.hero.facing-right .hero-crest {
+  left: 43%;
+  top: -10%;
+  height: 25%;
+  box-shadow:
+    -17px 8px 0 -5px #1f7d5a,
+    17px 8px 0 -5px #1f7d5a;
+}
+
+.hero.facing-left .rock-shield,
+.hero.facing-right .rock-shield {
+  top: 33%;
+  bottom: auto;
+  width: 42%;
+  height: 46%;
+  transform: none;
+}
+
+.hero.facing-right .rock-shield {
+  right: -8%;
+  left: auto;
+}
+
+.hero.facing-left .rock-shield {
+  left: -8%;
+}
+
+.hero.facing-left .rock-shield span,
+.hero.facing-right .rock-shield span {
+  bottom: 12%;
+  width: 44%;
+  height: 66%;
+}
+
+.hero.facing-left .rock-shield span:nth-child(1),
+.hero.facing-right .rock-shield span:nth-child(1) {
+  left: 0;
+  transform: rotate(-8deg);
+}
+
+.hero.facing-left .rock-shield span:nth-child(2),
+.hero.facing-right .rock-shield span:nth-child(2) {
+  left: 29%;
+}
+
+.hero.facing-left .rock-shield span:nth-child(3),
+.hero.facing-right .rock-shield span:nth-child(3) {
+  right: 0;
+  transform: rotate(8deg);
+}
+
+.hero.facing-up .rock-shield {
+  top: -6%;
+  bottom: auto;
+}
+
+.hero.facing-up .club {
+  right: 4%;
+  top: 46%;
+  height: 50%;
+  transform: rotate(148deg);
+}
+
+.hero.facing-left .club,
+.hero.facing-right .club {
+  top: 45%;
+  width: 19%;
+  height: 48%;
+  z-index: 2;
+}
+
+.hero.facing-right .club {
+  left: -3%;
+  right: auto;
+  transform: rotate(-128deg);
+}
+
+.hero.facing-left .club {
+  right: -3%;
+  transform: rotate(128deg);
+}
+
 .rock-shield span {
   position: absolute;
   bottom: 0;
@@ -290,6 +430,95 @@ button {
 .rock-shield span:nth-child(3) {
   right: 0;
   transform: rotate(14deg);
+}
+
+.rock-shield {
+  bottom: -4%;
+  width: 52%;
+  height: 42%;
+  border: 0;
+  border-radius: 0;
+  background: #43535f;
+  clip-path: polygon(50% 0, 94% 20%, 81% 78%, 50% 100%, 19% 78%, 6% 20%);
+  box-shadow: 0 5px 0 rgb(0 0 0 / 0.18);
+}
+
+.rock-shield::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  background:
+    linear-gradient(135deg, rgb(255 255 255 / 0.34), transparent 44%),
+    #9fb1ba;
+  clip-path: polygon(50% 0, 94% 20%, 81% 78%, 50% 100%, 19% 78%, 6% 20%);
+}
+
+.rock-shield span {
+  z-index: 2;
+  border: 0;
+  border-radius: 999px;
+  background: #5c6d76;
+  box-shadow: none;
+}
+
+.rock-shield span:nth-child(1) {
+  left: 47%;
+  top: 19%;
+  width: 7%;
+  height: 60%;
+  transform: none;
+}
+
+.rock-shield span:nth-child(2) {
+  left: 24%;
+  top: 39%;
+  width: 52%;
+  height: 8%;
+  transform: none;
+}
+
+.rock-shield span:nth-child(3) {
+  left: 28%;
+  top: 19%;
+  width: 23%;
+  height: 6%;
+  background: rgb(255 255 255 / 0.48);
+  transform: rotate(-26deg);
+}
+
+.hero.facing-left .rock-shield,
+.hero.facing-right .rock-shield {
+  top: 29%;
+  bottom: auto;
+  width: 34%;
+  height: 52%;
+  clip-path: polygon(36% 2%, 94% 22%, 82% 78%, 36% 100%, 8% 78%, 8% 22%);
+}
+
+.hero.facing-left .rock-shield::before,
+.hero.facing-right .rock-shield::before {
+  clip-path: polygon(36% 2%, 94% 22%, 82% 78%, 36% 100%, 8% 78%, 8% 22%);
+}
+
+.hero.facing-right .rock-shield {
+  right: -3%;
+  left: auto;
+  transform: none;
+}
+
+.hero.facing-left .rock-shield {
+  left: -3%;
+  transform: scaleX(-1);
+}
+
+.hero.facing-up .rock-shield {
+  top: -4%;
+  bottom: auto;
+  clip-path: polygon(50% 100%, 94% 80%, 81% 22%, 50% 0, 19% 22%, 6% 80%);
+}
+
+.hero.facing-up .rock-shield::before {
+  clip-path: polygon(50% 100%, 94% 80%, 81% 22%, 50% 0, 19% 22%, 6% 80%);
 }
 
 .club {
