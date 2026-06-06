@@ -11,17 +11,12 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="apple-touch-icon" href="assets/icon-192.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=enemies3">
+    <link rel="stylesheet" href="styles.css?v=world1">
   </head>
   <body>
     <main class="game-shell" aria-label="Dino game">
       <section class="room" id="room" aria-live="polite">
-        <div class="room-tile tile-path"></div>
-        <div class="room-tile tile-pond"></div>
-        <div class="room-tile tile-rocks"></div>
-        <div class="tree tree-one" aria-hidden="true"></div>
-        <div class="tree tree-two" aria-hidden="true"></div>
-        <div class="tree tree-three" aria-hidden="true"></div>
+        <div class="terrain-layer" id="terrainLayer" aria-hidden="true"></div>
 
         <div class="item-button" id="itemButton" aria-label="Boom berries">
           <span class="berry berry-one" aria-hidden="true"></span>
@@ -61,6 +56,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=enemies3" defer></script>
+    <script src="app.js?v=world1" defer></script>
   </body>
 </html>
