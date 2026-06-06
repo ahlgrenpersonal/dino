@@ -1,39 +1,31 @@
-const scoreEl = document.querySelector("#score");
-const dinoButton = document.querySelector(".dino-button");
+const berryCountEl = document.querySelector("#berryCount");
+const itemButton = document.querySelector("#itemButton");
 const resetButton = document.querySelector("#resetButton");
+const statusText = document.querySelector("#statusText");
 
-const scoreStorageKey = "dino-score";
+const itemStorageKey = "dino-boom-berries-collected";
 
-let score = Number(localStorage.getItem(scoreStorageKey) || 0);
-let hopTimer;
+let itemCollected = localStorage.getItem(itemStorageKey) === "true";
 
-function renderScore() {
-  scoreEl.textContent = String(score);
-  localStorage.setItem(scoreStorageKey, String(score));
+function renderRoom() {
+  berryCountEl.textContent = itemCollected ? "1" : "0";
+  statusText.textContent = itemCollected ? "Found" : "Ready";
+  itemButton.classList.toggle("is-collected", itemCollected);
+  itemButton.disabled = itemCollected;
+  localStorage.setItem(itemStorageKey, String(itemCollected));
 }
 
-function hop() {
-  score += 1;
-  renderScore();
-
-  dinoButton.classList.remove("is-hopping");
-  window.clearTimeout(hopTimer);
-  requestAnimationFrame(() => {
-    dinoButton.classList.add("is-hopping");
-    hopTimer = window.setTimeout(() => {
-      dinoButton.classList.remove("is-hopping");
-    }, 180);
-  });
-}
-
-dinoButton.addEventListener("click", hop);
-
-resetButton.addEventListener("click", () => {
-  score = 0;
-  renderScore();
+itemButton.addEventListener("click", () => {
+  itemCollected = true;
+  renderRoom();
 });
 
-renderScore();
+resetButton.addEventListener("click", () => {
+  itemCollected = false;
+  renderRoom();
+});
+
+renderRoom();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
