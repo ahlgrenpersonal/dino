@@ -1,9 +1,10 @@
-const CACHE_NAME = "dino-v36";
+const CACHE_NAME = "dino-v37";
 const ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=world17",
-  "./app.js?v=world17",
+  "./styles.css?v=world18",
+  "./app.js?v=world18",
+  "./version.json",
   "./manifest.webmanifest",
   "./assets/icon.svg",
   "./assets/icon-192.png",

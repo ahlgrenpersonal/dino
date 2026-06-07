@@ -15,6 +15,7 @@ const itemStorageKey = "dino-collected-items";
 const inventoryStorageKey = "dino-inventory";
 const oldItemStorageKey = "dino-boom-berries-collected";
 const terrainStorageKey = "dino-destroyed-terrain";
+const buildVersion = "world18";
 const worldColumns = 50;
 const worldRows = 1;
 const screenGrid = {
@@ -1464,6 +1465,51 @@ resetButton.addEventListener("click", () => {
 renderRoom();
 window.setInterval(gameTick, 250);
 
+async function clearAppShellCache() {
+  if ("serviceWorker" in navigator) {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(registrations.map((registration) => registration.unregister()));
+  }
+
+  if ("caches" in window) {
+    const keys = await caches.keys();
+    await Promise.all(keys.map((key) => caches.delete(key)));
+  }
+}
+
+async function refreshIfNewBuildIsLive() {
+  try {
+    const response = await fetch(`./version.json?check=${Date.now()}`, {
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const latest = await response.json();
+
+    if (!latest || latest.build === buildVersion) {
+      return false;
+    }
+
+    const reloadKey = `dino-reloading-${latest.build}`;
+
+    if (sessionStorage.getItem(reloadKey)) {
+      return false;
+    }
+
+    sessionStorage.setItem(reloadKey, "1");
+    status("Updating");
+    renderRoom();
+    await clearAppShellCache();
+    window.location.replace(`./index.html?fresh=${Date.now()}`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     let reloadingForUpdate = false;
@@ -1478,7 +1524,11 @@ if ("serviceWorker" in navigator) {
     });
 
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=world17", {
+      if (await refreshIfNewBuildIsLive()) {
+        return;
+      }
+
+      const registration = await navigator.serviceWorker.register("./sw.js?v=world18", {
         updateViaCache: "none"
       });
 
