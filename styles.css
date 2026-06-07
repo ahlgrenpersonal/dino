@@ -892,16 +892,116 @@ button {
   transform: rotate(45deg);
 }
 
-.item-button.item-bomb .berry {
-  border-color: #923038;
-  background: #e24f5b;
-}
-
 .enemy-layer {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 3;
+}
+
+.bomb-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.dropped-bomb,
+.blast-cell {
+  position: absolute;
+  left: var(--bomb-left);
+  top: var(--bomb-top);
+  transform: translate(-50%, -50%);
+}
+
+.dropped-bomb {
+  width: min(14%, 64px);
+  aspect-ratio: 1;
+  border: 4px solid #29313b;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 28%, rgb(255 255 255 / 0.28) 0 10%, transparent 11%),
+    #4a5260;
+  box-shadow:
+    inset -9px -10px 0 rgb(0 0 0 / 0.16),
+    0 7px 0 rgb(24 54 51 / 0.14);
+  animation: bombWiggle 600ms ease-in-out infinite;
+}
+
+.bomb-fuse {
+  position: absolute;
+  left: 57%;
+  top: -25%;
+  width: 18%;
+  height: 34%;
+  border-radius: 999px;
+  background: #6f4f31;
+  transform: rotate(34deg);
+  transform-origin: 50% 100%;
+}
+
+.bomb-fuse::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -13px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #ffd86b;
+  box-shadow:
+    0 0 0 4px rgb(255 216 107 / 0.28),
+    0 0 12px rgb(255 154 74 / 0.72);
+  transform: translateX(-50%);
+  animation: fusePulse 300ms ease-in-out infinite alternate;
+}
+
+.bomb-face {
+  position: absolute;
+  left: 28%;
+  top: 42%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff8da;
+  box-shadow: 21px 0 0 #fff8da;
+}
+
+.bomb-face::after {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 11px;
+  width: 16px;
+  height: 9px;
+  border-bottom: 3px solid #fff8da;
+  border-radius: 0 0 999px 999px;
+}
+
+.bomb-timer {
+  position: absolute;
+  left: 50%;
+  bottom: -20%;
+  min-width: 25px;
+  min-height: 25px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #29313b;
+  background: #fff8da;
+  font-size: 0.92rem;
+  line-height: 1;
+  transform: translateX(-50%);
+  box-shadow: 0 3px 0 rgb(24 54 51 / 0.12);
+}
+
+.blast-cell {
+  width: min(15%, 70px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #fff8da 0 18%, #ffd86b 19% 38%, rgb(255 141 91 / 0.7) 39% 58%, transparent 59%);
+  animation: blastSpark 820ms ease-out forwards;
 }
 
 .enemy {
@@ -1241,6 +1341,36 @@ button {
   top: 43px;
 }
 
+.item-button.item-bomb .berry {
+  border-color: #29313b;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 28%, rgb(255 255 255 / 0.28) 0 12%, transparent 13%),
+    #4a5260;
+}
+
+.item-button.item-bomb .berry::before {
+  left: 16px;
+  top: -12px;
+  width: 7px;
+  height: 15px;
+  border-radius: 999px;
+  background: #6f4f31;
+  transform: rotate(34deg);
+}
+
+.item-button.item-bomb .berry::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 13px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff8da;
+  box-shadow: 13px 0 0 #fff8da;
+}
+
 @keyframes glowPulse {
   0%,
   100% {
@@ -1251,6 +1381,44 @@ button {
   50% {
     transform: scale(1.08);
     opacity: 0.95;
+  }
+}
+
+@keyframes bombWiggle {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) rotate(-2deg);
+  }
+
+  50% {
+    transform: translate(-50%, -53%) rotate(2deg);
+  }
+}
+
+@keyframes fusePulse {
+  0% {
+    transform: translateX(-50%) scale(0.82);
+  }
+
+  100% {
+    transform: translateX(-50%) scale(1.15);
+  }
+}
+
+@keyframes blastSpark {
+  0% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(0.25);
+  }
+
+  68% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.32);
   }
 }
 

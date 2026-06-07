@@ -11,20 +11,21 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="apple-touch-icon" href="assets/icon-192.png">
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=world14">
+    <link rel="stylesheet" href="styles.css?v=world15">
   </head>
   <body>
     <main class="game-shell" aria-label="Dino game">
       <section class="room" id="room" aria-live="polite">
         <div class="terrain-layer" id="terrainLayer" aria-hidden="true"></div>
 
-        <div class="item-button" id="itemButton" aria-label="Boom berries">
+        <div class="item-button" id="itemButton" aria-label="Item">
           <span class="berry berry-one" aria-hidden="true"></span>
           <span class="berry berry-two" aria-hidden="true"></span>
           <span class="berry berry-three" aria-hidden="true"></span>
           <span class="item-glow" aria-hidden="true"></span>
         </div>
 
+        <div class="bomb-layer" id="bombLayer" aria-label="Bombs"></div>
         <div class="enemy-layer" id="enemyLayer" aria-label="Enemies"></div>
 
         <div class="hero facing-down" aria-label="Dino explorer">
@@ -48,7 +49,7 @@
 
       <section class="hud" aria-label="Inventory">
         <div>
-          <p class="label">Pop seeds</p>
+          <p class="label">Bombs</p>
           <p class="score" id="bombCount">0</p>
         </div>
         <div>
@@ -56,12 +57,12 @@
           <p class="score" id="findCount">0</p>
         </div>
         <p class="status" id="statusText">Ready</p>
-        <button class="bomb-button" type="button" id="bombButton" aria-label="Use pop seed">Pop</button>
+        <button class="bomb-button" type="button" id="bombButton" aria-label="Drop bomb">Bomb</button>
         <button class="attack-button" type="button" id="attackButton" aria-label="Swing club">Club</button>
         <button class="reset-button" type="button" id="resetButton" aria-label="Reset room">Reset</button>
       </section>
     </main>
 
-    <script src="app.js?v=world14" defer></script>
+    <script src="app.js?v=world15" defer></script>
   </body>
 </html>

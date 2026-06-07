@@ -1,4 +1,5 @@
 const bombCountEl = document.querySelector("#bombCount");
+const bombLayer = document.querySelector("#bombLayer");
 const findCountEl = document.querySelector("#findCount");
 const enemyLayer = document.querySelector("#enemyLayer");
 const itemButton = document.querySelector("#itemButton");
@@ -13,6 +14,7 @@ const statusText = document.querySelector("#statusText");
 const itemStorageKey = "dino-collected-items";
 const inventoryStorageKey = "dino-inventory";
 const oldItemStorageKey = "dino-boom-berries-collected";
+const terrainStorageKey = "dino-destroyed-terrain";
 const worldColumns = 50;
 const worldRows = 1;
 const screenGrid = {
@@ -21,6 +23,10 @@ const screenGrid = {
 };
 const startScreen = { x: 0, y: 0 };
 const startPosition = { x: 4, y: 10 };
+const gateScreenX = 30;
+const bombFuseMs = 3000;
+const bombExplosionMs = 900;
+const bombDamage = 10;
 const directionVectors = {
   up: { x: 0, y: -1 },
   right: { x: 1, y: 0 },
@@ -110,6 +116,9 @@ let currentScreen = { ...startScreen };
 let enemiesByScreen = new Map();
 let inventory = loadInventory();
 let collectedItems = loadCollectedItems();
+let destroyedTerrain = loadDestroyedTerrain();
+let droppedBombs = [];
+let bombSequence = 0;
 let heroPosition = { ...startPosition };
 let heroFacing = "down";
 let roomStatus = "Ready";
@@ -159,6 +168,30 @@ function addCell(cells, x, y) {
   }
 }
 
+function removeCells(cells, shouldRemove) {
+  for (let index = cells.length - 1; index >= 0; index -= 1) {
+    if (shouldRemove(cells[index])) {
+      cells.splice(index, 1);
+    }
+  }
+}
+
+function addUniqueCell(cells, x, y) {
+  const candidate = { x, y };
+
+  if (!cells.some((cell) => isSameCell(cell, candidate))) {
+    addCell(cells, x, y);
+  }
+}
+
+function isGateCell(cell) {
+  return cell.x >= 7 && cell.x <= 9;
+}
+
+function terrainKey(screen, type, cell) {
+  return `${keyFor(screen)}:${type}:${cellKey(cell)}`;
+}
+
 function isReservedCell(position) {
   return (
     (Math.abs(position.x - startPosition.x) <= 1 && Math.abs(position.y - startPosition.y) <= 1) ||
@@ -186,6 +219,32 @@ function findOpenCell(random, blockedCells, occupiedCells = []) {
   }
 
   return null;
+}
+
+function addGateScreenTerrain(screenX, water, bridges, ponds, mountains, rocks, trees) {
+  if (screenX !== gateScreenX) {
+    return;
+  }
+
+  removeCells(water, isGateCell);
+  removeCells(bridges, isGateCell);
+  removeCells(ponds, isGateCell);
+  removeCells(mountains, isGateCell);
+  removeCells(trees, isGateCell);
+
+  for (let x = 7; x <= 9; x += 1) {
+    for (let y = 0; y < screenGrid.rows; y += 1) {
+      addUniqueCell(rocks, x, y);
+    }
+  }
+}
+
+function filterDestroyedTerrain(screen) {
+  screen.rocks = screen.rocks.filter((cell) => !destroyedTerrain.has(terrainKey(screen, "rock", cell)));
+  screen.trees = screen.trees.filter((cell) => !destroyedTerrain.has(terrainKey(screen, "tree", cell)));
+  screen.obstacles = [...screen.rocks, ...screen.trees, ...screen.mountains];
+
+  return screen;
 }
 
 function createScreen(screenX, screenY) {
@@ -255,6 +314,8 @@ function createScreen(screenX, screenY) {
     }
   }
 
+  addGateScreenTerrain(screenX, water, bridges, ponds, mountains, rocks, trees);
+
   const pondCount = screenX === startScreen.x && screenY === startScreen.y ? 0 : Math.floor(random() * 3);
   const reservedWater = new Set([...water.map(cellKey), ...bridges.map(cellKey)]);
 
@@ -297,7 +358,7 @@ function createScreen(screenX, screenY) {
 
   const enemyCount = screenX === startScreen.x && screenY === startScreen.y
     ? 1
-    : 1 + Math.floor(random() * 4);
+    : 1 + Math.floor(random() * 5);
   const distanceFromStart = Math.min(screenX, worldColumns - screenX);
   const enemyChoices = distanceFromStart > 9
     ? ["fodder", "fodder", "raptor", "tank", "giant", "trex"]
@@ -321,7 +382,9 @@ function createScreen(screenX, screenY) {
 
   const itemRoll = random();
   let item = screenX === startScreen.x && screenY === startScreen.y
-    ? { id: "start-pop-seeds", type: "bomb", count: 3, x: 6, y: 8, hidden: false }
+    ? { id: "start-bombs", type: "bomb", count: 3, x: 6, y: 8, hidden: false }
+    : screenX === gateScreenX
+      ? { id: "gate-bombs", type: "bomb", count: 2, x: 2, y: 9, hidden: false }
     : null;
 
   if (!item && itemRoll < 0.3) {
@@ -333,7 +396,7 @@ function createScreen(screenX, screenY) {
     if (itemPosition) {
       item = {
         id: `item-${screenX}-${screenY}`,
-        type: random() < 0.75 ? "bomb" : "treasure",
+        type: itemRoll < 0.1 ? "bomb" : "treasure",
         count: 1 + Math.floor(random() * 3),
         x: itemPosition.x,
         y: itemPosition.y,
@@ -342,7 +405,7 @@ function createScreen(screenX, screenY) {
     }
   }
 
-  return {
+  return filterDestroyedTerrain({
     x: screenX,
     y: screenY,
     name,
@@ -356,7 +419,7 @@ function createScreen(screenX, screenY) {
     obstacles: [...rocks, ...trees, ...mountains],
     enemies,
     item
-  };
+  });
 }
 
 function pickFreeCell(random, blockedCells, enemies) {
@@ -413,12 +476,26 @@ function loadInventory() {
   }
 }
 
+function loadDestroyedTerrain() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(terrainStorageKey) || "[]");
+
+    return new Set(Array.isArray(saved) ? saved : []);
+  } catch {
+    return new Set();
+  }
+}
+
 function saveInventory() {
   localStorage.setItem(inventoryStorageKey, JSON.stringify(inventory));
 }
 
 function saveCollectedItems() {
   localStorage.setItem(itemStorageKey, JSON.stringify([...collectedItems]));
+}
+
+function saveDestroyedTerrain() {
+  localStorage.setItem(terrainStorageKey, JSON.stringify([...destroyedTerrain]));
 }
 
 function currentRoom() {
@@ -440,17 +517,25 @@ function createEnemies(screen) {
 }
 
 function enemiesForCurrentScreen() {
-  const screenKey = keyFor(currentScreen);
+  return enemiesForScreen(currentRoom());
+}
+
+function enemiesForScreen(screen) {
+  const screenKey = keyFor(screen);
 
   if (!enemiesByScreen.has(screenKey)) {
-    enemiesByScreen.set(screenKey, createEnemies(currentRoom()));
+    enemiesByScreen.set(screenKey, createEnemies(screen));
   }
 
   return enemiesByScreen.get(screenKey);
 }
 
 function setEnemiesForCurrentScreen(enemies) {
-  enemiesByScreen.set(keyFor(currentScreen), enemies);
+  setEnemiesForScreen(currentRoom(), enemies);
+}
+
+function setEnemiesForScreen(screen, enemies) {
+  enemiesByScreen.set(keyFor(screen), enemies);
 }
 
 function gridToPercent(position, max) {
@@ -500,11 +585,16 @@ function isPondCell(position) {
   return makeCellSet(currentRoom().ponds).has(cellKey(position));
 }
 
-function isObstacleCell(position) {
-  const screen = currentRoom();
+function isObstacleOnScreen(screen, position) {
   const obstacleCells = makeCellSet(screen.obstacles);
+  const waterCells = makeCellSet(screen.water);
+  const bridgeCells = makeCellSet(screen.bridges);
 
-  return obstacleCells.has(cellKey(position)) || (isWaterCell(position) && !isBridgeCell(position));
+  return obstacleCells.has(cellKey(position)) || (waterCells.has(cellKey(position)) && !bridgeCells.has(cellKey(position)));
+}
+
+function isObstacleCell(position) {
+  return isObstacleOnScreen(currentRoom(), position);
 }
 
 function enemyAt(position) {
@@ -600,6 +690,24 @@ function findFirstFreeCell() {
   return [...centerFirst, ...cells].find((candidate) => !isBlockedCell(candidate));
 }
 
+function isGateOpen() {
+  const gateScreen = world.get(`${gateScreenX},0`);
+
+  if (!gateScreen) {
+    return true;
+  }
+
+  for (let y = 0; y < screenGrid.rows; y += 1) {
+    const tunnelIsOpen = [7, 8, 9].every((x) => !isObstacleOnScreen(gateScreen, { x, y }));
+
+    if (tunnelIsOpen) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function ensureHeroOnFreeCell() {
   if (isBlockedCell(heroPosition)) {
     heroPosition = findFirstFreeCell() || { x: 0, y: 0 };
@@ -609,6 +717,11 @@ function ensureHeroOnFreeCell() {
 function moveToNextScreen(direction) {
   if (direction !== "left" && direction !== "right") {
     status("Edge");
+    return;
+  }
+
+  if (currentScreen.x === 0 && direction === "left" && !isGateOpen()) {
+    status("Rock gate");
     return;
   }
 
@@ -733,34 +846,138 @@ function swingClub() {
   renderRoom();
 }
 
-function useBomb() {
+function isInBombBlast(bomb, position) {
+  return Math.abs(position.x - bomb.x) <= 1 && Math.abs(position.y - bomb.y) <= 1;
+}
+
+function bombAt(position) {
+  return droppedBombs.find((bomb) =>
+    bomb.screenKey === keyFor(currentScreen) &&
+    !bomb.explodedAt &&
+    isSameCell(bomb, position)
+  );
+}
+
+function destroyBlastTerrain(screen, bomb) {
+  let destroyedCount = 0;
+
+  ["rocks", "trees"].forEach((collectionName) => {
+    const type = collectionName === "rocks" ? "rock" : "tree";
+    const keptCells = [];
+
+    screen[collectionName].forEach((cell) => {
+      if (isInBombBlast(bomb, cell)) {
+        destroyedTerrain.add(terrainKey(screen, type, cell));
+        destroyedCount += 1;
+        return;
+      }
+
+      keptCells.push(cell);
+    });
+
+    screen[collectionName] = keptCells;
+  });
+
+  if (destroyedCount > 0) {
+    screen.obstacles = [...screen.rocks, ...screen.trees, ...screen.mountains];
+    saveDestroyedTerrain();
+  }
+
+  return destroyedCount;
+}
+
+function damageBlastEnemies(screen, bomb) {
+  const enemies = enemiesForScreen(screen);
+  let removedCount = 0;
+  const now = performance.now();
+  const survivors = enemies.filter((enemy) => {
+    if (!isInBombBlast(bomb, enemy)) {
+      return true;
+    }
+
+    enemy.hp -= bombDamage;
+    enemy.dizzyUntil = now + 900;
+    enemy.attackStartedAt = null;
+
+    if (enemy.hp <= 0) {
+      removedCount += 1;
+      return false;
+    }
+
+    return true;
+  });
+
+  setEnemiesForScreen(screen, survivors);
+
+  return removedCount;
+}
+
+function explodeBomb(bomb) {
+  const screen = world.get(bomb.screenKey);
+
+  if (!screen) {
+    bomb.explodedAt = performance.now();
+    return;
+  }
+
+  const removedEnemies = damageBlastEnemies(screen, bomb);
+  const destroyedTerrainCount = destroyBlastTerrain(screen, bomb);
+  bomb.explodedAt = performance.now();
+  bomb.removedEnemies = removedEnemies;
+  bomb.destroyedTerrainCount = destroyedTerrainCount;
+
+  if (bomb.screenKey === keyFor(currentScreen)) {
+    if (destroyedTerrainCount > 0) {
+      status("Rocks pop");
+    } else if (removedEnemies > 0) {
+      status("Boom");
+    } else {
+      status("Sparkles");
+    }
+  }
+}
+
+function dropBomb() {
   if (inventory.bombs <= 0) {
-    status("No seeds");
+    status("No bombs");
     renderRoom();
     return;
   }
 
-  const beforeCount = enemiesForCurrentScreen().length;
-  const blastRadius = 2;
-  const survivors = enemiesForCurrentScreen().filter((enemy) =>
-    distanceBetween(enemy, heroPosition) > blastRadius
-  );
-  const removedCount = beforeCount - survivors.length;
+  if (bombAt(heroPosition)) {
+    status("Bomb set");
+    renderRoom();
+    return;
+  }
 
   inventory.bombs -= 1;
   saveInventory();
-  hero.classList.remove("is-popping");
-  requestAnimationFrame(() => hero.classList.add("is-popping"));
-  window.setTimeout(() => hero.classList.remove("is-popping"), 340);
+  bombSequence += 1;
+  droppedBombs.push({
+    id: `bomb-${Date.now()}-${bombSequence}`,
+    screenKey: keyFor(currentScreen),
+    x: heroPosition.x,
+    y: heroPosition.y,
+    placedAt: performance.now(),
+    explodesAt: performance.now() + bombFuseMs,
+    explodedAt: null
+  });
 
-  if (removedCount > 0) {
-    setEnemiesForCurrentScreen(survivors);
-    status("Pop");
-  } else {
-    status("Boom");
-  }
+  status("Bomb set");
 
   renderRoom();
+}
+
+function updateBombs() {
+  const now = performance.now();
+
+  droppedBombs.forEach((bomb) => {
+    if (!bomb.explodedAt && now >= bomb.explodesAt) {
+      explodeBomb(bomb);
+    }
+  });
+
+  droppedBombs = droppedBombs.filter((bomb) => !bomb.explodedAt || now - bomb.explodedAt < bombExplosionMs);
 }
 
 function chooseEnemyStep(enemy) {
@@ -850,6 +1067,11 @@ function updateEnemy(enemy, now) {
 function updateEnemies() {
   const now = performance.now();
   enemiesForCurrentScreen().forEach((enemy) => updateEnemy(enemy, now));
+}
+
+function gameTick() {
+  updateBombs();
+  updateEnemies();
   renderRoom();
 }
 
@@ -905,6 +1127,47 @@ function renderEnemies() {
   });
 }
 
+function renderBombs() {
+  bombLayer.innerHTML = "";
+  const now = performance.now();
+  const visibleBombs = droppedBombs.filter((bomb) => bomb.screenKey === keyFor(currentScreen));
+
+  visibleBombs.forEach((bomb) => {
+    if (bomb.explodedAt) {
+      for (let offsetY = -1; offsetY <= 1; offsetY += 1) {
+        for (let offsetX = -1; offsetX <= 1; offsetX += 1) {
+          const blastX = bomb.x + offsetX;
+          const blastY = bomb.y + offsetY;
+
+          if (blastX < 0 || blastX >= screenGrid.columns || blastY < 0 || blastY >= screenGrid.rows) {
+            continue;
+          }
+
+          const blast = document.createElement("div");
+          blast.className = "blast-cell";
+          blast.style.setProperty("--bomb-left", gridToPercent(blastX, screenGrid.columns));
+          blast.style.setProperty("--bomb-top", gridToYPosition(blastY));
+          bombLayer.append(blast);
+        }
+      }
+
+      return;
+    }
+
+    const secondsLeft = Math.max(1, Math.ceil((bomb.explodesAt - now) / 1000));
+    const bombEl = document.createElement("div");
+    bombEl.className = "dropped-bomb";
+    bombEl.style.setProperty("--bomb-left", gridToPercent(bomb.x, screenGrid.columns));
+    bombEl.style.setProperty("--bomb-top", gridToYPosition(bomb.y));
+    bombEl.innerHTML = `
+      <span class="bomb-fuse"></span>
+      <span class="bomb-face"></span>
+      <span class="bomb-timer">${secondsLeft}</span>
+    `;
+    bombLayer.append(bombEl);
+  });
+}
+
 function renderItem() {
   const item = currentRoom().item;
   const hasItem = item && !collectedItems.has(item.id);
@@ -925,7 +1188,7 @@ function renderItem() {
     collectedItems.add(item.id);
     if (item.type === "bomb") {
       inventory.bombs += item.count;
-      status(item.hidden || isPondCell(heroPosition) ? "Found seeds" : "Seeds");
+      status(item.hidden || isPondCell(heroPosition) ? "Found bombs" : "Bombs");
     } else {
       inventory.treasures += 1;
       status(item.hidden || isPondCell(heroPosition) ? "Found" : "Treasure");
@@ -946,6 +1209,7 @@ function renderRoom() {
   bombCountEl.textContent = String(inventory.bombs);
   findCountEl.textContent = String(inventory.treasures);
   statusText.textContent = roomStatus;
+  renderBombs();
   renderEnemies();
 }
 
@@ -1072,15 +1336,24 @@ window.addEventListener("keydown", (event) => {
 });
 
 attackButton.addEventListener("click", swingClub);
-bombButton.addEventListener("click", useBomb);
+bombButton.addEventListener("click", dropBomb);
 
 resetButton.addEventListener("click", () => {
   enemiesByScreen = new Map();
   inventory = { bombs: 0, treasures: 0 };
   collectedItems = new Set();
+  destroyedTerrain = new Set();
+  droppedBombs = [];
   localStorage.removeItem(itemStorageKey);
   localStorage.removeItem(inventoryStorageKey);
   localStorage.removeItem(oldItemStorageKey);
+  localStorage.removeItem(terrainStorageKey);
+  for (let y = 0; y < worldRows; y += 1) {
+    for (let x = 0; x < worldColumns; x += 1) {
+      const screen = createScreen(x, y);
+      world.set(keyFor(screen), screen);
+    }
+  }
   currentScreen = { ...startScreen };
   heroPosition = { ...startPosition };
   heroFacing = "down";
@@ -1089,7 +1362,7 @@ resetButton.addEventListener("click", () => {
 });
 
 renderRoom();
-window.setInterval(updateEnemies, 250);
+window.setInterval(gameTick, 250);
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
@@ -1105,7 +1378,7 @@ if ("serviceWorker" in navigator) {
     });
 
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=world14", {
+      const registration = await navigator.serviceWorker.register("./sw.js?v=world15", {
         updateViaCache: "none"
       });
 
