@@ -1069,7 +1069,7 @@ if ("serviceWorker" in navigator) {
     });
 
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=world11", {
+      const registration = await navigator.serviceWorker.register("./sw.js?v=world12", {
         updateViaCache: "none"
       });
 
