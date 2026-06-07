@@ -2,7 +2,7 @@
   "name": "Dino",
   "short_name": "Dino",
   "description": "A tiny installable dinosaur game.",
-  "start_url": "./index.html?v=world13",
+  "start_url": "./index.html?v=world14",
   "scope": ".",
   "display": "standalone",
   "background_color": "#b9e7d8",

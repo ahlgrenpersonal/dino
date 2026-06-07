@@ -1105,7 +1105,7 @@ if ("serviceWorker" in navigator) {
     });
 
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=world13", {
+      const registration = await navigator.serviceWorker.register("./sw.js?v=world14", {
         updateViaCache: "none"
       });
 

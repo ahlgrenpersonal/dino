@@ -320,7 +320,7 @@ button {
 .hero.is-swinging .club {
   filter: brightness(1.16);
   animation: clubSwingDown 420ms ease-out;
-  transform-origin: 50% 92%;
+  transform-origin: 50% 96%;
   z-index: 12;
   height: 90%;
   width: 26%;
@@ -350,6 +350,14 @@ button {
 
 .hero.is-swinging.swing-left .club {
   animation-name: clubSwingLeft;
+}
+
+.hero.facing-down.is-swinging .club {
+  right: 12%;
+  top: -26%;
+  width: 26%;
+  height: 90%;
+  transform-origin: 50% 96%;
 }
 
 .hero.facing-right.is-swinging .club {
@@ -772,6 +780,7 @@ button {
   border-radius: 999px;
   background: #9a683f;
   transform: rotate(30deg);
+  transform-origin: 50% 96%;
   z-index: 0;
   box-shadow: inset -8px 0 0 rgb(0 0 0 / 0.12);
 }
@@ -779,8 +788,8 @@ button {
 .club-hand {
   display: none;
   position: absolute;
-  width: 34px;
-  height: 17px;
+  width: 32px;
+  height: 18px;
   border: 3px solid var(--hero-shadow);
   border-radius: 999px;
   background: var(--hero-arm);
@@ -788,29 +797,55 @@ button {
   pointer-events: none;
 }
 
+.hero.facing-down .club-hand {
+  display: block;
+  right: 8%;
+  top: 47%;
+  transform: rotate(-18deg);
+}
+
+.hero.facing-up .club-hand {
+  display: block;
+  right: 18%;
+  top: 62%;
+  transform: rotate(22deg);
+}
+
 .hero.facing-right .club-hand {
   display: block;
-  right: -8%;
-  top: 45%;
-  transform: rotate(-14deg);
+  right: -6%;
+  top: 44%;
+  transform: rotate(-12deg);
 }
 
 .hero.facing-left .club-hand {
   display: block;
-  left: -8%;
-  top: 45%;
-  transform: rotate(14deg);
+  left: -6%;
+  top: 44%;
+  transform: rotate(12deg);
+}
+
+.hero.facing-down.is-swinging .club-hand {
+  right: 9%;
+  top: 59%;
+  transform: rotate(-4deg);
+}
+
+.hero.facing-up.is-swinging .club-hand {
+  right: 20%;
+  top: 57%;
+  transform: rotate(30deg);
 }
 
 .hero.facing-right.is-swinging .club-hand {
-  right: -3%;
-  top: 51%;
+  right: -4%;
+  top: 48%;
   transform: rotate(-8deg);
 }
 
 .hero.facing-left.is-swinging .club-hand {
-  left: -3%;
-  top: 51%;
+  left: -4%;
+  top: 48%;
   transform: rotate(8deg);
 }
 
@@ -1311,11 +1346,11 @@ button {
   }
 
   45% {
-    transform: translate(-18%, -10%) rotate(222deg) scale(1.1);
+    transform: translate(-6%, -18%) rotate(18deg) scale(1.1);
   }
 
   68% {
-    transform: translate(-8%, -14%) rotate(206deg) scale(1.06);
+    transform: translate(-3%, -12%) rotate(34deg) scale(1.06);
   }
 
   100% {
@@ -1329,11 +1364,11 @@ button {
   }
 
   45% {
-    transform: translate(0, 0) rotate(104deg) scale(1.14);
+    transform: translate(0, 0) rotate(90deg) scale(1.1);
   }
 
   68% {
-    transform: translate(0, 0) rotate(88deg) scale(1.1);
+    transform: translate(0, 0) rotate(78deg) scale(1.06);
   }
 
   100% {
@@ -1347,11 +1382,11 @@ button {
   }
 
   45% {
-    transform: translate(0, 0) rotate(-104deg) scale(1.14);
+    transform: translate(0, 0) rotate(-90deg) scale(1.1);
   }
 
   68% {
-    transform: translate(0, 0) rotate(-88deg) scale(1.1);
+    transform: translate(0, 0) rotate(-78deg) scale(1.06);
   }
 
   100% {
