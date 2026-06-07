@@ -13,13 +13,13 @@ const statusText = document.querySelector("#statusText");
 const itemStorageKey = "dino-collected-items";
 const inventoryStorageKey = "dino-inventory";
 const oldItemStorageKey = "dino-boom-berries-collected";
-const worldColumns = 5;
-const worldRows = 20;
+const worldColumns = 50;
+const worldRows = 1;
 const screenGrid = {
   columns: 10,
   rows: 18
 };
-const startScreen = { x: 2, y: 10 };
+const startScreen = { x: 0, y: 0 };
 const startPosition = { x: 4, y: 10 };
 const directionVectors = {
   up: { x: 0, y: -1 },
@@ -194,35 +194,64 @@ function createScreen(screenX, screenY) {
   const water = [];
   const bridges = [];
   const ponds = [];
+  const mountains = [];
   const rocks = [];
   const trees = [];
   const enemies = [];
-  const theme = screenY < 5 ? "highland" : screenY > 14 ? "lowland" : "meadow";
+  const theme = screenX % 9 < 3 ? "meadow" : screenX % 9 < 6 ? "highland" : "lowland";
   const name = screenX === startScreen.x && screenY === startScreen.y ? "Sunny path" : "Wild path";
 
-  if (screenX === 1 || (screenX === 3 && screenY > 8)) {
+  if (screenX % 7 === 2 || screenX % 11 === 5) {
     for (let y = 0; y < screenGrid.rows; y += 1) {
+      addCell(water, 3, y);
       addCell(water, 4, y);
-      addCell(water, 5, y);
     }
 
-    const bridgeY = screenY % 4 === 1 ? 4 : 10 + ((screenY + screenX) % 3) - 1;
-    for (let x = 4; x <= 5; x += 1) {
+    const bridgeY = 4 + Math.floor(random() * 8);
+    for (let x = 3; x <= 4; x += 1) {
       addCell(bridges, x, bridgeY);
       addCell(bridges, x, bridgeY + 1);
     }
   }
 
-  if (screenY === 5 || screenY === 13) {
-    for (let x = 0; x < screenGrid.columns; x += 1) {
-      addCell(water, x, 9);
-      addCell(water, x, 10);
+  if (screenX % 8 === 4) {
+    const lakeTop = 4 + Math.floor(random() * 4);
+
+    for (let x = 2; x <= 7; x += 1) {
+      addCell(water, x, lakeTop);
+      addCell(water, x, lakeTop + 1);
+      addCell(water, x, lakeTop + 2);
     }
 
-    const bridgeX = screenX === 0 ? 7 : 4 + (screenX % 2);
-    for (let y = 9; y <= 10; y += 1) {
+    const bridgeX = 4 + Math.floor(random() * 2);
+    for (let y = lakeTop; y <= lakeTop + 2; y += 1) {
       addCell(bridges, bridgeX, y);
       addCell(bridges, bridgeX + 1, y);
+    }
+  }
+
+  if (screenX !== startScreen.x && screenX % 5 === 1) {
+    const wallX = 5 + Math.floor(random() * 2);
+    const gapTop = 4 + Math.floor(random() * 8);
+
+    for (let y = 1; y < screenGrid.rows - 1; y += 1) {
+      if (y === gapTop || y === gapTop + 1 || y === gapTop + 2) {
+        continue;
+      }
+
+      addCell(mountains, wallX, y);
+      addCell(mountains, wallX + 1, y);
+    }
+  }
+
+  if (screenX % 6 === 3) {
+    for (let x = 1; x <= 8; x += 1) {
+      if (x === 4 || x === 5) {
+        continue;
+      }
+
+      addCell(mountains, x, 2);
+      addCell(mountains, x, 3);
     }
   }
 
@@ -238,8 +267,13 @@ function createScreen(screenX, screenY) {
     }
   }
 
-  const blockedForScenery = new Set([...water.map(cellKey), ...bridges.map(cellKey), ...ponds.map(cellKey)]);
-  const rockCount = 4 + Math.floor(random() * 5);
+  const blockedForScenery = new Set([
+    ...water.map(cellKey),
+    ...bridges.map(cellKey),
+    ...ponds.map(cellKey),
+    ...mountains.map(cellKey)
+  ]);
+  const rockCount = 5 + Math.floor(random() * 6);
 
   for (let index = 0; index < rockCount; index += 1) {
     const rock = findOpenCell(random, blockedForScenery, rocks);
@@ -250,7 +284,7 @@ function createScreen(screenX, screenY) {
     }
   }
 
-  const treeCount = 3 + Math.floor(random() * 4);
+  const treeCount = 4 + Math.floor(random() * 6);
 
   for (let index = 0; index < treeCount; index += 1) {
     const tree = findOpenCell(random, blockedForScenery, trees);
@@ -264,7 +298,7 @@ function createScreen(screenX, screenY) {
   const enemyCount = screenX === startScreen.x && screenY === startScreen.y
     ? 1
     : 1 + Math.floor(random() * 4);
-  const distanceFromStart = Math.abs(screenX - startScreen.x) + Math.abs(screenY - startScreen.y);
+  const distanceFromStart = Math.min(screenX, worldColumns - screenX);
   const enemyChoices = distanceFromStart > 9
     ? ["fodder", "fodder", "raptor", "tank", "giant", "trex"]
     : distanceFromStart > 4
@@ -318,7 +352,8 @@ function createScreen(screenX, screenY) {
     ponds,
     rocks,
     trees,
-    obstacles: [...rocks, ...trees],
+    mountains,
+    obstacles: [...rocks, ...trees, ...mountains],
     enemies,
     item
   };
@@ -572,21 +607,16 @@ function ensureHeroOnFreeCell() {
 }
 
 function moveToNextScreen(direction) {
-  const vector = directionVectors[direction];
-  const nextScreen = {
-    x: currentScreen.x + vector.x,
-    y: currentScreen.y + vector.y
-  };
-
-  if (
-    nextScreen.x < 0 ||
-    nextScreen.x >= worldColumns ||
-    nextScreen.y < 0 ||
-    nextScreen.y >= worldRows
-  ) {
+  if (direction !== "left" && direction !== "right") {
     status("Edge");
     return;
   }
+
+  const vector = directionVectors[direction];
+  const nextScreen = {
+    x: (currentScreen.x + vector.x + worldColumns) % worldColumns,
+    y: 0
+  };
 
   currentScreen = nextScreen;
   heroPosition = findEntryPosition(wrapPosition(direction), direction) || findFirstFreeCell() || startPosition;
@@ -839,6 +869,7 @@ function renderTerrain() {
   screen.water.forEach((cell) => renderTerrainCell(cell, "terrain-cell terrain-water"));
   screen.bridges.forEach((cell) => renderTerrainCell(cell, "terrain-cell terrain-bridge"));
   screen.ponds.forEach((cell) => renderTerrainCell(cell, "terrain-cell terrain-pond"));
+  screen.mountains.forEach((cell) => renderTerrainCell(cell, "terrain-cell terrain-mountain"));
   screen.rocks.forEach((cell) => renderTerrainCell(cell, "terrain-cell terrain-rock"));
   screen.trees.forEach((cell) => renderTerrainCell(cell, "terrain-cell terrain-tree"));
 }
@@ -920,8 +951,6 @@ function renderRoom() {
 
 function edgeMoveFromPointer(clientX, clientY, roomBounds) {
   const edgePaddingX = Math.max(18, roomBounds.width * 0.08);
-  const edgePaddingY = Math.max(18, (roomBounds.height - 104) * 0.06);
-  const playfieldBottom = roomBounds.bottom - 104;
 
   if (heroPosition.x === 0 && clientX <= roomBounds.left + edgePaddingX) {
     return { x: -1, y: 0 };
@@ -929,14 +958,6 @@ function edgeMoveFromPointer(clientX, clientY, roomBounds) {
 
   if (heroPosition.x === screenGrid.columns - 1 && clientX >= roomBounds.right - edgePaddingX) {
     return { x: 1, y: 0 };
-  }
-
-  if (heroPosition.y === 0 && clientY <= roomBounds.top + edgePaddingY) {
-    return { x: 0, y: -1 };
-  }
-
-  if (heroPosition.y === screenGrid.rows - 1 && clientY >= playfieldBottom - edgePaddingY) {
-    return { x: 0, y: 1 };
   }
 
   return null;
@@ -956,6 +977,21 @@ function moveFromPointer(clientX, clientY) {
   const heroCenterY = heroBounds.top + heroBounds.height / 2;
   const distanceX = clientX - heroCenterX;
   const distanceY = clientY - heroCenterY;
+  const tappedHero =
+    clientX >= heroBounds.left &&
+    clientX <= heroBounds.right &&
+    clientY >= heroBounds.top &&
+    clientY <= heroBounds.bottom;
+
+  if (tappedHero && heroPosition.x === 0) {
+    moveHero(-1, 0);
+    return;
+  }
+
+  if (tappedHero && heroPosition.x === screenGrid.columns - 1) {
+    moveHero(1, 0);
+    return;
+  }
 
   if (Math.abs(distanceX) > Math.abs(distanceY)) {
     moveHero(Math.sign(distanceX), 0);
@@ -1069,7 +1105,7 @@ if ("serviceWorker" in navigator) {
     });
 
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=world12", {
+      const registration = await navigator.serviceWorker.register("./sw.js?v=world13", {
         updateViaCache: "none"
       });
 
