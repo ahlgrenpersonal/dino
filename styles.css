@@ -1472,7 +1472,7 @@ button {
   background: #d25f3f;
 }
 
-.attack-button {
+.pause-button {
   min-width: 62px;
   min-height: 48px;
   border: 0;
@@ -1593,7 +1593,7 @@ button {
     font-size: 0.85rem;
   }
 
-  .attack-button,
+  .pause-button,
   .bomb-button,
   .reset-button {
     min-width: 52px;

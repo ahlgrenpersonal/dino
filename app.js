@@ -6,10 +6,10 @@ const itemButton = document.querySelector("#itemButton");
 const room = document.querySelector("#room");
 const terrainLayer = document.querySelector("#terrainLayer");
 const hero = document.querySelector(".hero");
-const attackButton = document.querySelector("#attackButton");
 const bombButton = document.querySelector("#bombButton");
 const resetButton = document.querySelector("#resetButton");
 const statusText = document.querySelector("#statusText");
+const pauseButton = document.querySelector("#pauseButton");
 
 const itemStorageKey = "dino-collected-items";
 const inventoryStorageKey = "dino-inventory";
@@ -112,6 +112,8 @@ const enemyTypes = {
   }
 };
 
+let initialScreen = { ...startScreen };
+let initialStatus = "Ready";
 let currentScreen = { ...startScreen };
 let enemiesByScreen = new Map();
 let inventory = loadInventory();
@@ -122,6 +124,8 @@ let bombSequence = 0;
 let heroPosition = { ...startPosition };
 let heroFacing = "down";
 let roomStatus = "Ready";
+let isPaused = false;
+let pausedAt = 0;
 
 const previewScreen = new URLSearchParams(window.location.search).get("screen");
 
@@ -136,8 +140,10 @@ if (previewScreen) {
     previewY >= 0 &&
     previewY < worldRows
   ) {
-    currentScreen = { x: previewX, y: previewY };
-    roomStatus = "Preview";
+    initialScreen = { x: previewX, y: previewY };
+    initialStatus = "Preview";
+    currentScreen = { ...initialScreen };
+    roomStatus = initialStatus;
   }
 }
 
@@ -190,6 +196,32 @@ function isGateCell(cell) {
 
 function terrainKey(screen, type, cell) {
   return `${keyFor(screen)}:${type}:${cellKey(cell)}`;
+}
+
+function fixedItemForScreen(screenX, screenY) {
+  if (screenX === startScreen.x && screenY === startScreen.y) {
+    return { id: "start-bombs", type: "bomb", count: 3, x: 6, y: 8, hidden: false };
+  }
+
+  if (screenX === gateScreenX && screenY === 0) {
+    return { id: "gate-bombs", type: "bomb", count: 2, x: 2, y: 9, hidden: false };
+  }
+
+  return null;
+}
+
+function reservePickupArea(blockedCells, item) {
+  if (!item) {
+    return;
+  }
+
+  for (let y = item.y - 1; y <= item.y + 1; y += 1) {
+    for (let x = item.x - 1; x <= item.x + 1; x += 1) {
+      if (x >= 0 && x < screenGrid.columns && y >= 0 && y < screenGrid.rows) {
+        blockedCells.add(cellKey({ x, y }));
+      }
+    }
+  }
 }
 
 function isReservedCell(position) {
@@ -256,6 +288,7 @@ function createScreen(screenX, screenY) {
   const rocks = [];
   const trees = [];
   const enemies = [];
+  const fixedItem = fixedItemForScreen(screenX, screenY);
   const theme = screenX % 9 < 3 ? "meadow" : screenX % 9 < 6 ? "highland" : "lowland";
   const name = screenX === startScreen.x && screenY === startScreen.y ? "Sunny path" : "Wild path";
 
@@ -333,6 +366,7 @@ function createScreen(screenX, screenY) {
     ...ponds.map(cellKey),
     ...mountains.map(cellKey)
   ]);
+  reservePickupArea(blockedForScenery, fixedItem);
   const rockCount = 5 + Math.floor(random() * 6);
 
   for (let index = 0; index < rockCount; index += 1) {
@@ -380,11 +414,7 @@ function createScreen(screenX, screenY) {
   }
 
   const itemRoll = random();
-  let item = screenX === startScreen.x && screenY === startScreen.y
-    ? { id: "start-bombs", type: "bomb", count: 3, x: 6, y: 8, hidden: false }
-    : screenX === gateScreenX
-      ? { id: "gate-bombs", type: "bomb", count: 2, x: 2, y: 9, hidden: false }
-    : null;
+  let item = fixedItem;
 
   if (!item && itemRoll < 0.3) {
     const hidden = ponds.length > 0 && random() < 0.6;
@@ -620,6 +650,52 @@ function status(message) {
   roomStatus = message;
 }
 
+function shiftTimedState(duration) {
+  droppedBombs.forEach((bomb) => {
+    if (!bomb.explodedAt) {
+      bomb.explodesAt += duration;
+    }
+  });
+
+  enemiesByScreen.forEach((enemies) => {
+    enemies.forEach((enemy) => {
+      enemy.nextMoveAt += duration;
+      enemy.nextAttackAt += duration;
+
+      if (enemy.attackStartedAt !== null) {
+        enemy.attackStartedAt += duration;
+      }
+
+      if (enemy.dizzyUntil > 0) {
+        enemy.dizzyUntil += duration;
+      }
+    });
+  });
+}
+
+function setPaused(paused) {
+  if (paused === isPaused) {
+    return;
+  }
+
+  isPaused = paused;
+
+  if (isPaused) {
+    pausedAt = performance.now();
+    status("Paused");
+  } else {
+    shiftTimedState(performance.now() - pausedAt);
+    pausedAt = 0;
+    status("Ready");
+  }
+
+  renderRoom();
+}
+
+function togglePause() {
+  setPaused(!isPaused);
+}
+
 function setHeroFacing(deltaX, deltaY) {
   if (deltaX > 0) {
     heroFacing = "right";
@@ -736,6 +812,12 @@ function moveToNextScreen(direction) {
 }
 
 function moveHero(deltaX, deltaY) {
+  if (isPaused) {
+    status("Paused");
+    renderRoom();
+    return;
+  }
+
   const direction = directionBetween(heroPosition, {
     x: heroPosition.x + deltaX,
     y: heroPosition.y + deltaY
@@ -806,6 +888,12 @@ function animateClub() {
 }
 
 function swingClub() {
+  if (isPaused) {
+    status("Paused");
+    renderRoom();
+    return;
+  }
+
   animateClub();
 
   const vector = directionVectors[heroFacing];
@@ -933,6 +1021,12 @@ function explodeBomb(bomb) {
 }
 
 function dropBomb() {
+  if (isPaused) {
+    status("Paused");
+    renderRoom();
+    return;
+  }
+
   if (inventory.bombs <= 0) {
     status("No bombs");
     renderRoom();
@@ -1065,6 +1159,10 @@ function updateEnemies() {
 }
 
 function gameTick() {
+  if (isPaused) {
+    return;
+  }
+
   updateBombs();
   updateEnemies();
   renderRoom();
@@ -1171,6 +1269,7 @@ function renderItem() {
   itemButton.hidden = !visibleItem;
   itemButton.classList.toggle("item-bomb", Boolean(item && item.type === "bomb"));
   itemButton.classList.toggle("item-treasure", Boolean(item && item.type === "treasure"));
+  itemButton.setAttribute("aria-label", item && item.type === "bomb" ? "Bomb pickup" : "Treasure pickup");
 
   if (!hasItem) {
     return;
@@ -1204,6 +1303,8 @@ function renderRoom() {
   bombCountEl.textContent = String(inventory.bombs);
   findCountEl.textContent = String(inventory.treasures);
   statusText.textContent = roomStatus;
+  pauseButton.textContent = isPaused ? "Play" : "Pause";
+  pauseButton.setAttribute("aria-label", isPaused ? "Resume game" : "Pause game");
   renderBombs();
   renderEnemies();
 }
@@ -1330,8 +1431,8 @@ window.addEventListener("keydown", (event) => {
   moveHero(move.x, move.y);
 });
 
-attackButton.addEventListener("click", swingClub);
 bombButton.addEventListener("click", dropBomb);
+pauseButton.addEventListener("click", togglePause);
 
 resetButton.addEventListener("click", () => {
   enemiesByScreen = new Map();
@@ -1339,6 +1440,9 @@ resetButton.addEventListener("click", () => {
   collectedItems = new Set();
   destroyedTerrain = new Set();
   droppedBombs = [];
+  bombSequence = 0;
+  isPaused = false;
+  pausedAt = 0;
   localStorage.removeItem(itemStorageKey);
   localStorage.removeItem(inventoryStorageKey);
   localStorage.removeItem(oldItemStorageKey);
@@ -1349,10 +1453,11 @@ resetButton.addEventListener("click", () => {
       world.set(keyFor(screen), screen);
     }
   }
-  currentScreen = { ...startScreen };
+  currentScreen = { ...initialScreen };
   heroPosition = { ...startPosition };
+  ensureHeroOnFreeCell();
   heroFacing = "down";
-  status("Ready");
+  status(initialStatus);
   renderRoom();
 });
 
@@ -1373,7 +1478,7 @@ if ("serviceWorker" in navigator) {
     });
 
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=world16", {
+      const registration = await navigator.serviceWorker.register("./sw.js?v=world17", {
         updateViaCache: "none"
       });
 
