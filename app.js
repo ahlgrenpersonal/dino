@@ -230,17 +230,16 @@ function addGateScreenTerrain(screenX, water, bridges, ponds, mountains, rocks, 
   removeCells(bridges, isGateCell);
   removeCells(ponds, isGateCell);
   removeCells(mountains, isGateCell);
-  removeCells(trees, isGateCell);
+  removeCells(rocks, isGateCell);
 
   for (let x = 7; x <= 9; x += 1) {
     for (let y = 0; y < screenGrid.rows; y += 1) {
-      addUniqueCell(rocks, x, y);
+      addUniqueCell(trees, x, y);
     }
   }
 }
 
 function filterDestroyedTerrain(screen) {
-  screen.rocks = screen.rocks.filter((cell) => !destroyedTerrain.has(terrainKey(screen, "rock", cell)));
   screen.trees = screen.trees.filter((cell) => !destroyedTerrain.has(terrainKey(screen, "tree", cell)));
   screen.obstacles = [...screen.rocks, ...screen.trees, ...screen.mountains];
 
@@ -721,7 +720,7 @@ function moveToNextScreen(direction) {
   }
 
   if (currentScreen.x === 0 && direction === "left" && !isGateOpen()) {
-    status("Rock gate");
+    status("Forest gate");
     return;
   }
 
@@ -860,23 +859,19 @@ function bombAt(position) {
 
 function destroyBlastTerrain(screen, bomb) {
   let destroyedCount = 0;
+  const keptTrees = [];
 
-  ["rocks", "trees"].forEach((collectionName) => {
-    const type = collectionName === "rocks" ? "rock" : "tree";
-    const keptCells = [];
+  screen.trees.forEach((cell) => {
+    if (isInBombBlast(bomb, cell)) {
+      destroyedTerrain.add(terrainKey(screen, "tree", cell));
+      destroyedCount += 1;
+      return;
+    }
 
-    screen[collectionName].forEach((cell) => {
-      if (isInBombBlast(bomb, cell)) {
-        destroyedTerrain.add(terrainKey(screen, type, cell));
-        destroyedCount += 1;
-        return;
-      }
-
-      keptCells.push(cell);
-    });
-
-    screen[collectionName] = keptCells;
+    keptTrees.push(cell);
   });
+
+  screen.trees = keptTrees;
 
   if (destroyedCount > 0) {
     screen.obstacles = [...screen.rocks, ...screen.trees, ...screen.mountains];
@@ -928,7 +923,7 @@ function explodeBomb(bomb) {
 
   if (bomb.screenKey === keyFor(currentScreen)) {
     if (destroyedTerrainCount > 0) {
-      status("Rocks pop");
+      status("Trees pop");
     } else if (removedEnemies > 0) {
       status("Boom");
     } else {
@@ -1378,7 +1373,7 @@ if ("serviceWorker" in navigator) {
     });
 
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=world15", {
+      const registration = await navigator.serviceWorker.register("./sw.js?v=world16", {
         updateViaCache: "none"
       });
 
