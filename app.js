@@ -965,11 +965,52 @@ function moveFromPointer(clientX, clientY) {
   moveHero(0, Math.sign(distanceY));
 }
 
+let lastTouchEndAt = 0;
+
+["gesturestart", "gesturechange", "gestureend"].forEach((eventName) => {
+  window.addEventListener(
+    eventName,
+    (event) => {
+      event.preventDefault();
+    },
+    { passive: false }
+  );
+});
+
+document.addEventListener(
+  "touchmove",
+  (event) => {
+    if (event.touches.length > 1) {
+      event.preventDefault();
+    }
+  },
+  { passive: false }
+);
+
+document.addEventListener(
+  "touchend",
+  (event) => {
+    if (event.target.closest("button")) {
+      return;
+    }
+
+    const now = Date.now();
+
+    if (now - lastTouchEndAt < 450) {
+      event.preventDefault();
+    }
+
+    lastTouchEndAt = now;
+  },
+  { passive: false }
+);
+
 room.addEventListener("pointerdown", (event) => {
   if (event.target.closest("button")) {
     return;
   }
 
+  event.preventDefault();
   moveFromPointer(event.clientX, event.clientY);
 });
 
@@ -1028,7 +1069,7 @@ if ("serviceWorker" in navigator) {
     });
 
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js?v=world10", {
+      const registration = await navigator.serviceWorker.register("./sw.js?v=world11", {
         updateViaCache: "none"
       });
 
