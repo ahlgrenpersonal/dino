@@ -1,0 +1,1 @@
+{"name":"board-games","private":true,"type":"module","scripts":{"test":"node --test tools/engine.test.mjs"}}

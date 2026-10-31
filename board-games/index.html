@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf6ea"><meta name="description" content="Little games, big smiles. Play Tic Tac Toe with a friend or Noodle, your goofy game buddy.">
+  <title>Board Games · Little games, big smiles</title>
+  <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icon-192.png"><link rel="stylesheet" href="styles.css?v=world3">
+</head>
+<body>
+  <div class="decoration deco-one" aria-hidden="true">✳</div><div class="decoration deco-two" aria-hidden="true">✧</div>
+  <main class="app">
+    <header class="header"><a class="brand" href="./" aria-label="Board Games home"><span class="brand-icon" aria-hidden="true">▦</span> Board Games<span class="brand-dot">.</span></a><button id="settingsButton" class="icon-button" aria-label="Open settings">⚙</button></header>
+    <div class="intro"><span class="eyebrow">LITTLE GAMES, BIG SMILES</span><h1>Tic Tac <span>Toe!</span><svg class="title-star" viewBox="0 0 40 40" aria-hidden="true"><path d="m20 2 4 12 13 2-10 9 2 13-11-7-11 7 3-13L1 16l13-2Z" fill="#f7bc50"/></svg></h1><p>Three in a row. Ready, set, go!</p></div>
+    <div class="play-layout">
+      <aside class="buddy-panel" aria-label="Your game buddy"><div class="buddy-label"><span class="online-dot"></span><span id="buddyLabel">MEET YOUR BUDDY</span></div><div id="avatar" class="avatar"></div><div class="buddy-name" id="buddyName">Noodle <span>the daydreamer</span></div><div class="speech" id="speech" aria-live="polite"></div><div class="buddy-footnote" id="buddyFootnote">A little wobbly. A lot of fun.</div></aside>
+      <section class="game-panel" aria-label="Tic Tac Toe game">
+        <div class="mode-switch" role="group" aria-label="Choose who to play"><button id="buddyMode" aria-pressed="true">✦ Play Noodle</button><button id="friendMode" aria-pressed="false">♡ Play together</button></div>
+        <div class="turn-row"><div class="player-chip" id="xChip"><span class="tiny-piece x">×</span><span id="xName">You</span></div><span id="turnText" role="status">Your turn!</span><div class="player-chip" id="oChip"><span id="oName">Noodle</span><span class="tiny-piece o">○</span></div></div>
+        <div class="board-wrap"><div id="board" class="board" role="group" aria-label="Tic Tac Toe board"></div><svg id="winLine" class="win-line" viewBox="0 0 300 300" aria-hidden="true"></svg><div id="confetti" class="confetti" aria-hidden="true"></div></div>
+        <div class="below-board"><span id="hintCaption">✧ A little sparkle can help you spot a win.</span></div>
+        <button id="newGame" class="primary-button"><span aria-hidden="true">↻</span> Start again</button>
+        <p class="game-note" id="gameNote">You’re X. Noodle is O. Tap an empty tile!</p>
+      </section>
+    </div>
+    <footer>Made for little thinkers <span aria-hidden="true">✦</span> Play at your own pace <span class="build">world3</span></footer>
+  </main>
+  <dialog id="settings"><form method="dialog"><div class="dialog-heading"><div><span class="eyebrow">MAKE IT YOURS</span><h2>A little fine-tuning</h2></div><button class="icon-button" aria-label="Close settings">×</button></div>
+    <label class="setting"><span><strong>Winning-move hints</strong><small>Sparkle when three in a row is one tap away.</small></span><select id="hints"><option value="100">Always</option><option value="50">Sometimes</option><option value="0">Off</option></select></label>
+    <label class="setting range-setting"><span><strong>Hint chance <output id="hintValue">100%</output></strong><small>Chance per turn with a winning move.</small></span><input id="hintChance" type="range" min="0" max="100" step="5" aria-label="Hint chance"></label>
+    <label class="setting"><span><strong>Extra Gentle Noodle</strong><small>Sometimes skips a winning move, if another tile is free.</small></span><input id="gentle" type="checkbox" role="switch"></label>
+    <label class="setting range-setting"><span><strong>Skip-a-win chance <output id="avoidValue">50%</output></strong><small>Used only with Extra Gentle on. Easy is otherwise random.</small></span><input id="avoidChance" type="range" min="0" max="100" step="5" aria-label="Skip-a-win chance"></label>
+    <label class="setting"><span><strong>Little sounds</strong><small>Soft plops for moves. No victory taunts.</small></span><input id="sound" type="checkbox" role="switch"></label>
+    <label class="setting"><span><strong>Calm motion</strong><small>Keep the silly faces; skip the bouncing and confetti.</small></span><input id="calm" type="checkbox" role="switch"></label>
+    <p class="settings-note">Settings and this game stay on this device. Play together means taking turns on one phone.</p><button class="primary-button">Back to the game</button>
+  </form></dialog>
+  <script type="module" src="app.js?v=world3"></script>
+</body></html>
