@@ -4,27 +4,36 @@ import {SkyGame,freshSave,readSave,BUILD,WORLD,LEVELS,SITE_COUNT,HERO_FEET,roofS
 import {Renderer} from '../art.js';
 import {loadProgress} from '../saves.js';
 const tick=(g,seconds=1,keys={})=>{for(let i=0;i<Math.ceil(seconds/.02);i++)g.update(.02,keys);};
-function at(level,checkpoint=0){const save=freshSave();save.completed=Array.from({length:level},(_,i)=>i);save.level=level;save.runs[level].checkpoint=checkpoint;return new SkyGame(save);}
-const g=new SkyGame(freshSave());assert.equal(WORLD.width,9600);assert.equal(g.enemies.length,8);assert(!g.selectLevel(1),'Plains unlocks only after the city boss');
-g.moveTo(50,830);tick(g,1);assert.equal(g.player.y,WORLD.ground-HERO_FEET);assert(g.player.landed);
+function at(level,checkpoint=0){const save=freshSave();save.completed=Array.from({length:level},(_,i)=>i);save.level=level;save.runs[level].checkpoint=checkpoint;save.runs[level].position={x:checkpoint===SITE_COUNT?8990:290,y:690};return new SkyGame(save);}
+const g=new SkyGame(freshSave());assert.equal(WORLD.width,9600);assert(g.enemies.length>=32);assert(!g.selectLevel(1),'Plains unlocks only after the city boss');
+g.enemies=[];g.moveTo(50,830);tick(g,1);assert.equal(g.player.y,WORLD.ground-HERO_FEET);assert(g.player.landed);
 g.moveTo(170,530);tick(g,2);assert.equal(g.player.y,roofSurface(g.roofs[0])-HERO_FEET);assert(g.player.landed);
 g.moveTo(600,220);tick(g,2);assert.equal(g.player.y,220);assert(!g.player.landed);
 g.blast();g.paused=true;const before=JSON.stringify(g.snapshot()),time=g.time,cd=g.blastCd;tick(g,3,{right:true});assert.equal(g.time,time);assert.equal(g.blastCd,cd);assert.equal(JSON.stringify(g.snapshot()),before);g.paused=false;
-const campaign=new SkyGame(freshSave()),events=[];campaign.onEvent=e=>events.push(e);const timings=[];
+// Regression for the actual failure: free flight right, leaving every earlier squad alive.
 for(let level=0;level<3;level++){
-  if(level)assert(campaign.selectLevel(level));
-  let seconds=0;
-  while(!campaign.run.complete&&seconds<1800){
-    if(!campaign.target)campaign.travel();
-    if(campaign.nearest(650)){campaign.laser();campaign.blast();}
-    tick(campaign,.1);seconds+=.1;
-  }
-  assert(campaign.run.complete,`${LEVELS[level].name} finishes using normal control methods`);
-  assert.equal(campaign.run.checkpoint,SITE_COUNT);assert.equal(campaign.run.bossHits,LEVELS[level].bossHp);assert(campaign.save.completed.includes(level));
-  assert.equal(events.filter(e=>e.type==='milestone'&&e.level===level).length,6);
-  assert(seconds>40,'Expanded levels contain materially more play than the original nine-second scripted route');timings.push(Math.round(seconds));
+ const bypass=at(level),seen=new Set();bypass.player.y=105;
+ for(let x=0;x<1200;x++){bypass.update(.02,{right:true});for(const e of bypass.enemies)seen.add(e.id);}
+ assert(bypass.player.x>9400);
+ assert(bypass.enemies.some(e=>e.boss),`${LEVELS[level].name}: boss appears without clearing previous sections or touching a star`);
+ assert(seen.size>=LEVELS[level].squad*SITE_COUNT*LEVELS[level].waves,'Flying right reveals the whole army');
+ assert(bypass.run.cleared.length<20,'The test deliberately leaves earlier robots alive');
+ assert(bypass.enemies.length<200,'Only nearby sections stay active on mobile');
+ const back=new SkyGame(bypass.snapshot());tick(back,20,{left:true});assert(back.enemies.some(e=>!e.boss),'Unbeaten enemies remain when flying back left');
 }
-assert.equal(unlockedLevel(campaign.save),2);assert(campaign.save.total>1000,'All three levels contain substantial armies');
+const campaign=new SkyGame(freshSave()),events=[];campaign.onEvent=e=>events.push(e);const timings=[],counts=[];
+for(let level=0;level<3;level++){
+ if(level)assert(campaign.selectLevel(level));let seconds=0;
+ while(!campaign.run.complete&&seconds<300){
+  const p=campaign.player,bounds={left:p.x-310,right:p.x+310,top:0,bottom:1000};
+  campaign.laser(bounds);campaign.blast();campaign.update(.02,{right:p.x<9350},bounds);seconds+=.02;
+ }
+ assert(campaign.run.complete,`${LEVELS[level].name} completes by flying right and using weapons, without guide travel`);
+ assert(campaign.run.kills>=50,`${LEVELS[level].name} has at least 50 defeats during the actual forward flight`);
+ assert.equal(campaign.run.bossHits,LEVELS[level].bossHp);assert(campaign.save.completed.includes(level));
+ timings.push(Math.round(seconds));counts.push(campaign.run.kills);
+}
+assert.equal(unlockedLevel(campaign.save),2);
 const completed=new SkyGame(campaign.snapshot());assert(completed.run.complete);assert.equal(completed.enemies.length,0,'Crash reload does not replay a finished level');
 const otherRun=JSON.stringify(completed.save.runs[2]);assert(completed.selectLevel(0));assert(!completed.run.complete);assert.equal(completed.run.checkpoint,0);assert(completed.enemies.length>0,'Returning to a finished level immediately starts fresh');
 const reloaded=new SkyGame(completed.snapshot());assert.equal(reloaded.run.checkpoint,0);assert(!reloaded.run.complete);assert.equal(JSON.stringify(reloaded.save.runs[2]),otherRun,'Replaying one level preserves the other levels');
@@ -39,7 +48,7 @@ for(let i=0;i<3;i++){
   const saved=bossGame.snapshot(),copy=new SkyGame(saved);assert.equal(copy.enemies.find(e=>e.boss).hp,boss.hp,'Boss damage survives reload');
   const bx=boss.x,by=boss.y;tick(bossGame,2);if(i===2)assert(Math.hypot(boss.x-bx,boss.y-by)>40,'Stormwing visibly flies');
 }
-const oldDone=readSave({schema:1,stage:3,total:23,best:7,sound:false});assert.equal(oldDone.schema,2);assert.deepEqual(oldDone.completed,[0]);assert(oldDone.runs[0].complete);assert.equal(unlockedLevel(oldDone),1);assert.equal(oldDone.total,23);assert.equal(oldDone.sound,false);
+const oldDone=readSave({schema:1,stage:3,total:23,best:7,sound:false});assert.equal(oldDone.schema,3);assert.deepEqual(oldDone.completed,[0]);assert(oldDone.runs[0].complete);assert.equal(unlockedLevel(oldDone),1);assert.equal(oldDone.total,23);assert.equal(oldDone.sound,false);
 const quotaSave=loadProgress(()=>({getItem:key=>key==='save'?JSON.stringify({schema:1,stage:3,total:23,sound:false}):null,setItem(){throw Error('Quota exceeded');}}),'save');assert.deepEqual(quotaSave.completed,[0]);assert.equal(quotaSave.total,23);assert.equal(quotaSave.sound,false,'Failure to write a backup preserves the readable old save');
 const oldPartial=readSave({schema:1,stage:2,total:18,bossHits:2,cleared:['s2-0','s2-3'],position:{x:2600,y:650}});assert.equal(oldPartial.runs[0].checkpoint,12);assert.equal(oldPartial.runs[0].bossHits,2);assert(oldPartial.runs[0].cleared.includes('city-12-0-3'));
 for(const raw of [null,{},[],{schema:2,level:9,runs:[{checkpoint:Infinity,cleared:[null,'bad'],position:{x:NaN,y:Infinity}}]},{schema:1,stage:'bad',best:Infinity}]){const save=readSave(raw);assert(save.level>=0&&save.level<3);assert(save.total>=0);for(const run of save.runs)assert(Number.isFinite(run.position.x)&&Number.isFinite(run.position.y));}
@@ -51,8 +60,13 @@ for(const [width,height,dpr] of [[390,600,3],[390,480,3],[320,370,2],[844,260,2]
 const gradient={addColorStop(){}};const context=new Proxy({}, {get:(_,name)=>name==='createLinearGradient'||name==='createRadialGradient'?()=>gradient:(...args)=>{for(const n of args)if(typeof n==='number')assert(Number.isFinite(n),`${String(name)} received a non-finite coordinate`);}});
 const mockCanvas=()=>({width:390,height:600,getContext:()=>context,getBoundingClientRect:()=>({width:390,height:600})});globalThis.document={createElement:()=>mockCanvas()};
 for(let i=0;i<3;i++)for(const checkpoint of [0,2,8,SITE_COUNT]){const scene=at(i,checkpoint),canvas=mockCanvas(),r=new Renderer(canvas);scene.player.x=checkpoint===SITE_COUNT?9200:scene.site.x;scene.player.y=500;r.follow(scene,0,true);r.draw(scene,.02);}
+// A schema-2 save stranded at the far right must recover its boss immediately.
+const strandedSave={schema:2,level:0,total:31,runs:[{checkpoint:2,wave:1,cleared:['city-2-1-0'],position:{x:9450,y:650}}]};
+const recovered=new SkyGame(strandedSave);assert(recovered.enemies.some(e=>e.boss));assert(recovered.run.cleared.includes('city-2-1-0'));assert(recovered.run.cleared.includes('city-1-0-0'));assert(recovered.run.cleared.includes('city-2-0-0'));
+const savedProgress=recovered.snapshot(),roundTrip=new SkyGame(savedProgress);assert.deepEqual(roundTrip.run.cleared,recovered.run.cleared);
+const html=await readFile(new URL('../index.html',import.meta.url),'utf8');assert(!html.includes('id="mission"'));assert(!html.includes('id="go"'));assert(!html.includes('id="flightStatus"'));assert.equal(typeof g.travel,'undefined');
 const folder=new URL('../',import.meta.url),version=JSON.parse(await readFile(new URL('version.json',folder),'utf8'));assert.equal(version.build,BUILD);
-for(const file of ['app.js','engine.js','levels.js','art.js','index.html','manifest.webmanifest','sw.js']){const text=await readFile(new URL(file,folder),'utf8');assert(text.includes(BUILD),`${file} uses the release build`);assert([...text.matchAll(/world\d+/g)].every(m=>m[0]===BUILD),`${file} has no stale build references`);}
+for(const file of ['app.js','engine.js','levels.js','saves.js','art.js','index.html','manifest.webmanifest','sw.js']){const text=await readFile(new URL(file,folder),'utf8');assert(text.includes(BUILD),`${file} uses the release build`);assert([...text.matchAll(/world\d+/g)].every(m=>m[0]===BUILD),`${file} has no stale build references`);}
 const sw=await readFile(new URL('sw.js',folder),'utf8');for(const match of sw.matchAll(/'([^']+\.(?:js|css|html|svg|png|webmanifest)(?:\?[^']*)?)'/g))await readFile(new URL(match[1].split('?')[0],folder));assert(sw.includes(`levels.js?v=${BUILD}`));
 const manifest=JSON.parse(await readFile(new URL('manifest.webmanifest',folder),'utf8'));assert.equal(manifest.scope,'./');for(const icon of manifest.icons)await readFile(new URL(icon.src,folder));assert(!(await readdir(folder)).some(f=>/photo|screenshot|AGENTS/i.test(f)));
-console.log(`Passed three full levels (${timings.join('/')} seconds scripted, not human playtime), ${campaign.save.total} robots, 18 restorations, bosses, migration, crash reload, automatic replay, partial per-level saves, rings, viewport mapping, all biome drawing and PWA assets.`);
+console.log(`Passed three full levels (${timings.join('/')} seconds scripted, not human playtime), ${counts.join('/')} robots per level, spatial encounters, bypassed enemies, bosses, migration, crash reload, automatic replay, partial per-level saves, rings, viewport mapping, all biome drawing and PWA assets.`);

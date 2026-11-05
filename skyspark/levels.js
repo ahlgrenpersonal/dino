@@ -1,4 +1,4 @@
-export const BUILD = 'world92';
+export const BUILD = 'world93';
 export const WORLD = { width: 9600, height: 1000, ground: 850 };
 export const SITE_COUNT = 18;
 export const LEVELS = [
@@ -33,11 +33,11 @@ export function sitesFor(level){
 }
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const integer=(n,a,b,fallback=0)=>Number.isInteger(n)?clamp(n,a,b):fallback;
-export const freshRun=()=>({checkpoint:0,wave:0,cleared:[],bossHits:0,complete:false,position:{x:290,y:690},playSeconds:0});
-export const freshSave=()=>({schema:2,level:0,completed:[],total:0,best:0,sound:true,runs:LEVELS.map(()=>freshRun())});
+export const freshRun=()=>({checkpoint:0,frontier:290,cleared:[],restored:[],kills:0,bossHits:0,complete:false,position:{x:290,y:690},playSeconds:0});
+export const freshSave=()=>({schema:3,level:0,completed:[],total:0,best:0,sound:true,runs:LEVELS.map(()=>freshRun())});
 export function unlockedLevel(save){let n=0;while(n<2&&save.completed.includes(n))n++;return n;}
 export function readSave(raw){
-  const s=freshSave();if(!raw||![1,2].includes(raw.schema))return s;
+  const s=freshSave();if(!raw||![1,2,3].includes(raw.schema))return s;
   s.total=integer(raw.total,0,1e7);s.best=integer(raw.best,0,1e7);s.sound=raw.sound!==false;
   if(raw.schema===1){
     const stage=integer(raw.stage,0,3);
@@ -48,19 +48,33 @@ export function readSave(raw){
       if(stage===2)s.runs[0].bossHits=integer(raw.bossHits,0,4);
       if(raw.position&&Number.isFinite(raw.position.x)&&Number.isFinite(raw.position.y))s.runs[0].position={x:clamp(raw.position.x*3,40,WORLD.width-40),y:clamp(raw.position.y,105,WORLD.ground-48)};
     }
-    return s;
+    // Reuse the schema-2 migration below so older completed sections stay cleared.
+    return readSave({...s,schema:2});
   }
   s.completed=Array.isArray(raw.completed)?[...new Set(raw.completed.filter(n=>Number.isInteger(n)&&n>=0&&n<3))]:[];
   for(let i=0;i<3;i++){
     const r=raw.runs?.[i];if(!r||typeof r!=='object')continue;
     const run=s.runs[i];run.checkpoint=integer(r.checkpoint,0,SITE_COUNT);
-    run.wave=integer(r.wave,0,LEVELS[i].waves-1);run.bossHits=integer(r.bossHits,0,LEVELS[i].bossHp);
+    run.bossHits=integer(r.bossHits,0,LEVELS[i].bossHp);
     run.complete=r.complete===true;
     if(run.complete){run.checkpoint=SITE_COUNT;run.bossHits=LEVELS[i].bossHp;if(!s.completed.includes(i))s.completed.push(i);}
     run.playSeconds=Number.isFinite(r.playSeconds)?clamp(r.playSeconds,0,1e8):0;
-    const prefix=`${LEVELS[i].id}-${run.checkpoint}-${run.wave}-`;
-    run.cleared=Array.isArray(r.cleared)?[...new Set(r.cleared.filter(id=>typeof id==='string'&&id.startsWith(prefix)&&/^[-a-z0-9]+$/.test(id)))].slice(0,40):[];
+    const validId=new RegExp(`^${LEVELS[i].id}-(\\d+)-(\\d+)-(\\d+)$`);
+    const cleared=new Set(Array.isArray(r.cleared)?r.cleared.filter(id=>{
+      if(typeof id!=='string')return false;const m=id.match(validId);if(!m)return false;
+      const section=Number(m[1]),wave=Number(m[2]),unit=Number(m[3]);
+      return section<=SITE_COUNT&&wave<(section===SITE_COUNT?1:LEVELS[i].waves)&&unit<(section===SITE_COUNT?8:LEVELS[i].squad);
+    }):[]);
+    if(raw.schema===2)for(let section=0;section<=run.checkpoint;section++){
+      const waves=section<run.checkpoint?LEVELS[i].waves:integer(r.wave,0,LEVELS[i].waves-1);
+      if(section===SITE_COUNT)break;
+      for(let wave=0;wave<waves;wave++)for(let unit=0;unit<LEVELS[i].squad;unit++)cleared.add(`${LEVELS[i].id}-${section}-${wave}-${unit}`);
+    }
+    run.cleared=[...cleared];
+    run.restored=raw.schema===3&&Array.isArray(r.restored)?[...new Set(r.restored.filter(n=>Number.isInteger(n)&&n>=0&&n<6))]:Array.from({length:Math.floor(run.checkpoint/3)},(_,n)=>n);
+    run.kills=raw.schema===3?integer(r.kills,0,1e7,run.cleared.length+(run.complete?1:0)):Math.min(s.total,run.cleared.length+(run.complete?1:0));
     if(r.position&&Number.isFinite(r.position.x)&&Number.isFinite(r.position.y))run.position={x:clamp(r.position.x,40,WORLD.width-40),y:clamp(r.position.y,105,WORLD.ground-48)};
+    run.frontier=Number.isFinite(r.frontier)?clamp(Math.max(r.frontier,run.position.x),40,WORLD.width-40):Math.max(run.position.x,run.checkpoint*500);
   }
   s.level=integer(raw.level,0,unlockedLevel(s));
   return s;

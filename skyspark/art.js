@@ -1,4 +1,4 @@
-import { WORLD, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world92';
+import { WORLD, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world93';
 const TAU=Math.PI*2;
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function path(c,points,fill,stroke,width=1){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();if(fill){c.fillStyle=fill;c.fill();}if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke();}}
@@ -228,7 +228,7 @@ export class Renderer {
     const c=this.c,b=this.bounds(),t=g.time;
     for(const site of g.sites.filter(s=>s.restore)){
       const x=site.restoreX,y=site.restoreY;if(x<b.left-220||x>b.right+220)continue;
-      const lit=g.run.checkpoint>site.index||g.run.complete;
+      const lit=g.run.restored.includes(site.district);
       if(g.level.biome==='city'&&site.district===0){
         oval(c,x,832,140,12,'#263b4d55');box(c,x-120,798,240,32,10,'#baac9b');oval(c,x,800,119,25,'#ddd2b9');oval(c,x,797,104,18,lit?'#6ca7b4':'#758386');box(c,x-19,732,38,67,5,'#d2c5ac');oval(c,x,733,56,12,'#eddbb9');
         if(lit)for(let i=-3;i<=3;i++){c.beginPath();c.moveTo(x,724);c.quadraticCurveTo(x+i*19,645-Math.sin(t*2+i)*8,x+i*30,791);c.strokeStyle='#a9efea';c.lineWidth=3;c.stroke();}
@@ -249,7 +249,6 @@ export class Renderer {
     if(!this.reduced&&g.shake>0)c.translate(Math.sin(g.time*90)*g.shake*.35,Math.cos(g.time*73)*g.shake*.2);
     c.scale(this.scale,this.scale);c.translate(-this.camera.x,-this.camera.y);
     this.architecture(g);
-    if(g.restoreReady){const a={x:g.site.restoreX,y:g.site.restoreY};glow(c,a.x,a.y,95,'#b8ffdf55');c.beginPath();c.arc(a.x,a.y,44+Math.sin(g.time*4)*4,0,TAU);c.strokeStyle='#e7ffe8';c.lineWidth=3;c.stroke();label(c,'✦',a.x,a.y+11,36,'#fff3a8');label(c,'FLY HERE',a.x,a.y-64,12,'#fff4c8');}
     for(const r of g.rings)if(!r.taken){
       glow(c,r.x,r.y,57,'#ffd47130');c.beginPath();c.ellipse(r.x,r.y,23,37,0,0,TAU);c.strokeStyle='#ffe5a1';c.lineWidth=6;c.stroke();
       c.strokeStyle='#fff9db';c.lineWidth=1.5;c.stroke();label(c,'✦',r.x,r.y+6,20,'#fff2b5');

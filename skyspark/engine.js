@@ -1,4 +1,4 @@
-import { BUILD, WORLD, SITE_COUNT, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world92';
+import { BUILD, WORLD, SITE_COUNT, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world93';
 export { BUILD, WORLD, SITE_COUNT, LEVELS, freshSave, readSave, unlockedLevel };
 export const HERO_FEET=48,HERO_EYES=-33;
 export const roofSurface=r=>r.y-17;
@@ -16,13 +16,13 @@ export class SkyGame {
   constructor(save,onEvent=()=>{}){this.save=readSave(save);this.onEvent=onEvent;this.time=0;this.paused=false;this.setupRun();}
   get level(){return LEVELS[this.save.level];}
   get run(){return this.save.runs[this.save.level];}
-  get site(){return this.sites[Math.min(SITE_COUNT-1,this.run.checkpoint)];}
+  get site(){return this.sites[clamp(Math.round((this.player.x-430)/500),0,SITE_COUNT-1)];}
   setupRun(){
     this.sites=sitesFor(this.save.level);this.roofs=roofsFor(this.save.level);
     this.player={...this.run.position,vx:0,vy:0,facing:1,landed:false,flare:0,trail:[]};
-    this.target=null;this.route=null;this.aim=null;this.effects=[];this.particles=[];this.enemies=[];this.rings=[];
-    this.laserCd=0;this.blastCd=0;this.auraCd=.7;this.combo=0;this.comboTime=0;this.shake=0;this.restoreReady=false;this.incoming=0;this.ringRun=false;this.ringsTaken=0;
-    this.spawnEncounter();
+    this.target=null;this.aim=null;this.effects=[];this.particles=[];this.enemies=[];this.rings=[];this.defeated=new Set(this.run.cleared);
+    this.laserCd=0;this.blastCd=0;this.auraCd=.7;this.combo=0;this.comboTime=0;this.shake=0;this.ringRun=false;this.ringsTaken=0;
+    this.syncEncounters();
   }
   emit(type,data={}){this.onEvent({type,...data});}
   snapshot(){this.run.position={x:this.player.x,y:this.player.y};return structuredClone(this.save);}
@@ -35,44 +35,40 @@ export class SkyGame {
   }
   restartLevel(){this.save.runs[this.save.level]=freshRun();this.setupRun();this.emit('level-enter',{level:this.save.level,replay:true});}
   robot(id,x,y,type='bot'){return{id,x,y,homeX:x,homeY:y,type,hp:1,maxHp:1,radius:type==='drone'?26:25,hit:0,cd:2+(x%7)*.4,phase:x*.03,paint:this.save.level};}
-  spawnEncounter(){
+  syncEncounters(bounds){
     if(this.run.complete)return;
-    const r=this.run,l=this.level,boss=r.checkpoint===SITE_COUNT;
-    if(boss){
-      if(r.bossHits<l.bossHp)this.enemies.push({id:`${l.id}-boss`,type:l.bossType,boss:true,name:l.boss,x:9220,y:l.bossType==='wyvern'?400:l.bossType==='excavator'?720:640,homeX:9220,homeY:l.bossType==='wyvern'?400:l.bossType==='excavator'?720:640,hp:l.bossHp-r.bossHits,maxHp:l.bossHp,radius:l.bossType==='excavator'?150:115,hit:0,cd:3,phase:0});
-      for(let i=0;i<8;i++){const id=`${l.id}-${SITE_COUNT}-0-${i}`;if(!r.cleared.includes(id))this.enemies.push(this.robot(id,8940+(i%4)*175,i<4?800:270+(i%3)*70,i<4?'bot':'drone'));}
-      return;
+    // Every nearby section is independent. Leaving a robot behind never blocks the route.
+    const radius=Math.max(1050,Math.min(1800,bounds?(bounds.right-bounds.left)/2+350:1050));
+    const left=this.player.x-radius,right=this.player.x+radius;
+    this.enemies=this.enemies.filter(e=>e.hp>0&&e.homeX>left-400&&e.homeX<right+400);
+    const active=new Set(this.enemies.map(e=>e.id)),l=this.level;
+    for(const site of this.sites){
+      if(site.x<left-250||site.x>right+250)continue;
+      for(let wave=0;wave<l.waves;wave++)for(let i=0;i<l.squad;i++){
+        const id=`${l.id}-${site.index}-${wave}-${i}`;
+        if(this.defeated.has(id)||active.has(id))continue;
+        // Air columns and street squads are spread across each 500-unit stretch.
+        const column=i%4,row=Math.floor(i/4),air=(i+site.pattern+wave)%4!==0;
+        let x=site.x-210+column*110+wave*52;
+        let y=air?220+((row*2+column+wave+site.pattern)%4)*155:800;
+        if(this.save.level===0&&!air&&site.index%3===1){
+          const roof=this.roofs.find(r=>Math.abs(r.x-x)<140);
+          if(roof){x=roof.x+30+(i%3)*50;y=roofSurface(roof)-50;}
+        }
+        this.enemies.push(this.robot(id,clamp(x,60,WORLD.width-60),y,air?'drone':'bot'));
+      }
     }
-    const site=this.site;
-    for(let i=0;i<l.squad;i++){
-      const id=`${l.id}-${r.checkpoint}-${r.wave}-${i}`;if(r.cleared.includes(id))continue;
-      let x,y,type;
-      if(site.pattern===0){x=site.x-280+(i%5)*125;y=i<5?800:440+(i%3)*80;type=i<5?'bot':'drone';}
-      else if(site.pattern===1){x=site.x-250+(i%4)*170;y=210+Math.floor(i/4)*180;type='drone';}
-      else if(site.pattern===2){x=site.x-290+(i%5)*140;y=i<5?800:410+(i%3)*110;type=i<5?'bot':'drone';}
-      else {x=site.x-260+(i%4)*170;y=330+Math.floor(i/4)*170;type='drone';}
-      if(this.save.level===0&&type==='bot'&&r.checkpoint%3===1){const roof=this.roofs.find(p=>Math.abs(p.x-site.x)<350);if(roof){x=roof.x+25+(i%4)*42;y=roofSurface(roof)-50;}}
-      this.enemies.push(this.robot(id,clamp(x,60,WORLD.width-60),y,type));
+    if(9220>=left&&9220<=right){
+      if(this.run.bossHits<l.bossHp&&!active.has(`${l.id}-boss`))this.enemies.push({id:`${l.id}-boss`,type:l.bossType,boss:true,name:l.boss,x:9220,y:l.bossType==='wyvern'?400:l.bossType==='excavator'?720:640,homeX:9220,homeY:l.bossType==='wyvern'?400:l.bossType==='excavator'?720:640,hp:l.bossHp-this.run.bossHits,maxHp:l.bossHp,radius:l.bossType==='excavator'?150:115,hit:0,cd:3,phase:0});
+      for(let i=0;i<8;i++){
+        const id=`${l.id}-${SITE_COUNT}-0-${i}`;
+        if(!this.defeated.has(id)&&!active.has(id))this.enemies.push(this.robot(id,8940+(i%4)*175,i<4?800:270+(i%3)*70,i<4?'bot':'drone'));
+      }
     }
   }
-  goal(){
-    if(this.run.complete)return null;
-    if(this.restoreReady)return{x:this.site.restoreX,y:this.site.restoreY,kind:'restore'};
-    const enemy=this.nearest(Infinity);if(enemy)return{x:enemy.x,y:enemy.y,enemy:enemy.id,kind:'robot'};
-    return{x:this.site.x,y:this.site.y,kind:'incoming'};
-  }
-  travel(index='next'){
-    if(this.paused)return false;
-    let goal;
-    if(index==='next')goal=this.goal();
-    else if(Number.isInteger(index)&&index>=0&&index<=Math.min(this.run.checkpoint,SITE_COUNT-1))goal={x:this.sites[index].x,y:this.sites[index].y};
-    if(!goal)return false;
-    this.target={...goal};this.route=this.run.checkpoint===SITE_COUNT?this.level.boss:this.site.name;this.player.landed=false;this.emit('travel',{name:this.route});return true;
-  }
-  stop(){this.target=null;this.route=null;}
+  stop(){this.target=null;}
   moveTo(x, y) {
     if (this.paused) return;
-    this.route = null;
     const victim = this.enemies.filter(e => e.hp > 0 && hitShapes(e,this.time).some(([dx,dy,r])=>Math.hypot(e.x+dx-x,e.y+dy-y)<r+35)).sort((a,b)=>Math.hypot(a.x-x,a.y-y)-Math.hypot(b.x-x,b.y-y))[0];
     const ring=this.ringRun&&this.rings.find(r=>!r.taken&&Math.hypot(r.x-x,r.y-y)<52);
     let landing = null;
@@ -100,8 +96,8 @@ export class SkyGame {
       this.emit('titan-hit', { hits: this.run.bossHits });
     }
     if (e.hp > 0) return true;
-    this.save.total++; this.combo++; this.comboTime = 3.5; this.save.best = Math.max(this.save.best,this.combo);
-    if (!e.boss) this.run.cleared.push(e.id);
+    this.save.total++; this.run.kills++; this.combo++; this.comboTime = 3.5; this.save.best = Math.max(this.save.best,this.combo);
+    if (!e.boss){this.defeated.add(e.id);this.run.cleared.push(e.id);}
     if(kind==='laser')this.effects.push({type:'split',x:e.x,y:e.y,age:0,life:e.boss?1:.7,robot:{...e,hp:e.maxHp,hit:0}});
     for (let i=0;i<(e.boss?50:12);i++) {
       const a = (i * 2.399) + this.time;
@@ -135,24 +131,23 @@ export class SkyGame {
   ringFlight(){
     if(!this.run.complete)return false;
     this.ringRun=true;this.ringsTaken=0;this.rings=Array.from({length:12},(_,i)=>({x:450+i*740,y:220+(i%4)*110,taken:false}));
-    this.target={x:this.rings[0].x,y:this.rings[0].y};this.route=null;this.player.landed=false;this.emit('rings-start');return true;
+    this.emit('rings-start');return true;
   }
   update(dt, keys = {}, bounds) {
     if(this.paused)return;
     dt=clamp(dt,0,.04);this.time+=dt;if(!this.run.complete)this.run.playSeconds+=dt;
-    if(this.incoming>0){this.incoming=Math.max(0,this.incoming-dt);if(this.incoming===0)this.spawnEncounter();}
     this.laserCd=Math.max(0,this.laserCd-dt);this.blastCd=Math.max(0,this.blastCd-dt);this.auraCd-=dt;
     this.player.flare=Math.max(0,this.player.flare-dt);this.shake=Math.max(0,this.shake-dt*20);
     this.comboTime-=dt;if(this.comboTime<=0)this.combo=0;
     const p=this.player,oldX=p.x,oldY=p.y;
     const kx=(keys.right?1:0)-(keys.left?1:0),ky=(keys.down?1:0)-(keys.up?1:0);
-    if(kx||ky){this.target=null;this.route=null;p.landed=false;const n=Math.hypot(kx,ky);p.x+=kx/n*470*dt;p.y+=ky/n*470*dt;}
+    if(kx||ky){this.target=null;p.landed=false;const n=Math.hypot(kx,ky);p.x+=kx/n*470*dt;p.y+=ky/n*470*dt;}
     else if(this.target){
       const victim=this.target.enemy&&this.enemies.find(e=>e.id===this.target.enemy&&e.hp>0);
       if(victim){this.target.x=victim.x;this.target.y=victim.y;}
-      const d=distance(p,this.target),speed=this.route?650:500,step=Math.min(d,speed*dt);
+      const d=distance(p,this.target),speed=500,step=Math.min(d,speed*dt);
       if(d>1){p.x+=(this.target.x-p.x)/d*step;p.y+=(this.target.y-p.y)/d*step;}
-      if(d<8){p.landed=!!this.target.land;this.target=null;if(this.route){this.emit('arrive',{id:this.route});this.route=null;}}
+      if(d<8){p.landed=!!this.target.land;this.target=null;}
     }
     p.x=clamp(p.x,40,WORLD.width-40);p.y=clamp(p.y,105,WORLD.ground-HERO_FEET);
     if(p.y>=WORLD.ground-HERO_FEET-1&&ky>=0&&!this.target)p.landed=true;
@@ -160,6 +155,13 @@ export class SkyGame {
     p.vx=(p.x-oldX)/Math.max(dt,.001);p.vy=(p.y-oldY)/Math.max(dt,.001);
     if(Math.abs(p.vx)>4)p.facing=Math.sign(p.vx);
     p.trail.push({x:p.x,y:p.y,age:0});for(const t of p.trail)t.age+=dt;p.trail=p.trail.filter(t=>t.age<.3).slice(-18);
+    if(!this.run.complete){
+      const checkpoint=this.run.checkpoint;
+      this.run.frontier=Math.max(this.run.frontier,p.x);
+      this.run.checkpoint=Math.min(SITE_COUNT,Math.floor(this.run.frontier/500));
+      this.syncEncounters(bounds);
+      if(this.run.checkpoint>checkpoint)this.emit('checkpoint');
+    }
     for(const e of this.enemies){
       if(e.hp<=0)continue;e.hit=Math.max(0,e.hit-dt);e.cd-=dt;
       if(e.type==='drone')e.y=e.homeY+Math.sin(this.time*1.8+e.phase)*22;
@@ -195,20 +197,18 @@ export class SkyGame {
     this.particles=this.particles.filter(s=>s.age<s.life).slice(-220);
     for(const r of this.rings)if(!r.taken&&distance(p,r)<52){r.taken=true;this.ringsTaken++;this.emit('ring',{count:this.ringsTaken});}
     if(this.ringRun&&this.ringsTaken===this.rings.length){this.ringRun=false;this.emit('rings-complete');}
-    if(!this.run.complete&&this.incoming===0&&!this.enemies.some(e=>e.hp>0)){
-      const run=this.run;
-      if(run.checkpoint===SITE_COUNT){
-        run.complete=true;run.bossHits=this.level.bossHp;run.cleared=[];
+    if(!this.run.complete){
+      // Restoration is a reward for clearing a district, never an invisible progression gate.
+      for(let district=0;district<6;district++){
+        if(this.run.restored.includes(district))continue;
+        let cleared=true;
+        for(let site=district*3;site<district*3+3&&cleared;site++)for(let wave=0;wave<this.level.waves&&cleared;wave++)for(let i=0;i<this.level.squad;i++)if(!this.defeated.has(`${this.level.id}-${site}-${wave}-${i}`)){cleared=false;break;}
+        if(cleared){this.run.restored.push(district);this.emit('milestone',{name:this.level.districts[district],level:this.save.level});}
+      }
+      if(this.run.bossHits===this.level.bossHp){
+        this.run.complete=true;
         if(!this.save.completed.includes(this.save.level))this.save.completed.push(this.save.level);
-        this.stop();this.emit('level-complete',{level:this.save.level});
-      }else if(run.wave+1<this.level.waves){
-        run.wave++;run.cleared=[];this.incoming=.75;this.emit('incoming',{wave:run.wave+1});
-      }else{
-        if(this.site.restore&&!this.restoreReady){this.restoreReady=true;this.emit('restore-ready',{name:this.site.name,task:this.site.task});}
-        if(!this.site.restore||distance(p,{x:this.site.restoreX,y:this.site.restoreY})<75){
-          const site=this.site;run.checkpoint++;run.wave=0;run.cleared=[];this.restoreReady=false;this.stop();
-          this.emit(site.restore?'milestone':'checkpoint',{name:site.name,checkpoint:run.checkpoint,level:this.save.level});this.spawnEncounter();
-        }
+        this.emit('level-complete',{level:this.save.level});
       }
     }
     this.enemies=this.enemies.filter(e=>e.hp>0);
