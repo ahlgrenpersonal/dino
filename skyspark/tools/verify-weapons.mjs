@@ -19,9 +19,9 @@ g.paused=true;const age=f.age,cd=g.sparkCd;tick(g,2);assert.equal(f.age,age);ass
 tick(g,.54);assert.equal(g.run.kills,8);assert.equal(g.enemies.length,2);assert(!g.sparks());tick(g,.7);g.player.x=1900;assert(g.sparks());tick(g,.1);assert.equal(g.run.kills,10);
 g=scene([[1150,500],[1500,500]]);g.sparks();tick(g,.7);assert.equal(g.run.kills,1,'A jump cannot cross an empty gap beyond its range');
 g=scene([]);assert(!g.sparks());assert.equal(g.sparkCd,0,'No target does not waste the sparks cooldown');
-// One laser cast removes three armor points, never repeated damage every animation frame.
-g=scene([[1250,467]]);let boss=g.enemies[0];Object.assign(boss,{boss:true,type:'titan',hp:12,maxHp:12});g.laser();assert.equal(boss.hp,9);tick(g,.8);assert.equal(boss.hp,9);assert.equal(g.run.bossHits,3);assert(!g.laser());
-tick(g,1.5);assert(g.laser());assert.equal(boss.hp,6);
+// One laser cast removes two armor points, never repeated damage every animation frame.
+g=scene([[1250,467]]);let boss=g.enemies[0];Object.assign(boss,{boss:true,type:'titan',hp:12,maxHp:12});g.laser();assert.equal(boss.hp,10);tick(g,.8);assert.equal(boss.hp,10);assert.equal(g.run.bossHits,2);assert(!g.laser());
+tick(g,1.5);assert(g.laser());assert.equal(boss.hp,8);
 g=scene([[1250,500]]);boss=g.enemies[0];Object.assign(boss,{boss:true,hp:12,maxHp:12});g.sparks();tick(g,.7);assert.equal(boss.hp,11,'A chain cannot bounce repeatedly on one boss');
 assert(WEAPONS.laserCooldown>WEAPONS.sparksCooldown);assert(WEAPONS.laserDamage>1);
 for(let i=0;i<3;i++){
@@ -30,4 +30,4 @@ for(let i=0;i<3;i++){
   const save=readSave(raw);assert.equal(save.runs[i].bossHits,LEVELS[i].bossHp/2,'Older partial boss damage keeps its fraction');assert.equal(save.runs[i].kills,20);assert.equal(readSave(save).runs[i].bossHits,save.runs[i].bossHits,'Migration is applied only once');
   assert(armorSegments({hp:LEVELS[i].bossHp,maxHp:LEVELS[i].bossHp}).length<=12,'Stronger armor still fits the HUD');
 }
-console.log('Passed piercing and adaptive up/down/left laser sweeps, one triple-damage hit per cast, staged eight-target lightning, jump range, cooldowns, paused chains, boss scaling and save migration.');
+console.log('Passed piercing and adaptive up/down/left laser sweeps, one two-damage hit per cast, staged eight-target lightning, jump range, cooldowns, paused chains, boss scaling and save migration.');
