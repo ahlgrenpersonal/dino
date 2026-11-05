@@ -26,7 +26,7 @@ for(let level=0;level<3;level++){
  if(level)assert(campaign.selectLevel(level));let seconds=0;
  while(!campaign.run.complete&&seconds<300){
   const p=campaign.player,bounds={left:p.x-310,right:p.x+310,top:0,bottom:1000};
-  campaign.laser(bounds);campaign.blast();campaign.update(.02,{right:p.x<9350},bounds);seconds+=.02;
+  campaign.sparks(bounds);campaign.laser(bounds);campaign.blast();campaign.update(.02,{right:p.x<9350},bounds);seconds+=.02;
  }
  assert(campaign.run.complete,`${LEVELS[level].name} completes by flying right and using weapons, without guide travel`);
  assert(campaign.run.kills>=50,`${LEVELS[level].name} has at least 50 defeats during the actual forward flight`);
@@ -48,9 +48,9 @@ for(let i=0;i<3;i++){
   const saved=bossGame.snapshot(),copy=new SkyGame(saved);assert.equal(copy.enemies.find(e=>e.boss).hp,boss.hp,'Boss damage survives reload');
   const bx=boss.x,by=boss.y;tick(bossGame,2);if(i===2)assert(Math.hypot(boss.x-bx,boss.y-by)>40,'Stormwing visibly flies');
 }
-const oldDone=readSave({schema:1,stage:3,total:23,best:7,sound:false});assert.equal(oldDone.schema,3);assert.deepEqual(oldDone.completed,[0]);assert(oldDone.runs[0].complete);assert.equal(unlockedLevel(oldDone),1);assert.equal(oldDone.total,23);assert.equal(oldDone.sound,false);
+const oldDone=readSave({schema:1,stage:3,total:23,best:7,sound:false});assert.equal(oldDone.schema,4);assert.deepEqual(oldDone.completed,[0]);assert(oldDone.runs[0].complete);assert.equal(unlockedLevel(oldDone),1);assert.equal(oldDone.total,23);assert.equal(oldDone.sound,false);
 const quotaSave=loadProgress(()=>({getItem:key=>key==='save'?JSON.stringify({schema:1,stage:3,total:23,sound:false}):null,setItem(){throw Error('Quota exceeded');}}),'save');assert.deepEqual(quotaSave.completed,[0]);assert.equal(quotaSave.total,23);assert.equal(quotaSave.sound,false,'Failure to write a backup preserves the readable old save');
-const oldPartial=readSave({schema:1,stage:2,total:18,bossHits:2,cleared:['s2-0','s2-3'],position:{x:2600,y:650}});assert.equal(oldPartial.runs[0].checkpoint,12);assert.equal(oldPartial.runs[0].bossHits,2);assert(oldPartial.runs[0].cleared.includes('city-12-0-3'));
+const oldPartial=readSave({schema:1,stage:2,total:18,bossHits:2,cleared:['s2-0','s2-3'],position:{x:2600,y:650}});assert.equal(oldPartial.runs[0].checkpoint,12);assert.equal(oldPartial.runs[0].bossHits,6);assert(oldPartial.runs[0].cleared.includes('city-12-0-3'));
 for(const raw of [null,{},[],{schema:2,level:9,runs:[{checkpoint:Infinity,cleared:[null,'bad'],position:{x:NaN,y:Infinity}}]},{schema:1,stage:'bad',best:Infinity}]){const save=readSave(raw);assert(save.level>=0&&save.level<3);assert(save.total>=0);for(const run of save.runs)assert(Number.isFinite(run.position.x)&&Number.isFinite(run.position.y));}
 const ringGame=new SkyGame(campaign.snapshot());assert(ringGame.ringFlight());for(const ring of ringGame.rings){ringGame.moveTo(ring.x,ring.y);tick(ringGame,Math.hypot(ringGame.player.x-ring.x,ringGame.player.y-ring.y)/500+1);assert(ring.taken,'Each ring remains reachable without a roof snapping the target');}assert.equal(ringGame.ringsTaken,12);assert(!ringGame.ringRun);
 for(const [level,dx,dy] of [[1,258,28],[2,240,-58],[2,-240,-58]]){const g=at(level,SITE_COUNT),e=g.enemies.find(e=>e.boss);g.enemies=[e];g.player.x=e.x+dx;g.player.y=e.y+dy;const hp=e.hp;tick(g,.02,{right:true});assert(e.hp<hp,'Flight damages the visible bucket and wing tips');}
@@ -59,7 +59,7 @@ for(const [width,height,dpr] of [[390,600,3],[390,480,3],[320,370,2],[844,260,2]
 // Exercise every biome and boss drawing through a finite-coordinate canvas mock.
 const gradient={addColorStop(){}};const context=new Proxy({}, {get:(_,name)=>name==='createLinearGradient'||name==='createRadialGradient'?()=>gradient:(...args)=>{for(const n of args)if(typeof n==='number')assert(Number.isFinite(n),`${String(name)} received a non-finite coordinate`);}});
 const mockCanvas=()=>({width:390,height:600,getContext:()=>context,getBoundingClientRect:()=>({width:390,height:600})});globalThis.document={createElement:()=>mockCanvas()};
-for(let i=0;i<3;i++)for(const checkpoint of [0,2,8,SITE_COUNT]){const scene=at(i,checkpoint),canvas=mockCanvas(),r=new Renderer(canvas);scene.player.x=checkpoint===SITE_COUNT?9200:scene.site.x;scene.player.y=500;r.follow(scene,0,true);r.draw(scene,.02);}
+for(let i=0;i<3;i++)for(const checkpoint of [0,2,8,SITE_COUNT]){const scene=at(i,checkpoint),canvas=mockCanvas(),r=new Renderer(canvas);scene.player.x=checkpoint===SITE_COUNT?9200:scene.site.x;scene.player.y=500;scene.sparks();scene.laser();scene.update(.02);r.follow(scene,0,true);r.draw(scene,.02);}
 // A schema-2 save stranded at the far right must recover its boss immediately.
 const strandedSave={schema:2,level:0,total:31,runs:[{checkpoint:2,wave:1,cleared:['city-2-1-0'],position:{x:9450,y:650}}]};
 const recovered=new SkyGame(strandedSave);assert(recovered.enemies.some(e=>e.boss));assert(recovered.run.cleared.includes('city-2-1-0'));assert(recovered.run.cleared.includes('city-1-0-0'));assert(recovered.run.cleared.includes('city-2-0-0'));

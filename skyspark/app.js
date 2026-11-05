@@ -1,8 +1,8 @@
-import { BUILD, SkyGame, LEVELS, SITE_COUNT, unlockedLevel, freshSave, readSave } from './engine.js?v=world93';
-import { Renderer, hero } from './art.js?v=world93';
-import { Sound } from './audio.js?v=world93';
-import { loadProgress } from './saves.js?v=world93';
-const buildVersion = 'world93';
+import { BUILD, WEAPONS, armorSegments, SkyGame, LEVELS, SITE_COUNT, unlockedLevel, freshSave, readSave } from './engine.js?v=world94';
+import { Renderer, hero } from './art.js?v=world94';
+import { Sound } from './audio.js?v=world94';
+import { loadProgress } from './saves.js?v=world94';
+const buildVersion = 'world94';
 const SAVE_KEY='skyspark-save-v1',BACKUP_KEY='skyspark-before-restart-v1';
 const $=id=>document.getElementById(id),canvas=$('world'),panel=$('panel'),sound=new Sound();
 let storageOK=true,savePending=0,lastSave=0,last=performance.now(),panelMode='',toastUntil=0,celebrationUntil=0,notified=false,installPrompt=null,updatePending=false;
@@ -21,7 +21,7 @@ function updateSaveLabel(){const s=$('saveStatus');s.textContent=storageOK?'● 
 function toast(text,seconds=3){$('toast').textContent=text;$('toast').classList.add('show');toastUntil=game.time+seconds;}
 function celebrate(top,title,text){$('celebrationTop').textContent=top;$('celebrationTitle').textContent=title;$('celebrationText').textContent=text;$('celebration').classList.add('show');celebrationUntil=game.time+4;}
 function onEvent(e){
-  sound.effect(e.type);
+  sound.effect(e.type,e);
   if(['destroy','titan-hit','checkpoint'].includes(e.type))soonSave();
   if(e.type==='milestone')soonSave();
   if(e.type==='level-complete'){
@@ -64,7 +64,7 @@ function drawMap(){
 }
 function showMap(){$('mapDot').hidden=true;openPanel('map','Your worlds','ADVENTURE MAP',mapHTML());drawMap();}
 function showPause(){
-  openPanel('pause','A little breather','SKYSPARK',`<button class="panel-action" data-action="resume">▶ Keep flying</button><button class="panel-action secondary" data-action="map">⌖ Open the adventure map</button><div class="help"><p><strong>↗ Fly:</strong> tap the sky. Tap a rooftop to land.</p><p><strong>⚡ Smash:</strong> fly straight into a robot.</p><p><strong>Laser:</strong> slices toward the gold-ringed robot.</p><p><strong>Big Blast:</strong> clears the robots all around you.</p><p>Your shield keeps you safe. No fuel. No falling. No lost progress.</p><p>Keyboard: arrows / WASD · L laser · Space blast · M map · Esc pause.</p></div><div class="settings-row"><span>Music & sound</span><button data-action="sound">${sound.enabled?'On':'Off'}</button></div><div class="settings-row"><span>Gentle motion</span><button data-action="motion">${renderer.reduced?'On':'Off'}</button></div><button class="panel-action secondary" data-action="restart">Start this level again</button>${hasBackup()?'<button class="panel-action secondary" data-action="restore">Restore previous save</button>':''}<div class="install-note">Install on iPhone: Safari → Share → Add to Home Screen. Your adventure saves on this device.${installPrompt?'<button class="panel-action secondary" data-action="install">Install SkySpark</button>':''}</div><p class="fineprint">${storageOK?'Progress saves automatically on this device.':'Saving is unavailable. Keep this page open to retain progress.'}<br>SkySpark · ${BUILD} · Original artwork & synthesized sound.</p>`);
+  openPanel('pause','A little breather','SKYSPARK',`<button class="panel-action" data-action="resume">▶ Keep flying</button><button class="panel-action secondary" data-action="map">⌖ Open the adventure map</button><div class="help"><p><strong>↗ Fly:</strong> tap the sky. Tap a rooftop to land.</p><p><strong>⚡ Smash:</strong> fly straight into a robot.</p><p><strong>Sparks:</strong> lightning jumps through up to eight robots.</p><p><strong>Laser:</strong> sweeps through robots and cuts through armor.</p><p><strong>Big Blast:</strong> clears the robots all around you.</p><p>Your shield keeps you safe. No fuel. No falling. No lost progress.</p><p>Keyboard: arrows / WASD · X sparks · L laser · Space blast · M map · Esc pause.</p></div><div class="settings-row"><span>Music & sound</span><button data-action="sound">${sound.enabled?'On':'Off'}</button></div><div class="settings-row"><span>Gentle motion</span><button data-action="motion">${renderer.reduced?'On':'Off'}</button></div><button class="panel-action secondary" data-action="restart">Start this level again</button>${hasBackup()?'<button class="panel-action secondary" data-action="restore">Restore previous save</button>':''}<div class="install-note">Install on iPhone: Safari → Share → Add to Home Screen. Your adventure saves on this device.${installPrompt?'<button class="panel-action secondary" data-action="install">Install SkySpark</button>':''}</div><p class="fineprint">${storageOK?'Progress saves automatically on this device.':'Saving is unavailable. Keep this page open to retain progress.'}<br>SkySpark · ${BUILD} · Original artwork & synthesized sound.</p>`);
 }
 function hasBackup(){try{return !!localStorage.getItem(BACKUP_KEY);}catch{return false;}}
 function resetPresentation(){
@@ -81,7 +81,7 @@ function restart(){
   }catch{toast('Could not protect your save. Your current adventure is still here.',5);$('panelBody').insertAdjacentHTML('beforeend','<p class="restart-note">Your save could not be backed up. Nothing was restarted.</p>');}
 }
 function restore(){
-  try{const raw=JSON.parse(localStorage.getItem(BACKUP_KEY));if(![1,2,3].includes(raw?.schema))throw Error();const previous=readSave(raw);localStorage.setItem(SAVE_KEY,JSON.stringify(previous));game=new SkyGame(previous,onEvent);resetPresentation();closePanel();toast('Your previous adventure is back.',4);}catch{toast('That backup is unavailable. Your adventure has not changed.',5);}
+  try{const raw=JSON.parse(localStorage.getItem(BACKUP_KEY));if(![1,2,3,4].includes(raw?.schema))throw Error();const previous=readSave(raw);localStorage.setItem(SAVE_KEY,JSON.stringify(previous));game=new SkyGame(previous,onEvent);resetPresentation();closePanel();toast('Your previous adventure is back.',4);}catch{toast('That backup is unavailable. Your adventure has not changed.',5);}
 }
 $('panelBody').addEventListener('click',async e=>{
   const button=e.target.closest('button');if(!button||button.disabled)return;
@@ -105,6 +105,7 @@ function bindPower(id,activate){
   const b=$(id);b.addEventListener('pointerdown',e=>{if(e.button!==0||b.disabled)return;e.preventDefault();unlock();activate();});
   b.addEventListener('click',e=>{if(e.detail===0&&!b.disabled)activate();});
 }
+bindPower('sparks',()=>game.sparks(renderer.bounds()));
 bindPower('laser',()=>game.laser(renderer.bounds()));bindPower('blast',()=>game.blast());
 let pointer=null,downAt=null;
 function point(e){const r=canvas.getBoundingClientRect();return renderer.screenToWorld(e.clientX-r.left,e.clientY-r.top);}
@@ -123,6 +124,7 @@ document.addEventListener('keydown',e=>{
   if(panel.open)return;
   if(keyNames[key]){keys[keyNames[key]]=true;e.preventDefault();}
   if(e.repeat)return;
+  if(key==='x'){game.sparks(renderer.bounds());e.preventDefault();}
   if(key==='l'||key==='z'){game.laser(renderer.bounds());e.preventDefault();}
   if(key===' '){game.blast();e.preventDefault();}
   if(key==='m'){showMap();e.preventDefault();}
@@ -137,12 +139,15 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installProm
 function hud(){
   const run=game.run,alive=game.enemies.filter(e=>e.hp>0),boss=alive.find(e=>e.boss),done=run.complete;
   $('robotCount').textContent=String(run.kills);
-  $('laser').disabled=game.laserCd>0||game.paused;$('laserLabel').textContent=game.laserCd>0?'RECHARGING':'SLICE THROUGH';
+  $('sparks').disabled=game.sparkCd>0||game.paused;$('sparkLabel').textContent=game.sparkCd>0?'RECHARGING':'JUMP THROUGH 8';
+  $('sparkCharge').style.transform=`scaleX(${game.sparkCd/WEAPONS.sparksCooldown})`;
+  $('laserCharge').style.transform=`scaleX(${game.laserCd/WEAPONS.laserCooldown})`;
+  $('laser').disabled=game.laserCd>0||game.paused;$('laserLabel').textContent=game.laserCd>0?'RECHARGING':'SWEEP & SLICE';
   $('blast').disabled=game.blastCd>0||game.paused;$('blastLabel').textContent=game.blastCd>0?`READY IN ${Math.ceil(game.blastCd)}s`:'POWER READY';
   $('blastCharge').style.transform=`scaleX(${game.blastCd/5})`;$('blast').classList.toggle('ready',game.blastCd===0);
   $('combo').hidden=game.combo<3;$('combo').textContent=`${game.combo} × SUPER!`;
   $('bossHud').hidden=!boss||Math.abs(game.player.x-boss.x)>750;$('playfield').classList.toggle('boss-active',!$('bossHud').hidden);
-  if(boss){$('bossHud').querySelector('span').textContent=game.level.boss.toUpperCase();$('bossSegments').innerHTML=Array.from({length:boss.maxHp},(_,i)=>`<i class="${i>=boss.hp?'lost':''}"></i>`).join('');}
+  if(boss){$('bossHud').querySelector('span').textContent=game.level.boss.toUpperCase();$('bossSegments').innerHTML=armorSegments(boss).map(fill=>`<i style="background:linear-gradient(to right,#ffd393 ${fill*100}%,#73868d ${fill*100}%)"></i>`).join('');$('bossSegments').setAttribute('aria-valuemax',String(boss.maxHp));$('bossSegments').setAttribute('aria-valuenow',String(boss.hp));}
   if(game.time>toastUntil)$('toast').classList.remove('show');if(game.time>celebrationUntil)$('celebration').classList.remove('show');
   $('hint').classList.toggle('dim',game.time>8&&!done&&storageOK);
   $('hint').textContent=!storageOK?'Saving is unavailable. Keep this page open to keep progress.':done?'Open the map to fly another level. Every return is a fresh adventure.':'Fly right · Tap a robot to smash';

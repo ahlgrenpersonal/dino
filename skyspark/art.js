@@ -1,4 +1,4 @@
-import { WORLD, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world93';
+import { WORLD, WEAPONS, armorSegments, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world94';
 const TAU=Math.PI*2;
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function path(c,points,fill,stroke,width=1){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();if(fill){c.fillStyle=fill;c.fill();}if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke();}}
@@ -70,7 +70,7 @@ function robot(c,e,time,ghost=false){
     // Broken panels make giant progress visible.
     for(const f of [-1,1]){
       line(c,f*12,22,f*16,41,dark,12);box(c,f*16-10,37,23,13,3,metal,'#172e49');
-      if(!titan||e.hp>(f<0?2:1)){
+      if(!titan||e.hp>e.maxHp*(f<0?.5:.25)){
         line(c,f*26,-12,f*32,15,dark,12);box(c,f*33-9,4,18,27,5,metal,'#243c55');
         path(c,[[f*15,-25],[f*35,-25],[f*42,-10],[f*22,-6]],metal,'#284561',1.3);
         line(c,f*27,-20,f*34,-16,'#f0ac78',2);
@@ -79,7 +79,7 @@ function robot(c,e,time,ghost=false){
     path(c,[[-21,-23],[20,-23],[25,4],[14,28],[-13,28],[-25,4]],metal,'#1b344e',1.5);
     path(c,[[-15,-14],[15,-14],[18,8],[0,19],[-17,8]],dark);
     for(let i=0;i<3;i++)line(c,-11,8+i*5,11,8+i*5,'#6b869a',2);
-    if(titan&&e.hp<3){path(c,[[-13,-12],[10,-7],[0,14],[-14,2]],'#142536');lightning(c,-10,-8,9,8,time,'#ffe297',1);}
+    if(titan&&e.hp<e.maxHp*.75){path(c,[[-13,-12],[10,-7],[0,14],[-14,2]],'#142536');lightning(c,-10,-8,9,8,time,'#ffe297',1);}
     glow(c,0,-3,17,'#ffad7655');oval(c,0,-3,8,8,'#492c41');oval(c,0,-3,5.4,5.4,'#ffcd8a');oval(c,-1,-4,2.6,2.6,'#fff6d5');
     box(c,-14,-48,28,29,9,metal,'#243950');path(c,[[-14,-34],[0,-30],[14,-34],[11,-23],[0,-18],[-11,-23]],dark);
     line(c,-10,-36,-3,-35,'#ffba6e',3);line(c,4,-35,11,-36,'#ffba6e',3);
@@ -102,9 +102,9 @@ function excavator(c,e,time){
   box(c,-127,-15,32,50,5,'#536976');for(let i=0;i<4;i++)line(c,-120,-6+i*9,-102,-6+i*9,'#a4b3a7',3);
   glow(c,-7,33,50,'#ffe58c44');oval(c,-7,33,24,24,'#55413c');oval(c,-7,33,16,16,'#fff1a6');
   const swing=Math.sin(time*.9)*16;
-  if(e.hp>2){line(c,54,-1,140,-112+swing,'#4e5960',37);line(c,54,-1,140,-112+swing,'#e4b765',28);line(c,140,-112+swing,219,-19,'#5a6266',26);line(c,140,-112+swing,219,-19,'#f2d08c',18);path(c,[[199,-27],[259,-12],[265,41],[218,52],[194,20]],gold,'#4b5960',4);for(let i=0;i<3;i++)path(c,[[218+i*15,49],[225+i*15,65],[232+i*15,45]],'#dbe1cd');}
+  if(e.hp>e.maxHp/3){line(c,54,-1,140,-112+swing,'#4e5960',37);line(c,54,-1,140,-112+swing,'#e4b765',28);line(c,140,-112+swing,219,-19,'#5a6266',26);line(c,140,-112+swing,219,-19,'#f2d08c',18);path(c,[[199,-27],[259,-12],[265,41],[218,52],[194,20]],gold,'#4b5960',4);for(let i=0;i<3;i++)path(c,[[218+i*15,49],[225+i*15,65],[232+i*15,45]],'#dbe1cd');}
   else lightning(c,55,0,110,-40,time,'#b8ffff',4);
-  if(e.hp<5)path(c,[[-142,8],[-82,5],[-110,47],[-141,30]],'#4c5a60');
+  if(e.hp<e.maxHp*5/6)path(c,[[-142,8],[-82,5],[-110,47],[-141,30]],'#4c5a60');
   line(c,-77,-53,-55,-53,'#fff0a3',5);line(c,-18,-53,2,-53,'#fff0a3',5);
   c.restore();
 }
@@ -114,7 +114,7 @@ function stormwing(c,e,time){
   for(const f of [-1,1]){
     path(c,[[f*23,-20],[f*112,-93-wing],[f*252,-63-wing],[f*187,26],[f*125,0],[f*88,57],[f*42,30]],metal,'#233b62',4);
     for(let i=0;i<3;i++)line(c,f*(60+i*48),-15-i*12,f*(100+i*46),-50-wing,'#a4c9d1',4);
-    if(e.hp>3){glow(c,f*128,-10,35,'#ae98ff66');oval(c,f*128,-10,14,14,'#34415d');oval(c,f*128,-10,8,8,'#d9b8ff');}
+    if(e.hp>e.maxHp*3/8){glow(c,f*128,-10,35,'#ae98ff66');oval(c,f*128,-10,14,14,'#34415d');oval(c,f*128,-10,8,8,'#d9b8ff');}
     else lightning(c,f*50,-5,f*138,-20,time,'#c2faff',3);
     path(c,[[f*17,35],[f*38,96],[f*63,111],[f*28,115],[f*3,59]],'#788da6','#253d5c',2);
   }
@@ -262,7 +262,7 @@ export class Renderer {
       robot(c,e,g.time);
       if(e.boss){
         label(c,e.name.toUpperCase(),e.x,e.y-228,17,'#fff0d0');
-        for(let i=0;i<e.maxHp;i++){box(c,e.x-e.maxHp*16+i*32,e.y-212,24,6,3,i<e.hp?'#ffcc85':'#617d89');}
+        const bars=armorSegments(e);bars.forEach((fill,i)=>{const x=e.x-bars.length*16+i*32;box(c,x,e.y-212,24,6,3,'#617d89');if(fill>0)box(c,x,e.y-212,24*fill,6,3,'#ffcc85');});
       }
     }
     const p=g.player;
@@ -275,9 +275,17 @@ export class Renderer {
       const k=1-f.age/f.life;c.save();c.globalAlpha=k;
       if(f.type==='zap'){lightning(c,f.x,f.y,f.tx,f.ty,g.time,'#4edcff',9);lightning(c,f.x,f.y,f.tx,f.ty,g.time,'#e1ffff',3);}
       if(f.type==='laser'){
-        const eye=eyePosition(p);
-        line(c,eye.x,eye.y-2,f.tx,f.ty-2,'#fa719b33',32);line(c,eye.x,eye.y-2,f.tx,f.ty-2,'#ff7db0',9);line(c,eye.x,eye.y+2,f.tx,f.ty+2,'#ffebf5',3);
+        const eye=eyePosition(p),tx=eye.x+Math.cos(f.angle)*WEAPONS.laserRange,ty=eye.y+Math.sin(f.angle)*WEAPONS.laserRange;
+        // A short pink afterglow makes the gentle sweep readable without hiding targets.
+        for(let i=1;i<=3;i++){const a=f.angle-f.sweep*.035*i;line(c,eye.x,eye.y,eye.x+Math.cos(a)*WEAPONS.laserRange,eye.y+Math.sin(a)*WEAPONS.laserRange,'#ff91bc17',16-i*3);}
+        line(c,eye.x,eye.y-2,tx,ty-2,'#fa719b33',32);line(c,eye.x,eye.y-2,tx,ty-2,'#ff7db0',9);line(c,eye.x,eye.y+2,tx,ty+2,'#ffebf5',3);
         glow(c,eye.x,eye.y,50,'#ffa7cb88');
+      }
+      if(f.type==='chain')for(let i=0;i<f.fired;i++){
+        const a=i?f.nodes[i-1]:{x:f.x,y:f.y},b=f.nodes[i],age=f.age-i*.075,strength=Math.max(0,1-age/.4);
+        if(strength<=0)continue;c.save();c.globalAlpha*=strength;
+        lightning(c,a.x,a.y,b.x,b.y,g.time+i*.4,'#33bfff',12);lightning(c,a.x,a.y,b.x,b.y,g.time+i*.4,'#b8ffff',4);lightning(c,a.x,a.y,b.x,b.y,g.time+i*.4,'#ffffff',1.5);
+        glow(c,b.x,b.y,45,'#97ffff77');c.beginPath();c.arc(b.x,b.y,12+age*60,0,TAU);c.strokeStyle='#c6ffff';c.lineWidth=2;c.stroke();c.restore();
       }
       if(f.type==='sphere'){
         const r=Math.min(1,f.age/.55)*f.radius;

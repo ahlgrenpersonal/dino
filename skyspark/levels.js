@@ -1,14 +1,14 @@
-export const BUILD = 'world93';
+export const BUILD = 'world94';
 export const WORLD = { width: 9600, height: 1000, ground: 850 };
 export const SITE_COUNT = 18;
 export const LEVELS = [
-  { id:'city', name:'Sunbeam City', short:'City', icon:'☀', color:'#ffd28c', biome:'city', boss:'Iron Colossus', bossType:'titan', bossHp:4, waves:2, squad:8,
+  { id:'city', name:'Sunbeam City', short:'City', icon:'☀', color:'#ffd28c', biome:'city', boss:'Iron Colossus', bossType:'titan', bossHp:12, waves:2, squad:8,
     districts:['Fountain Quarter','Market Street','Beacon Rooftops','Sunset Gardens','Clocktower Mile','Skybridge'],
     tasks:['Restart the fountain','Light the market lanterns','Wake the rooftop beacon','Bring the gardens to life','Power the clocktower','Open the skybridge'] },
-  { id:'plains', name:'Emerald Plains', short:'Plains', icon:'❧', color:'#a6f5cc', biome:'plains', boss:'The Earthmover', bossType:'excavator', bossHp:6, waves:2, squad:10,
+  { id:'plains', name:'Emerald Plains', short:'Plains', icon:'❧', color:'#a6f5cc', biome:'plains', boss:'The Earthmover', bossType:'excavator', bossHp:18, waves:2, squad:10,
     districts:['Buttercup Meadow','Willow Lake','Windmill Fields','Lakeside Trail','Sunflower Rise','Quarry Edge'],
     tasks:['Wake the meadow wind chimes','Clear the lake spring','Start the windmill','Light the lakeside lantern','Restore the flower meadow','Free the quarry spring'] },
-  { id:'mountains', name:'Stormpeak Range', short:'Mountains', icon:'▲', color:'#d6b8ff', biome:'mountains', boss:'Stormwing', bossType:'wyvern', bossHp:8, waves:3, squad:10,
+  { id:'mountains', name:'Stormpeak Range', short:'Mountains', icon:'▲', color:'#d6b8ff', biome:'mountains', boss:'Stormwing', bossType:'wyvern', bossHp:24, waves:3, squad:10,
     districts:['Pine Valley','Crystal Cliffs','Cloud Bridge','Snowcap Pass','Aurora Ridge','Stormwing Summit'],
     tasks:['Light the valley watchfire','Wake the crystal beacon','Power the cloud bridge','Light the snowcap lantern','Restore the aurora beacon','Open the summit signal'] }
 ];
@@ -34,10 +34,10 @@ export function sitesFor(level){
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const integer=(n,a,b,fallback=0)=>Number.isInteger(n)?clamp(n,a,b):fallback;
 export const freshRun=()=>({checkpoint:0,frontier:290,cleared:[],restored:[],kills:0,bossHits:0,complete:false,position:{x:290,y:690},playSeconds:0});
-export const freshSave=()=>({schema:3,level:0,completed:[],total:0,best:0,sound:true,runs:LEVELS.map(()=>freshRun())});
+export const freshSave=()=>({schema:4,level:0,completed:[],total:0,best:0,sound:true,runs:LEVELS.map(()=>freshRun())});
 export function unlockedLevel(save){let n=0;while(n<2&&save.completed.includes(n))n++;return n;}
 export function readSave(raw){
-  const s=freshSave();if(!raw||![1,2,3].includes(raw.schema))return s;
+  const s=freshSave();if(!raw||![1,2,3,4].includes(raw.schema))return s;
   s.total=integer(raw.total,0,1e7);s.best=integer(raw.best,0,1e7);s.sound=raw.sound!==false;
   if(raw.schema===1){
     const stage=integer(raw.stage,0,3);
@@ -55,7 +55,7 @@ export function readSave(raw){
   for(let i=0;i<3;i++){
     const r=raw.runs?.[i];if(!r||typeof r!=='object')continue;
     const run=s.runs[i];run.checkpoint=integer(r.checkpoint,0,SITE_COUNT);
-    run.bossHits=integer(r.bossHits,0,LEVELS[i].bossHp);
+    run.bossHits=raw.schema<4?integer(r.bossHits,0,[4,6,8][i])*3:integer(r.bossHits,0,LEVELS[i].bossHp);
     run.complete=r.complete===true;
     if(run.complete){run.checkpoint=SITE_COUNT;run.bossHits=LEVELS[i].bossHp;if(!s.completed.includes(i))s.completed.push(i);}
     run.playSeconds=Number.isFinite(r.playSeconds)?clamp(r.playSeconds,0,1e8):0;
@@ -71,8 +71,8 @@ export function readSave(raw){
       for(let wave=0;wave<waves;wave++)for(let unit=0;unit<LEVELS[i].squad;unit++)cleared.add(`${LEVELS[i].id}-${section}-${wave}-${unit}`);
     }
     run.cleared=[...cleared];
-    run.restored=raw.schema===3&&Array.isArray(r.restored)?[...new Set(r.restored.filter(n=>Number.isInteger(n)&&n>=0&&n<6))]:Array.from({length:Math.floor(run.checkpoint/3)},(_,n)=>n);
-    run.kills=raw.schema===3?integer(r.kills,0,1e7,run.cleared.length+(run.complete?1:0)):Math.min(s.total,run.cleared.length+(run.complete?1:0));
+    run.restored=raw.schema>=3&&Array.isArray(r.restored)?[...new Set(r.restored.filter(n=>Number.isInteger(n)&&n>=0&&n<6))]:Array.from({length:Math.floor(run.checkpoint/3)},(_,n)=>n);
+    run.kills=raw.schema>=3?integer(r.kills,0,1e7,run.cleared.length+(run.complete?1:0)):Math.min(s.total,run.cleared.length+(run.complete?1:0));
     if(r.position&&Number.isFinite(r.position.x)&&Number.isFinite(r.position.y))run.position={x:clamp(r.position.x,40,WORLD.width-40),y:clamp(r.position.y,105,WORLD.ground-48)};
     run.frontier=Number.isFinite(r.frontier)?clamp(Math.max(r.frontier,run.position.x),40,WORLD.width-40):Math.max(run.position.x,run.checkpoint*500);
   }

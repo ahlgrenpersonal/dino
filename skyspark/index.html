@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=world93">
+  <link rel="stylesheet" href="styles.css?v=world94">
 </head>
 <body>
 <svg class="symbols" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -26,11 +26,11 @@
 <main id="game">
   <header class="topbar">
     <div class="brand"><span class="brand-mark"><svg><use href="#bolt"/></svg></span><div><b>SKY<span>SPARK</span></b><small>LITTLE HERO. BIG POWERS.</small></div></div>
-    <div class="header-tools"><span class="saved" id="saveStatus" aria-label="Progress saves on this device">● SAVED</span><button class="icon-button" id="sound" aria-label="Turn sound off" aria-pressed="true"><svg><use href="#sound-icon"/></svg></button><button class="icon-button" id="pause" aria-label="Pause game"><svg><use href="#pause-icon"/></svg></button></div>
+    <div class="header-tools"><span class="saved" id="saveStatus" aria-label="Progress saves on this device">● SAVED</span><button class="icon-button map-control" id="map" aria-label="Map — choose a world"><svg><use href="#map-icon"/></svg><i id="mapDot" hidden></i></button><button class="icon-button" id="sound" aria-label="Turn sound off" aria-pressed="true"><svg><use href="#sound-icon"/></svg></button><button class="icon-button" id="pause" aria-label="Pause game"><svg><use href="#pause-icon"/></svg></button></div>
   </header>
   <section id="playfield" aria-label="Superhero playground">
     <canvas id="world" tabindex="0" aria-label="Fly through three worlds. Tap the sky to fly, a rooftop to land, or a robot to smash. Use arrow keys or WASD on a keyboard."></canvas>
-    <div id="bossHud" hidden><span>IRON COLOSSUS</span><div id="bossSegments"></div></div>
+    <div id="bossHud" hidden><span>IRON COLOSSUS</span><div id="bossSegments" role="progressbar" aria-label="Boss armor" aria-valuemin="0" aria-valuemax="12" aria-valuenow="12"></div></div>
     <div class="hero-chip"><span class="hero-dot">✦</span><span>Hero <small>SUPER SHIELD ON</small></span></div>
     <div class="tally" aria-label="Robots defeated this flight"><svg><use href="#bolt"/></svg><b id="robotCount">0</b><span>ROBOTS</span></div>
     <div id="combo" hidden></div>
@@ -40,13 +40,13 @@
     <div id="loading">Warming up your superpowers…</div>
   </section>
   <footer class="console">
-    <button id="map" class="control map-control"><svg><use href="#map-icon"/></svg><span>Map<small>CHOOSE A WORLD</small></span><i id="mapDot" hidden></i></button>
-    <button id="laser" class="control laser-control"><svg><use href="#laser-icon"/></svg><span>Laser<small id="laserLabel">SLICE THROUGH</small></span></button>
+    <button id="sparks" class="control spark-control"><span class="charge" id="sparkCharge"></span><svg><use href="#bolt"/></svg><span>Sparks<small id="sparkLabel">JUMP THROUGH 8</small></span></button>
+    <button id="laser" class="control laser-control"><span class="charge" id="laserCharge"></span><svg><use href="#laser-icon"/></svg><span>Laser<small id="laserLabel">SWEEP & SLICE</small></span></button>
     <button id="blast" class="control blast-control"><span class="charge" id="blastCharge"></span><svg><use href="#sphere-icon"/></svg><span>Big Blast<small id="blastLabel">POWER READY</small></span></button>
   </footer>
 </main>
 <dialog id="panel" aria-labelledby="panelTitle"><div class="panel-head"><div><small id="panelEyebrow"></small><h1 id="panelTitle"></h1></div><button id="closePanel" class="close" aria-label="Close and return to game">✕</button></div><div id="panelBody"></div></dialog>
 <noscript>This game needs JavaScript to power the hero.</noscript>
-<script type="module" src="app.js?v=world93"></script>
+<script type="module" src="app.js?v=world94"></script>
 </body>
 </html>

@@ -33,10 +33,12 @@ export class Sound {
     o.connect(g);g.connect(this.master);this.voices.add(o);o.onended=()=>{this.voices.delete(o);o.disconnect();g.disconnect();};o.start(time);o.stop(time+duration+.03);
     }catch{this.active=false;this.recoverOnGesture=true;}
   }
-  effect(kind){
+  effect(kind,detail={}){
     if(!this.ctx||!this.active||!this.enabled)return;
     const t=this.ctx.currentTime;
     if(kind==='laser'){this.note(1300,t,.23,.2,'sawtooth',130);this.note(1800,t,.18,.06,'sine',260);}
+    if(kind==='sparks')this.note(900,t,.16,.09,'triangle',1600);
+    if(kind==='chain-hop'){const f=650+(detail.index||0)*120;this.note(f,t,.13,.07,'triangle',f*1.7);}
     if(kind==='blast'){this.note(90,t,.8,.65,'sine',32);this.note(400,t,.7,.08,'triangle',70);}
     if(kind==='destroy'){this.note(220,t,.15,.15,'triangle',55);this.note(880,t,.12,.06,'sine');}
     if(kind==='spark'){this.note(1200,t,.1,.08,'triangle',350);}
