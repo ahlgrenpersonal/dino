@@ -117,6 +117,8 @@ function bindPower(id,activate){
 }
 bindPower('laser',()=>game.laser(renderer.bounds()));bindPower('blast',()=>game.blast());
 $('go').addEventListener('click',()=>{
+  if(game.ringRun){const ring=game.rings.find(r=>!r.taken);if(ring)game.moveTo(ring.x,ring.y);return;}
+  if(game.replay){const enemy=game.nearest(Infinity);if(enemy)game.moveTo(enemy.x,enemy.y);return;}
   if(game.restoreReady){game.moveTo(game.save.stage===0?480:1515,game.save.stage===0?690:340);return;}
   if(game.save.stage===3){showMap();return;}
   game.travel(LANDMARKS[Math.min(2,game.save.stage)].id);
@@ -156,7 +158,7 @@ function hud(){
   $('missionEyebrow').textContent=game.replay?`ROBOT REMIX ${game.wave}`:game.ringRun?'GOLDEN SKY TRAIL':stage===3?'SUPERHERO FREE PLAY':`ADVENTURE ${stage+1} OF 3`;
   $('missionText').textContent=game.replay?'Bring on the robot army!':game.ringRun?'Follow the golden rings':game.restoreReady?(stage===0?'Touch the fountain’s spark':'Touch the glowing beacon'):titles[stage];
   $('missionDetail').textContent=game.replay?`${alive.length} robots left · every power works`:game.ringRun?`${game.ringsTaken} / 8 rings · take your time`:stage===3?'Map → robot remixes & a golden sky trail':game.restoreReady?'Fly into the glowing star to bring it to life':`${alive.length} ${alive.length===1?'robot':'robots'} left · ${LANDMARKS[Math.min(2,stage)].name}`;
-  $('go').setAttribute('aria-label',stage===3?'Choose your next adventure on the map':'Fly to your current adventure');
+  $('go').setAttribute('aria-label',game.ringRun?'Fly to the next golden ring':game.replay?'Fly to the next robot':stage===3?'Choose your next adventure on the map':'Fly to your current adventure');
   $('laser').disabled=game.laserCd>0||game.paused;$('laserLabel').textContent=game.laserCd>0?'RECHARGING':'SLICE THROUGH';
   $('blast').disabled=game.blastCd>0||game.paused;$('blastLabel').textContent=game.blastCd>0?`READY IN ${Math.ceil(game.blastCd)}s`:'POWER READY';
   $('blastCharge').style.transform=`scaleX(${game.blastCd/5})`;$('blast').classList.toggle('ready',game.blastCd===0);
