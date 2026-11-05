@@ -1,4 +1,4 @@
-import { BUILD, WORLD, SITE_COUNT, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world99';
+import { BUILD, WORLD, SITE_COUNT, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world100';
 export { BUILD, WORLD, SITE_COUNT, LEVELS, freshSave, readSave, unlockedLevel };
 export const HERO_FEET=48,HERO_EYES=-33;
 export const WEAPONS={punchDamage:1,sparksDamage:.8,blastDamage:1,blastCooldown:2.5,sparksCooldown:1.2,chainLimit:8,chainRange:320,laserCooldown:2.2,laserDamage:3,laserRange:1100,laserDuration:.6,maxSweep:.65};
@@ -318,7 +318,7 @@ export class SkyGame {
         return Math.hypot(e.x+sx-oldX-dx*t,e.y+sy-oldY-dy*t)<r+25;
       }))this.damage(e,'ram');
       const visible=!bounds||e.x+e.radius>bounds.left-160&&e.x-e.radius<bounds.right+160&&e.y+e.radius>bounds.top-160&&e.y-e.radius<bounds.bottom+160;
-      if(e.hp>0&&e.cd<=0&&visible&&distance(p,e)<(e.boss?1400:1100))this.fireEnemy(e);
+      if(!this.run.complete&&e.hp>0&&e.cd<=0&&visible&&distance(p,e)<(e.boss?1400:1100))this.fireEnemy(e);
     }
     this.aim=this.nearest(900,bounds)?.id||null;
     if(this.auraCd<=0){
@@ -350,6 +350,7 @@ export class SkyGame {
       }
       if(this.run.bossHits===this.level.bossHp){
         this.run.complete=true;
+        this.projectiles=[];this.effects=this.effects.filter(f=>f.type!=='enemy-beam');
         if(!this.save.completed.includes(this.save.level))this.save.completed.push(this.save.level);
         this.emit('level-complete',{level:this.save.level});
       }

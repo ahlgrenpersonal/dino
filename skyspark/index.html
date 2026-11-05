@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=world99">
+  <link rel="stylesheet" href="styles.css?v=world100">
 </head>
 <body>
 <svg class="symbols" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -22,6 +22,8 @@
   <symbol id="pause-icon" viewBox="0 0 24 24"><path d="M7 4v16M17 4v16" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></symbol>
   <symbol id="sound-icon" viewBox="0 0 24 24"><path d="m3 9 5 0 5-5v16l-5-5H3Z"/><path d="M17 7q7 5 0 10m0-7q3 2 0 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
   <symbol id="arrow-icon" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="trophy-icon" viewBox="0 0 64 64"><path d="M18 8h28v16c0 13-6 19-14 19s-14-6-14-19V8Z" fill="#ffe08a" stroke="#fff5c5" stroke-width="2"/><path d="M18 13H8v9c0 9 6 13 14 13m24-22h10v9c0 9-6 13-14 13" fill="none" stroke="#ffd376" stroke-width="5"/><path d="M32 42v10m-11 5h22" stroke="#ffdb81" stroke-width="6" stroke-linecap="round"/><path d="m32 16 3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1Z" fill="#d69045"/></symbol>
+  <symbol id="lock-icon" viewBox="0 0 32 32"><rect x="7" y="14" width="18" height="15" rx="4"/><path d="M11 14V9a5 5 0 0 1 10 0v5" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="16" cy="21" r="2" fill="#28475c"/></symbol>
 </defs></svg>
 <main id="game">
   <header class="topbar">
@@ -35,7 +37,7 @@
     <div class="tally" aria-label="Robots defeated this flight"><svg><use href="#bolt"/></svg><b id="robotCount">0</b><span>ROBOTS</span></div>
     <div id="combo" hidden></div>
     <div id="toast" role="status" aria-live="polite"></div>
-    <div id="celebration" aria-hidden="true"><small id="celebrationTop"></small><strong id="celebrationTitle"></strong><span id="celebrationText"></span></div>
+    <div id="celebration" aria-hidden="true"><svg class="victory-trophy"><use href="#trophy-icon"/></svg><small id="celebrationTop"></small><strong id="celebrationTitle"></strong><span id="celebrationText"></span><div id="victoryCountdown" hidden><i></i><i></i><i></i></div></div>
     <div id="hint"><span>↗</span> Tap the sky to fly · Tap a robot to smash</div>
     <div id="loading">Warming up your superpowers…</div>
   </section>
@@ -47,6 +49,6 @@
 </main>
 <dialog id="panel" aria-labelledby="panelTitle"><div class="panel-head"><div><small id="panelEyebrow"></small><h1 id="panelTitle"></h1></div><button id="closePanel" class="close" aria-label="Close and return to game">✕</button></div><div id="panelBody"></div></dialog>
 <noscript>This game needs JavaScript to power the hero.</noscript>
-<script type="module" src="app.js?v=world99"></script>
+<script type="module" src="app.js?v=world100"></script>
 </body>
 </html>

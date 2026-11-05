@@ -1,4 +1,4 @@
-import { WORLD, WEAPONS, armorSegments, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world99';
+import { WORLD, WEAPONS, armorSegments, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world100';
 const TAU=Math.PI*2;
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function path(c,points,fill,stroke,width=1){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();if(fill){c.fillStyle=fill;c.fill();}if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke();}}
@@ -125,6 +125,48 @@ function stormwing(c,e,time){
   path(c,[[0,-112],[-18,-132],[0,-123],[18,-132]],'#d4c4ea');
   glow(c,0,3,45,'#c4a0ff66');oval(c,0,3,23,27,'#3a4265');oval(c,0,3,14,17,'#c8b4ff');oval(c,-3,-1,6,8,'#fff0ff');
   path(c,[[0,59],[20,108],[0,146],[-15,100]],'#91a6c3','#24385b',3);c.restore();
+}
+// Static, recognizable world postcards. Drawn locally; no downloaded image assets.
+export function worldPicture(canvas,index){
+  const c=canvas.getContext('2d');c.save();c.scale(canvas.width/720,canvas.height/240);
+  const city=index===0,plains=index===1;
+  c.fillStyle=grad(c,0,0,0,240,[[0,city?'#547eab':plains?'#4ca6cf':'#555786'],[1,city?'#ffcf9c':plains?'#d6edb2':'#d8c7ea']]);c.fillRect(0,0,720,240);
+  glow(c,445,65,180,'#fff0b650');oval(c,445,65,29,29,city?'#fff0b5':plains?'#fff5cf':'#f3ebff');
+  for(const [x,y] of [[60,45],[255,28],[570,32]]){oval(c,x,y,58,8,'#ffffff55');oval(c,x+20,y-6,27,11,'#ffffff55');}
+  if(city){
+    for(let i=0;i<12;i++){
+      const x=i*65-15,h=45+(i*31)%75;c.fillStyle='#6c8d9b';c.fillRect(x,200-h,55,h);
+    }
+    for(let i=0;i<7;i++){
+      const x=i*112-20,h=[107,140,85,120,72,100,95][i],y=225-h;
+      box(c,x,y,89,h,2,grad(c,x,y,x+89,225,[[0,['#a87c75','#8fa6a5','#b4a28a'][i%3]],[1,'#566b80']]));
+      c.fillStyle='#ffe2a9';c.fillRect(x-5,y-6,99,7);
+      for(let row=y+15;row<218;row+=26)for(let col=x+13;col<x+80;col+=24){box(c,col,row,12,16,1,'#304f6a');c.fillStyle='#f1d49b';c.fillRect(col+2,row+2,8,6);}
+      if(i===1){line(c,x+44,y-6,x+44,y-42,'#d6d4bf',3);path(c,[[x+32,y-6],[x+44,y-27],[x+56,y-6]],'#d0c9b4');}
+    }
+    c.fillStyle='#3e556c';c.fillRect(0,225,720,15);for(let x=15;x<720;x+=100)c.fillRect(x,232,45,3);
+    tree(c,365,230,.52);
+  }else if(plains){
+    for(const [x,y,rx,ry,col] of [[80,219,240,100,'#84bc8a'],[500,225,340,130,'#75b18a'],[100,245,300,82,'#66a26d']])oval(c,x,y,rx,ry,col);
+    oval(c,360,217,350,61,'#b6e0c4');oval(c,370,222,325,54,grad(c,0,170,0,270,[[0,'#9ae4db'],[1,'#448eb0']]));
+    for(let i=0;i<5;i++)line(c,170+i*24,193+i*10,420+i*28,193+i*10,'#e3fff07a',2);
+    path(c,[[0,205],[135,198],[250,240],[0,240]],'#6da65e');tree(c,125,220,.7);
+    box(c,285,99,26,71,3,'#f3dfb6');path(c,[[278,102],[298,73],[318,102]],'#c8836d');
+    for(let i=0;i<4;i++){const a=i*Math.PI/2+.3;line(c,298,105,298+Math.cos(a)*40,105+Math.sin(a)*40,'#fff5dc',7);}oval(c,298,105,6,6,'#6d7c70');
+    for(let i=0;i<16;i++){const x=12+i*12,y=218+(i%3)*7;line(c,x,y,x,y-8,'#4d7d4f',2);oval(c,x,y-9,3,3,['#fff4ad','#ffe0ea','#ffffff'][i%3]);}
+  }else{
+    for(const [x,y,w,col] of [[100,37,160,'#8d98bc'],[365,12,185,'#7586aa'],[560,50,160,'#667d9e']]){
+      path(c,[[x-w,240],[x,y],[x+w,240]],col);path(c,[[x-w*.24,y+49],[x,y],[x+w*.3,y+62],[x+6,y+43],[x-12,y+51]],'#f3f0f5');
+    }
+    path(c,[[0,225],[110,197],[260,226],[380,199],[530,220],[720,201],[720,240],[0,240]],'#d3dfdf');
+    for(const [x,s] of [[28,.75],[140,.52],[340,.62],[685,.7]])pine(c,x,239,s);
+    for(let i=0;i<24;i++)oval(c,(i*127)%720,12+(i*59)%200,1.6,1.6,'#ffffffaa');
+  }
+  // Matching boss silhouettes help a non-reader recognize each adventure.
+  c.save();c.translate(575,city?146:plains?180:129);const scale=city?.4:plains?.38:.4;c.scale(scale,scale);
+  robot(c,{x:0,y:0,type:city?'titan':plains?'excavator':'wyvern',hp:24,maxHp:24,phase:0,hit:0},.2);c.restore();
+  glow(c,220,108,72,'#b4ffff33');hero(c,220,111,69,0,{facing:1,flying:true,portrait:true});
+  c.restore();
 }
 export class Renderer {
   constructor(canvas){
