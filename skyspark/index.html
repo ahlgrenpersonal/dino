@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#172f46">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="SkySpark">
+  <meta name="description" content="Take flight, unleash your superpowers, and bring a sunlit city back to life. A small, joyful superhero adventure.">
+  <title>SkySpark — Little hero. Big powers.</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css?v=world90">
+</head>
+<body>
+<svg class="symbols" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
+  <symbol id="bolt" viewBox="0 0 32 32"><path d="M18 2 5 19h10l-2 11 14-18H17l1-10Z"/></symbol>
+  <symbol id="map-icon" viewBox="0 0 32 32"><path d="m3 7 9-3 8 4 9-3v21l-9 3-8-4-9 3V7Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M12 4v21m8-17v21" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="14" r="4" fill="currentColor"/></symbol>
+  <symbol id="laser-icon" viewBox="0 0 36 32"><path d="M3 10q8-7 14 0-6 8-14 0Zm0 14q8-7 14 0-6 8-14 0Z" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="m12 10 21-7M12 24l21 5" stroke="currentColor" stroke-width="3"/><circle cx="10" cy="10" r="2.5"/><circle cx="10" cy="24" r="2.5"/></symbol>
+  <symbol id="sphere-icon" viewBox="0 0 36 36"><circle cx="18" cy="18" r="10" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M18 1v5m0 24v5M1 18h5m24 0h5M6 6l4 4m16 16 4 4M6 30l4-4m16-16 4-4" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/><path d="m20 10-8 10h6l-2 7 9-12h-6l1-5Z"/></symbol>
+  <symbol id="pause-icon" viewBox="0 0 24 24"><path d="M7 4v16M17 4v16" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></symbol>
+  <symbol id="sound-icon" viewBox="0 0 24 24"><path d="m3 9 5 0 5-5v16l-5-5H3Z"/><path d="M17 7q7 5 0 10m0-7q3 2 0 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="arrow-icon" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</defs></svg>
+<main id="game">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark"><svg><use href="#bolt"/></svg></span><div><b>SKY<span>SPARK</span></b><small>LITTLE HERO. BIG POWERS.</small></div></div>
+    <div class="header-tools"><span class="saved" id="saveStatus" aria-label="Progress saves on this device">● SAVED</span><button class="icon-button" id="sound" aria-label="Turn sound off" aria-pressed="true"><svg><use href="#sound-icon"/></svg></button><button class="icon-button" id="pause" aria-label="Pause game"><svg><use href="#pause-icon"/></svg></button></div>
+  </header>
+  <section id="playfield" aria-label="Superhero playground">
+    <canvas id="world" tabindex="0" aria-label="Fly through the city. Tap the sky to fly, a rooftop to land, or a robot to smash. Use arrow keys or WASD on a keyboard."></canvas>
+    <div class="mission" id="mission"><span class="mission-badge"><svg><use href="#bolt"/></svg></span><div><small id="missionEyebrow">YOUR FIRST ADVENTURE</small><strong id="missionText">Wake up the fountain</strong><span id="missionDetail">Clear the robots in Sunbeam Plaza</span></div><button id="go" aria-label="Fly to your current adventure"><svg><use href="#arrow-icon"/></svg></button></div>
+    <div id="bossHud" hidden><span>IRON COLOSSUS</span><div id="bossSegments"></div></div>
+    <div class="hero-chip"><span class="hero-dot">✦</span><span>Hero <small>SUPER SHIELD ON</small></span></div>
+    <div class="tally" aria-label="Robots defeated"><svg><use href="#bolt"/></svg><b id="robotCount">0</b><span>ROBOTS</span></div>
+    <div id="combo" hidden></div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <div id="celebration" aria-hidden="true"><small id="celebrationTop"></small><strong id="celebrationTitle"></strong><span id="celebrationText"></span></div>
+    <div id="flightStatus" hidden><span>✦</span><b id="flightLabel"></b><button id="stopTravel" aria-label="Stop automatic flight">✕</button></div>
+    <div id="hint"><span>↗</span> Tap the sky to fly · Tap a robot to smash</div>
+    <div id="loading">Warming up your superpowers…</div>
+  </section>
+  <footer class="console">
+    <button id="map" class="control map-control"><svg><use href="#map-icon"/></svg><span>Map<small>CHOOSE A PLACE</small></span><i id="mapDot" hidden></i></button>
+    <button id="laser" class="control laser-control"><svg><use href="#laser-icon"/></svg><span>Laser<small id="laserLabel">SLICE THROUGH</small></span></button>
+    <button id="blast" class="control blast-control"><span class="charge" id="blastCharge"></span><svg><use href="#sphere-icon"/></svg><span>Big Blast<small id="blastLabel">POWER READY</small></span></button>
+  </footer>
+</main>
+<dialog id="panel" aria-labelledby="panelTitle"><div class="panel-head"><div><small id="panelEyebrow"></small><h1 id="panelTitle"></h1></div><button id="closePanel" class="close" aria-label="Close and return to game">✕</button></div><div id="panelBody"></div></dialog>
+<noscript>This game needs JavaScript to power the hero.</noscript>
+<script type="module" src="app.js?v=world90"></script>
+</body>
+</html>
