@@ -162,6 +162,7 @@ function hud(){
   $('blastCharge').style.transform=`scaleX(${game.blastCd/5})`;$('blast').classList.toggle('ready',game.blastCd===0);
   $('combo').hidden=game.combo<3;$('combo').textContent=`${game.combo} × SUPER!`;
   $('bossHud').hidden=!boss||Math.abs(game.player.x-boss.x)>750;
+  $('playfield').classList.toggle('boss-active',!$('bossHud').hidden);
   if(boss)$('bossSegments').innerHTML=Array.from({length:4},(_,i)=>`<i class="${i>=boss.hp?'lost':''}"></i>`).join('');
   $('flightStatus').hidden=!game.route;
   if(game.route)$('flightLabel').textContent=LANDMARKS.find(l=>l.id===game.route)?.name||'Flying';
