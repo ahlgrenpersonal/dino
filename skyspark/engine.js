@@ -1,7 +1,7 @@
-import { BUILD, WORLD, SITE_COUNT, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world97';
+import { BUILD, WORLD, SITE_COUNT, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world98';
 export { BUILD, WORLD, SITE_COUNT, LEVELS, freshSave, readSave, unlockedLevel };
 export const HERO_FEET=48,HERO_EYES=-33;
-export const WEAPONS={punchDamage:1,sparksDamage:.8,blastDamage:1,sparksCooldown:1.2,chainLimit:8,chainRange:320,laserCooldown:2.2,laserDamage:3,laserRange:1100,laserDuration:.6,maxSweep:.65};
+export const WEAPONS={punchDamage:1,sparksDamage:.8,blastDamage:1,blastCooldown:2.5,sparksCooldown:1.2,chainLimit:8,chainRange:320,laserCooldown:2.2,laserDamage:3,laserRange:1100,laserDuration:.6,maxSweep:.65};
 const wrapAngle=a=>Math.atan2(Math.sin(a),Math.cos(a));
 export function laserAngle(f,age=f.age){const t=Math.min(1,age/WEAPONS.laserDuration);return f.from+f.sweep*t*t*(3-2*t);}
 export function armorSegments(e){const n=Math.min(12,e.maxHp),unit=e.maxHp/n;return Array.from({length:n},(_,i)=>Math.max(0,Math.min(1,(e.hp-i*unit)/unit)));}
@@ -23,8 +23,8 @@ export class SkyGame {
   get site(){return this.sites[clamp(Math.round((this.player.x-430)/500),0,SITE_COUNT-1)];}
   setupRun(){
     this.sites=sitesFor(this.save.level);this.roofs=roofsFor(this.save.level);
-    this.player={...this.run.position,vx:0,vy:0,facing:1,landed:false,flare:0,trail:[]};
-    this.target=null;this.aim=null;this.effects=[];this.particles=[];this.enemies=[];this.rings=[];this.defeated=new Set(this.run.cleared);
+    this.player={...this.run.position,vx:0,vy:0,facing:1,landed:false,flare:0,shield:0,trail:[]};
+    this.target=null;this.aim=null;this.effects=[];this.particles=[];this.enemies=[];this.projectiles=[];this.shieldHits=0;this.rings=[];this.defeated=new Set(this.run.cleared);
     this.laserCd=0;this.sparkCd=0;this.blastCd=0;this.auraCd=.7;this.combo=0;this.comboTime=0;this.shake=0;this.ringRun=false;this.ringsTaken=0;
     this.syncEncounters();
   }
@@ -38,7 +38,7 @@ export class SkyGame {
     this.save.level=index;this.setupRun();this.emit('level-enter',{level:index,replay});return true;
   }
   restartLevel(){this.save.runs[this.save.level]=freshRun();this.setupRun();this.emit('level-enter',{level:this.save.level,replay:true});}
-  robot(id,x,y,type='bot'){return{id,x,y,homeX:x,homeY:y,type,hp:.8,maxHp:.8,radius:type==='drone'?26:25,hit:0,cd:2+(x%7)*.4,phase:x*.03,paint:this.save.level};}
+  robot(id,x,y,type='bot'){return{id,x,y,homeX:x,homeY:y,type,hp:.8,maxHp:.8,radius:type==='drone'?26:25,hit:0,cd:.45+(x%7)*.16,phase:x*.03,paint:this.save.level};}
   syncEncounters(bounds){
     if(this.run.complete)return;
     // Every nearby section is independent. Leaving a robot behind never blocks the route.
@@ -63,7 +63,7 @@ export class SkyGame {
       }
     }
     if(9220>=left&&9220<=right){
-      if(this.run.bossHits<l.bossHp&&!active.has(`${l.id}-boss`))this.enemies.push({id:`${l.id}-boss`,type:l.bossType,boss:true,name:l.boss,x:9220,y:l.bossType==='wyvern'?400:l.bossType==='excavator'?720:640,homeX:9220,homeY:l.bossType==='wyvern'?400:l.bossType==='excavator'?720:640,hp:l.bossHp-this.run.bossHits,maxHp:l.bossHp,radius:l.bossType==='excavator'?150:115,hit:0,cd:3,phase:0});
+      if(this.run.bossHits<l.bossHp&&!active.has(`${l.id}-boss`))this.enemies.push({id:`${l.id}-boss`,type:l.bossType,boss:true,name:l.boss,x:9220,y:l.bossType==='wyvern'?400:l.bossType==='excavator'?720:640,homeX:9220,homeY:l.bossType==='wyvern'?400:l.bossType==='excavator'?720:640,hp:l.bossHp-this.run.bossHits,maxHp:l.bossHp,radius:l.bossType==='excavator'?150:115,hit:0,cd:.65,phase:0,attacks:0});
       for(let i=0;i<8;i++){
         const id=`${l.id}-${SITE_COUNT}-0-${i}`;
         if(!this.defeated.has(id)&&!active.has(id))this.enemies.push(this.robot(id,8940+(i%4)*175,i<4?800:270+(i%3)*70,i<4?'bot':'drone'));
@@ -163,9 +163,59 @@ export class SkyGame {
   }
   blast() {
     if (this.paused || this.blastCd>0) return false;
-    this.blastCd = 5; this.shake = 6; this.player.flare = .8;
+    this.blastCd = WEAPONS.blastCooldown; this.shake = 6; this.player.flare = .8;
     this.effects.push({type:'sphere',x:this.player.x,y:this.player.y,age:0,life:.85,radius:450,hit:[]});
     this.emit('blast'); return true;
+  }
+  enemyMuzzle(e,beam=false,offset=0){
+    if(beam)return {x:e.x,y:e.y-(e.type==='titan'?140:e.type==='wyvern'?75:85)};
+    if(e.type==='wyvern')return{x:e.x+offset*128,y:e.y-10};
+    if(e.type==='titan')return{x:e.x+offset*130,y:e.y-30};
+    if(e.type==='excavator')return{x:e.x-25+offset*55,y:e.y-90};
+    return{x:e.x+(this.player.x>=e.x?25:-25),y:e.y-8};
+  }
+  fireEnemy(e){
+    const volley=e.boss?(e.type==='excavator'?3:2):1,turn=e.attacks||0;
+    e.attacks=turn+1;e.cd=e.boss?2.6:3.5+(Math.abs(e.phase)%1.4);
+    if(e.boss&&e.type!=='excavator'&&turn%2===0){
+      const origin=this.enemyMuzzle(e,true);
+      this.effects.push({type:'enemy-beam',owner:e.id,...origin,tx:this.player.x,ty:this.player.y,age:0,charge:.95,fire:.35,life:1.4,hit:false});
+      this.emit('enemy-charge');
+    }
+    for(let i=0;i<volley&&this.projectiles.length<96;i++){
+      const origin=this.enemyMuzzle(e,false,e.boss?(i===0?-1:1):0);
+      const angle=Math.atan2(this.player.y-origin.y,this.player.x-origin.x)+(i-(volley-1)/2)*(e.boss ? .13 : 0);
+      const speed=e.boss?210:e.type==='drone'?185:165;
+      this.projectiles.push({type:e.boss?'missile':'orb',owner:e.id,...origin,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,radius:e.boss?15:12,age:0,life:7,trail:[]});
+    }
+    this.emit('enemy-fire');
+  }
+  shieldImpact(x,y){
+    this.shieldHits++;const audible=this.player.shield<.18;
+    this.player.shield=.65;this.shake=Math.max(this.shake,1.5);
+    this.effects.push({type:'shield-hit',x:this.player.x,y:this.player.y,angle:Math.atan2(y-this.player.y,x-this.player.x),age:0,life:.45});
+    if(audible)this.emit('shield'); // Impact feedback only: no damage, knockback or lost progress.
+  }
+  updateEnemyAttacks(dt,oldX,oldY){
+    const p=this.player;
+    for(const q of this.projectiles){
+      q.age+=dt;const x=q.x,y=q.y;q.x+=q.vx*dt;q.y+=q.vy*dt;
+      q.trail.push({x,y});q.trail=q.trail.slice(-9);
+      // Relative swept collision lets fast flight genuinely dodge a slow projectile.
+      const rx=x-oldX,ry=y-oldY,dx=q.x-x-(p.x-oldX),dy=q.y-y-(p.y-oldY);
+      const t=clamp(-(rx*dx+ry*dy)/(dx*dx+dy*dy||1),0,1);
+      if(Math.hypot(rx+dx*t,ry+dy*t)<q.radius+27){q.age=q.life;this.shieldImpact(q.x,q.y);}
+    }
+    this.projectiles=this.projectiles.filter(q=>q.age<q.life&&Math.abs(q.x-p.x)<2100&&q.y>-500&&q.y<1500);
+    for(const f of this.effects){
+      if(f.type!=='enemy-beam')continue;
+      const owner=this.enemies.find(e=>e.id===f.owner&&e.hp>0);
+      if(owner){const origin=this.enemyMuzzle(owner,true);f.x=origin.x;f.y=origin.y;}
+      else if(f.age<f.charge){f.age=f.life;continue;}
+      if(f.hit||f.age<f.charge||f.age>f.charge+f.fire)continue;
+      const angle=Math.atan2(f.ty-f.y,f.tx-f.x),dx=p.x-f.x,dy=p.y-f.y,along=dx*Math.cos(angle)+dy*Math.sin(angle),across=Math.abs(dx*Math.sin(angle)-dy*Math.cos(angle));
+      if(along>=0&&along<1400&&across<38){f.hit=true;this.shieldImpact(f.x,f.y);}
+    }
   }
   ringFlight(){
     if(!this.run.complete)return false;
@@ -176,7 +226,7 @@ export class SkyGame {
     if(this.paused)return;
     dt=clamp(dt,0,.04);this.time+=dt;if(!this.run.complete)this.run.playSeconds+=dt;
     this.laserCd=Math.max(0,this.laserCd-dt);this.sparkCd=Math.max(0,this.sparkCd-dt);this.blastCd=Math.max(0,this.blastCd-dt);this.auraCd-=dt;
-    this.player.flare=Math.max(0,this.player.flare-dt);this.shake=Math.max(0,this.shake-dt*20);
+    this.player.flare=Math.max(0,this.player.flare-dt);this.player.shield=Math.max(0,this.player.shield-dt);this.shake=Math.max(0,this.shake-dt*20);
     this.comboTime-=dt;if(this.comboTime<=0)this.combo=0;
     const p=this.player,oldX=p.x,oldY=p.y;
     const kx=(keys.right?1:0)-(keys.left?1:0),ky=(keys.down?1:0)-(keys.up?1:0);
@@ -214,11 +264,8 @@ export class SkyGame {
         const t=clamp(((e.x+sx-oldX)*dx+(e.y+sy-oldY)*dy)/(dx*dx+dy*dy||1),0,1);
         return Math.hypot(e.x+sx-oldX-dx*t,e.y+sy-oldY-dy*t)<r+25;
       }))this.damage(e,'ram');
-      if(e.hp>0&&e.cd<=0&&distance(p,e)<(e.boss?600:380)){
-        e.cd=e.boss?3.8:4;
-        this.effects.push({type:'enemy-shot',x:e.x,y:e.y,tx:p.x,ty:p.y,age:0,life:.65});
-        this.emit('shield'); // All hostile shots are absorbed. No health or lost progress.
-      }
+      const visible=!bounds||e.x+e.radius>bounds.left-160&&e.x-e.radius<bounds.right+160&&e.y+e.radius>bounds.top-160&&e.y-e.radius<bounds.bottom+160;
+      if(e.hp>0&&e.cd<=0&&visible&&distance(p,e)<(e.boss?1400:1100))this.fireEnemy(e);
     }
     this.aim=this.nearest(900,bounds)?.id||null;
     if(this.auraCd<=0){
@@ -233,6 +280,7 @@ export class SkyGame {
       if(f.type==='laser'&&previousAge<WEAPONS.laserDuration){const angle=laserAngle(f);this.laserHits(f,f.angle,angle);f.angle=angle;}
       if(f.type==='sphere')for(const e of this.enemies)if(e.hp>0&&!f.hit.includes(e.id)&&distance(e,f)<Math.min(1,f.age/.55)*f.radius+e.radius){if(this.damage(e,'sphere'))f.hit.push(e.id);}
     }
+    this.updateEnemyAttacks(dt,oldX,oldY);
     this.effects=this.effects.filter(e=>e.age<e.life);
     for(const s of this.particles){s.age+=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.vy+=420*dt;}
     this.particles=this.particles.filter(s=>s.age<s.life).slice(-220);

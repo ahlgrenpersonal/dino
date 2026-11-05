@@ -1,8 +1,8 @@
-import { BUILD, WEAPONS, armorSegments, SkyGame, LEVELS, SITE_COUNT, unlockedLevel, freshSave, readSave } from './engine.js?v=world97';
-import { Renderer, hero } from './art.js?v=world97';
-import { Sound } from './audio.js?v=world97';
-import { loadProgress } from './saves.js?v=world97';
-const buildVersion = 'world97';
+import { BUILD, WEAPONS, armorSegments, SkyGame, LEVELS, SITE_COUNT, unlockedLevel, freshSave, readSave } from './engine.js?v=world98';
+import { Renderer, hero } from './art.js?v=world98';
+import { Sound } from './audio.js?v=world98';
+import { loadProgress } from './saves.js?v=world98';
+const buildVersion = 'world98';
 const SAVE_KEY='skyspark-save-v1',BACKUP_KEY='skyspark-before-restart-v1';
 const $=id=>document.getElementById(id),canvas=$('world'),panel=$('panel'),sound=new Sound();
 let storageOK=true,savePending=0,lastSave=0,last=performance.now(),panelMode='',toastUntil=0,celebrationUntil=0,notified=false,installPrompt=null,updatePending=false;
@@ -143,8 +143,8 @@ function hud(){
   $('sparkCharge').style.transform=`scaleX(${game.sparkCd/WEAPONS.sparksCooldown})`;
   $('laserCharge').style.transform=`scaleX(${game.laserCd/WEAPONS.laserCooldown})`;
   $('laser').disabled=game.laserCd>0||game.paused;$('laserLabel').textContent=game.laserCd>0?'RECHARGING':'SWEEP & SLICE';
-  $('blast').disabled=game.blastCd>0||game.paused;$('blastLabel').textContent=game.blastCd>0?`READY IN ${Math.ceil(game.blastCd)}s`:'POWER READY';
-  $('blastCharge').style.transform=`scaleX(${game.blastCd/5})`;$('blast').classList.toggle('ready',game.blastCd===0);
+  $('blast').disabled=game.blastCd>0||game.paused;$('blastLabel').textContent=game.blastCd>0?`READY IN ${game.blastCd.toFixed(1)}s`:'POWER READY';
+  $('blastCharge').style.transform=`scaleX(${game.blastCd/WEAPONS.blastCooldown})`;$('blast').classList.toggle('ready',game.blastCd===0);
   $('combo').hidden=game.combo<3;$('combo').textContent=`${game.combo} × SUPER!`;
   $('bossHud').hidden=!boss||Math.abs(game.player.x-boss.x)>750;$('playfield').classList.toggle('boss-active',!$('bossHud').hidden);
   if(boss){$('bossHud').querySelector('span').textContent=game.level.boss.toUpperCase();$('bossSegments').innerHTML=armorSegments(boss).map(fill=>`<i style="background:linear-gradient(to right,#ffd393 ${fill*100}%,#73868d ${fill*100}%)"></i>`).join('');$('bossSegments').setAttribute('aria-valuemax',String(boss.maxHp));$('bossSegments').setAttribute('aria-valuenow',String(boss.hp));}
@@ -152,6 +152,7 @@ function hud(){
   $('hint').classList.toggle('dim',game.time>8&&!done&&storageOK);
   $('hint').textContent=!storageOK?'Saving is unavailable. Keep this page open to keep progress.':done?'Open the map to fly another level. Every return is a fresh adventure.':'Fly right · Tap a robot to smash';
   canvas.dataset.level=game.level.id;canvas.dataset.stage=String(run.checkpoint);canvas.dataset.robots=String(alive.length);canvas.dataset.flying=String(!game.player.landed);canvas.dataset.complete=String(done);
+  canvas.dataset.projectiles=String(game.projectiles.length);canvas.dataset.shieldHits=String(game.shieldHits);
   canvas.dataset.kills=String(run.kills);canvas.dataset.boss=boss?.name||'';canvas.dataset.bossHp=String(boss?.hp||0);
   canvas.dataset.playerX=String(Math.round(game.player.x));canvas.dataset.playerY=String(Math.round(game.player.y));canvas.dataset.paused=String(game.paused);
   $('game').dataset.biome=game.level.biome;

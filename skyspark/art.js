@@ -1,4 +1,4 @@
-import { WORLD, WEAPONS, armorSegments, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world97';
+import { WORLD, WEAPONS, armorSegments, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world98';
 const TAU=Math.PI*2;
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function path(c,points,fill,stroke,width=1){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();if(fill){c.fillStyle=fill;c.fill();}if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke();}}
@@ -271,6 +271,19 @@ export class Renderer {
       const a=p.trail[i-1],b=p.trail[i];line(c,a.x,a.y+12,b.x,b.y+12,`rgba(139,250,255,${(1-b.age/.3)*.35})`,(1-b.age/.3)*20+1);
     }
     hero(c,p.x,p.y,76,g.time,{facing:p.facing,flying:!p.landed,speed:Math.hypot(p.vx,p.vy),vx:p.vx,vy:p.vy,flare:p.flare});
+    for(const q of g.projectiles){
+      const b=this.bounds();if(q.x<b.left-80||q.x>b.right+80||q.y<b.top-80||q.y>b.bottom+80)continue;
+      for(let i=1;i<q.trail.length;i++){const a=q.trail[i-1],t=q.trail[i];line(c,a.x,a.y,t.x,t.y,q.type==='missile'?'#ffd28c55':'#ffe5ab44',2+i*.5);}
+      if(q.type==='missile'){
+        glow(c,q.x,q.y,36,'#ffd39344');c.save();c.translate(q.x,q.y);c.rotate(Math.atan2(q.vy,q.vx));
+        path(c,[[-16,-6],[-41-Math.sin(g.time*40)*7,0],[-16,6]],'#ffbd65');path(c,[[-17,-3],[-33,0],[-17,3]],'#fff4b1');
+        path(c,[[-7,-6],[-18,-16],[7,-6]],'#8db498','#3a5564',2);path(c,[[-7,6],[-18,16],[7,6]],'#8db498','#3a5564',2);
+        box(c,-18,-7,32,14,5,'#dce5ca','#3a5564');path(c,[[10,-7],[26,0],[10,7]],'#95dd83','#3a5564',2);line(c,-6,-4,5,-4,'#ffffff',2);c.restore();
+      }else{
+        glow(c,q.x,q.y,33,'#ffc87866');oval(c,q.x,q.y,14,14,'#54674f');oval(c,q.x,q.y,11,11,'#ffc56d');oval(c,q.x-2,q.y-2,6,6,'#fff5c5');
+      }
+    }
+    if(p.shield>0){c.save();c.globalAlpha=p.shield/.65;glow(c,p.x,p.y-3,95,'#8cefff55');c.beginPath();c.ellipse(p.x,p.y-3,59,68,0,0,TAU);c.strokeStyle='#c9ffff';c.lineWidth=4;c.stroke();c.beginPath();c.ellipse(p.x,p.y-3,66,75,0,0,TAU);c.strokeStyle='#79dfff88';c.lineWidth=2;c.stroke();c.restore();}
     for(const f of g.effects){
       const k=1-f.age/f.life;c.save();c.globalAlpha=k;
       if(f.type==='zap'){lightning(c,f.x,f.y,f.tx,f.ty,g.time,'#4edcff',9);lightning(c,f.x,f.y,f.tx,f.ty,g.time,'#e1ffff',3);}
@@ -299,10 +312,19 @@ export class Renderer {
         c.beginPath();c.arc(f.x,f.y,r,0,TAU);c.strokeStyle=f.color;c.lineWidth=3*k;c.stroke();
         for(let i=0;i<6;i++){const a=i*TAU/6;line(c,f.x+Math.cos(a)*r*.5,f.y+Math.sin(a)*r*.5,f.x+Math.cos(a)*r,f.y+Math.sin(a)*r,'#fff2c3',3*k);}
       }
-      if(f.type==='enemy-shot'){
-        const q=Math.min(1,f.age/.4),x=f.x+(f.tx-f.x)*q,y=f.y+(f.ty-f.y)*q;
-        oval(c,x,y,5,5,'#ffd99d');
-        if(q===1){c.beginPath();c.arc(f.tx,f.ty,38+f.age*12,0,TAU);c.strokeStyle='#95f8fc';c.lineWidth=2;c.stroke();}
+      if(f.type==='enemy-beam'){
+        const angle=Math.atan2(f.ty-f.y,f.tx-f.x),tx=f.x+Math.cos(angle)*1400,ty=f.y+Math.sin(angle)*1400;
+        if(f.age<f.charge){
+          c.globalAlpha=.8;c.setLineDash([10,12]);line(c,f.x,f.y,f.tx,f.ty,'#ccffa3aa',2);c.setLineDash([]);
+          c.beginPath();c.arc(f.tx,f.ty,30+Math.sin(g.time*9)*4,0,TAU);c.strokeStyle='#bdff91';c.lineWidth=2;c.stroke();glow(c,f.x,f.y,30+f.age*20,'#b1ff7955');
+        }else{
+          c.globalAlpha=Math.min(1,Math.max(0,(f.life-f.age)/.1));
+          line(c,f.x,f.y,tx,ty,'#94ff5722',36);line(c,f.x,f.y-3,tx,ty-3,'#73ed5c',12);line(c,f.x,f.y+3,tx,ty+3,'#e9ffb7',4);glow(c,f.x,f.y,65,'#9fff7966');
+        }
+      }
+      if(f.type==='shield-hit'){
+        const x=p.x+Math.cos(f.angle)*58,y=p.y+Math.sin(f.angle)*64;
+        glow(c,x,y,45,'#c0ffff88');for(let i=0;i<6;i++){const a=f.angle-1+i*.4,r=12+f.age*100;line(c,x+Math.cos(a)*8,y+Math.sin(a)*8,x+Math.cos(a)*r,y+Math.sin(a)*r,'#eaffff',2);}
       }
       if(f.type==='split')for(const side of [-1,1]){
         c.save();c.translate(side*f.age*65,f.age*f.age*180);c.translate(f.x,f.y);c.rotate(side*f.age*.8);c.translate(-f.x,-f.y);

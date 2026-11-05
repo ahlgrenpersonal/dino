@@ -1,1 +1,1 @@
-{"name":"skyspark","private":true,"type":"module","scripts":{"test":"node tools/verify.mjs && node tools/verify-weapons.mjs && node tools/verify-audio.mjs"}}
+{"name":"skyspark","private":true,"type":"module","scripts":{"test":"node tools/verify.mjs && node tools/verify-weapons.mjs && node tools/verify-enemies.mjs && node tools/verify-audio.mjs"}}

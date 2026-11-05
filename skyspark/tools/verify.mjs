@@ -59,7 +59,7 @@ for(const [width,height,dpr] of [[390,600,3],[390,480,3],[320,370,2],[844,260,2]
 // Exercise every biome and boss drawing through a finite-coordinate canvas mock.
 const gradient={addColorStop(){}};const context=new Proxy({}, {get:(_,name)=>name==='createLinearGradient'||name==='createRadialGradient'?()=>gradient:(...args)=>{for(const n of args)if(typeof n==='number')assert(Number.isFinite(n),`${String(name)} received a non-finite coordinate`);}});
 const mockCanvas=()=>({width:390,height:600,getContext:()=>context,getBoundingClientRect:()=>({width:390,height:600})});globalThis.document={createElement:()=>mockCanvas()};
-for(let i=0;i<3;i++)for(const checkpoint of [0,2,8,SITE_COUNT]){const scene=at(i,checkpoint),canvas=mockCanvas(),r=new Renderer(canvas);scene.player.x=checkpoint===SITE_COUNT?9200:scene.site.x;scene.player.y=500;scene.sparks();scene.laser();scene.update(.02);r.follow(scene,0,true);r.draw(scene,.02);}
+for(let i=0;i<3;i++)for(const checkpoint of [0,2,8,SITE_COUNT]){const scene=at(i,checkpoint),canvas=mockCanvas(),r=new Renderer(canvas);scene.player.x=checkpoint===SITE_COUNT?9200:scene.site.x;scene.player.y=500;for(const enemy of scene.enemies)enemy.cd=0;scene.update(.02);scene.sparks();scene.laser();scene.update(.02);r.follow(scene,0,true);r.draw(scene,.02);}
 // A schema-2 save stranded at the far right must recover its boss immediately.
 const strandedSave={schema:2,level:0,total:31,runs:[{checkpoint:2,wave:1,cleared:['city-2-1-0'],position:{x:9450,y:650}}]};
 const recovered=new SkyGame(strandedSave);assert(recovered.enemies.some(e=>e.boss));assert(recovered.run.cleared.includes('city-2-1-0'));assert(recovered.run.cleared.includes('city-1-0-0'));assert(recovered.run.cleared.includes('city-2-0-0'));

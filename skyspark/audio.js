@@ -39,6 +39,9 @@ export class Sound {
     if(kind==='laser'){this.note(1300,t,.23,.2,'sawtooth',130);this.note(1800,t,.18,.06,'sine',260);}
     if(kind==='sparks')this.note(900,t,.16,.09,'triangle',1600);
     if(kind==='chain-hop'){const f=650+(detail.index||0)*120;this.note(f,t,.13,.07,'triangle',f*1.7);}
+    if(kind==='enemy-fire')this.note(190,t,.13,.035,'triangle',95);
+    if(kind==='enemy-charge')this.note(330,t,.85,.045,'sine',850);
+    if(kind==='shield'){this.note(760,t,.18,.065,'sine',1250);this.note(1140,t+.03,.2,.035);}
     if(kind==='blast'){this.note(90,t,.8,.65,'sine',32);this.note(400,t,.7,.08,'triangle',70);}
     if(kind==='destroy'){this.note(220,t,.15,.15,'triangle',55);this.note(880,t,.12,.06,'sine');}
     if(kind==='spark'){this.note(1200,t,.1,.08,'triangle',350);}
