@@ -1,15 +1,37 @@
 // Original synthesized score and effects. No recordings, external services or downloads.
 export class Sound {
-  constructor(){this.ctx=null;this.enabled=true;this.active=false;this.next=0;this.beat=0;this.master=null;}
-  unlock(){
-    if(!this.enabled)return;
-    try{if(!this.ctx){this.ctx=new (globalThis.AudioContext||globalThis.webkitAudioContext)();this.master=this.ctx.createGain();this.master.gain.value=.22;this.master.connect(this.ctx.destination);}if(this.ctx.state==='suspended')this.ctx.resume().catch(()=>{});this.active=true;}catch{}
+  constructor({createContext,now=()=>Date.now()}={}){this.createContext=createContext||(()=>new (globalThis.AudioContext||globalThis.webkitAudioContext)());this.now=now;this.ctx=null;this.enabled=true;this.active=false;this.next=0;this.beat=0;this.master=null;this.paused=false;this.recoverOnGesture=false;this.clock=null;this.clockAt=0;this.voices=new Set();}
+  retire(){
+    const old=this.ctx;this.active=false;
+    try{if(this.master){this.master.gain.cancelScheduledValues(old.currentTime);this.master.gain.value=0;this.master.disconnect();}}catch{}
+    for(const node of this.voices)try{node.stop();node.disconnect();}catch{}
+    this.voices.clear();this.ctx=null;this.master=null;
+    if(old&&old.state!=='closed')try{Promise.resolve(old.close()).catch(()=>{});}catch{}
   }
+  foreground(){this.recoverOnGesture=true;this.active=false;this.next=0;}
+  unlock({rebuild=false}={}){
+    if(!this.enabled)return;
+    try{
+      const frozen=this.ctx?.state==='running'&&this.clock!==null&&this.ctx.currentTime===this.clock&&this.now()-this.clockAt>1200;
+      if(this.ctx&&(rebuild||this.recoverOnGesture||this.ctx.state==='closed'||frozen))this.retire();
+      this.recoverOnGesture=false;
+      if(!this.ctx){this.ctx=this.createContext();this.master=this.ctx.createGain();this.master.gain.value=this.paused?0:.22;this.master.connect(this.ctx.destination);this.clock=null;this.next=0;this.kicked=false;}
+      const ctx=this.ctx;
+      const ready=()=>{if(this.ctx!==ctx||!this.enabled)return;this.active=ctx.state==='running';if(this.active){this.next=ctx.currentTime+.02;this.applyGain();}};
+      // Safari may report interrupted rather than suspended after a background return.
+      if(ctx.state!=='running'){this.active=false;Promise.resolve(ctx.resume()).then(ready).catch(()=>{if(this.ctx===ctx)this.active=false;});}else if(!this.active)ready();
+      if(!this.kicked&&ctx.createBufferSource&&ctx.createBuffer){this.kicked=true;const kick=ctx.createBufferSource();kick.buffer=ctx.createBuffer(1,1,ctx.sampleRate||44100);kick.connect(this.master);kick.onended=()=>kick.disconnect();kick.start(0);}
+    }catch{this.active=false;this.recoverOnGesture=true;}
+  }
+  applyGain(){if(!this.ctx||!this.master)return;try{const t=this.ctx.currentTime;this.master.gain.cancelScheduledValues(t);this.master.gain.setValueAtTime(this.enabled&&!this.paused ? 0.22 : 0,t);}catch{this.active=false;this.recoverOnGesture=true;}}
+  setEnabled(value){this.enabled=!!value;if(this.enabled)this.unlock({rebuild:true});else{this.active=false;this.applyGain();}return this.enabled;}
   note(freq,time,duration,vol=.1,type='sine',slide){
     if(!this.ctx||!this.enabled||!this.active)return;
+    try{
     const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type=type;o.frequency.setValueAtTime(freq,time);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(25,slide),time+duration);
     g.gain.setValueAtTime(0,time);g.gain.linearRampToValueAtTime(vol,time+.015);g.gain.exponentialRampToValueAtTime(.001,time+duration);
-    o.connect(g);g.connect(this.master);o.start(time);o.stop(time+duration+.03);
+    o.connect(g);g.connect(this.master);this.voices.add(o);o.onended=()=>{this.voices.delete(o);o.disconnect();g.disconnect();};o.start(time);o.stop(time+duration+.03);
+    }catch{this.active=false;this.recoverOnGesture=true;}
   }
   effect(kind){
     if(!this.ctx||!this.active||!this.enabled)return;
@@ -19,13 +41,20 @@ export class Sound {
     if(kind==='destroy'){this.note(220,t,.15,.15,'triangle',55);this.note(880,t,.12,.06,'sine');}
     if(kind==='spark'){this.note(1200,t,.1,.08,'triangle',350);}
     if(kind==='ring'){this.note(660,t,.24,.18);this.note(990,t+.08,.24,.14);}
-    if(kind==='milestone'||kind==='rings-complete')for(let i=0;i<5;i++)this.note([392,494,587,784,988][i],t+i*.12,.6,.18,'triangle');
+    if(kind==='milestone'||kind==='level-complete'||kind==='rings-complete')for(let i=0;i<5;i++)this.note([392,494,587,784,988][i],t+i*.12,.6,.18,'triangle');
     if(kind==='titan-hit'){this.note(100,t,.4,.4,'triangle',45);}
   }
   update(paused){
+    try{this.tick(paused);}catch{this.active=false;this.recoverOnGesture=true;}
+  }
+  tick(paused){
+    if(this.paused!==paused){this.paused=paused;if(this.ctx){this.next=this.ctx.currentTime+.02;this.applyGain();}}
     if(!this.ctx||!this.enabled)return;
-    const t=this.ctx.currentTime;this.master.gain.setTargetAtTime(paused?0:.22,t,.1);
-    if(paused){this.next=t+.1;return;}
+    const t=this.ctx.currentTime;
+    if(this.ctx.state!=='running'){this.active=false;this.next=t+.02;return;}
+    if(this.clock!==t){this.clock=t;this.clockAt=this.now();}
+    if(paused){this.next=t+.02;return;}
+    if(this.next>t+1)this.next=t+.02;
     if(!this.active||this.next>t+.1)return;
     this.next=Math.max(this.next,t+.02);
     const chords=[[196,246.94,293.66],[164.81,196,246.94],[130.81,164.81,196],[146.83,185,220]],chord=chords[Math.floor(this.beat/16)%4];
@@ -34,5 +63,5 @@ export class Sound {
     if(this.beat%8===0)for(const f of chord)this.note(f,this.next,1.8,.025,'sine');
     this.next+=.235;this.beat++;
   }
-  toggle(){this.enabled=!this.enabled;if(this.enabled)this.unlock();if(this.master)this.master.gain.value=this.enabled?.22:0;return this.enabled;}
+  toggle(){return this.setEnabled(!this.enabled);}
 }

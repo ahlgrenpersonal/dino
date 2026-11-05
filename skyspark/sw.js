@@ -1,5 +1,5 @@
-const CACHE_NAME='skyspark-world90';
-const SHELL=['./','index.html','styles.css?v=world90','app.js?v=world90','engine.js?v=world90','art.js?v=world90','audio.js?v=world90','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png'];
+const CACHE_NAME='skyspark-world92';
+const SHELL=['./','index.html','styles.css?v=world92','app.js?v=world92','engine.js?v=world92','levels.js?v=world92','saves.js?v=world92','art.js?v=world92','audio.js?v=world92','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(names=>Promise.all(names.filter(n=>n.startsWith('skyspark-')&&n!==CACHE_NAME).map(n=>caches.delete(n)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',event=>{

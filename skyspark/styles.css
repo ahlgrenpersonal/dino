@@ -11,3 +11,5 @@ dialog{position:fixed;inset:calc(14px + var(--safe-top)) max(12px,env(safe-area-
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 
 @media(min-height:521px){#playfield.boss-active #toast{top:166px}#playfield.boss-active #combo{top:160px}}
+
+.district-links{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 14px}.district-links button{min-height:38px;border-radius:11px;border:1px solid #b6d9c53b;background:#33556a;color:#e1efdf;padding:8px 10px;font-size:10px}.biome-plains .place-icon{background:#42785b66}.biome-mountains .place-icon{background:#76649066}#game[data-biome=plains] .mission-badge{background:#3b6d61}#game[data-biome=mountains] .mission-badge{background:#615577}
