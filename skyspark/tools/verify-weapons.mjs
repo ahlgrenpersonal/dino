@@ -32,21 +32,21 @@ tick(g,.6);assert.equal(g.run.kills,16,'The chain continues to the sixteenth tar
 tick(g,.1);g.player.x=2900;assert(g.sparks());tick(g,.1);assert.equal(g.run.kills,18);
 g=scene([[1150,500],[1500,500]]);g.sparks();tick(g,.7);assert.equal(g.run.kills,1,'A jump cannot cross an empty gap beyond its range');
 g=scene([]);assert(!g.sparks());assert.equal(g.sparkCd,0,'No target does not waste the sparks cooldown');
-// One laser cast removes three armor points, never repeated damage every animation frame.
-g=scene([[1250,467]]);let boss=g.enemies[0];Object.assign(boss,{boss:true,type:'titan',hp:12,maxHp:12});g.laser();assert.equal(boss.hp,9);tick(g,.8);assert.equal(boss.hp,9);assert.equal(g.run.bossHits,3);assert(!g.laser());
-tick(g,1.5);assert(g.laser());assert.equal(boss.hp,6);
+// One laser cast removes five armor points, never repeated damage every animation frame.
+g=scene([[1250,467]]);let boss=g.enemies[0];Object.assign(boss,{boss:true,type:'titan',hp:12,maxHp:12});g.laser();assert.equal(boss.hp,7);tick(g,.8);assert.equal(boss.hp,7);assert.equal(g.run.bossHits,5);assert(!g.laser());
+tick(g,1.5);assert(g.laser());assert.equal(boss.hp,2);
 g=scene([[1250,500]]);boss=g.enemies[0];Object.assign(boss,{boss:true,hp:12,maxHp:12});g.sparks();tick(g,.7);assert.equal(boss.hp,11.2,'A chain cannot bounce repeatedly on one boss');
 const damageSave=readSave(g.snapshot());assert.equal(damageSave.runs[0].bossHits,.8,'Fractional armor damage survives reload');
-for(const [kind,amount] of [['ram',1],['chain',.8],['spark',.8],['sphere',1],['laser',3]]){
+for(const [kind,amount] of [['ram',1],['chain',.8],['spark',.8],['sphere',1],['laser',5]]){
   const h=scene([[1250,500]]),b=h.enemies[0];Object.assign(b,{boss:true,hp:12,maxHp:12});h.damage(b,kind);assert.equal(b.hp,12-amount,`${kind} uses the normalized damage`);
 }
 g=scene([[1250,500]]);boss=g.enemies[0];Object.assign(boss,{boss:true,hp:12,maxHp:12});for(let n=0;n<15;n++){g.damage(boss,'chain');g.time+=1;}assert.equal(boss.hp,0,'Fractional hits finish a boss without a tiny remainder');
 assert.equal(WEAPONS.punchDamage,1);assert.equal(WEAPONS.sparksDamage,.8);assert.equal(WEAPONS.blastDamage,1);
-assert(WEAPONS.laserCooldown>WEAPONS.sparksCooldown);assert(WEAPONS.laserDamage>1);
+assert(WEAPONS.laserCooldown>WEAPONS.sparksCooldown);assert.equal(WEAPONS.laserDamage,5);
 for(let i=0;i<3;i++){
   assert.equal(LEVELS[i].bossHp,[12,18,24][i]);
   const raw={schema:3,level:i,completed:Array.from({length:i},(_,j)=>j),runs:[]};raw.runs[i]={bossHits:[2,3,4][i],position:{x:9200,y:500},cleared:[],kills:20};
   const save=readSave(raw);assert.equal(save.runs[i].bossHits,LEVELS[i].bossHp/2,'Older partial boss damage keeps its fraction');assert.equal(save.runs[i].kills,20);assert.equal(readSave(save).runs[i].bossHits,save.runs[i].bossHits,'Migration is applied only once');
   assert(armorSegments({hp:LEVELS[i].bossHp,maxHp:LEVELS[i].bossHp}).length<=12,'Stronger armor still fits the HUD');
 }
-console.log('Passed piercing and adaptive up/down/left laser sweeps, one three-damage hit per cast, staged sixteen-target lightning, jump range, cooldowns, paused chains, boss scaling and save migration.');
+console.log('Passed piercing and adaptive up/down/left laser sweeps, one five-damage hit per cast, staged sixteen-target lightning, jump range, cooldowns, paused chains, boss scaling and save migration.');
