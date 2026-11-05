@@ -12,6 +12,17 @@ let f=g.effects.find(e=>e.type==='laser');assert(f.sweep<0);assert(Math.abs(f.sw
 tick(g,.64);assert(g.run.kills>=6,'Sweep follows the larger upper group');assert(g.enemies.some(e=>e.y===600),'The sweep stays narrow instead of covering both directions');
 g=scene([[1180,467],[1340,530],[1460,590],[1560,640]]);g.laser();assert(g.effects.find(e=>e.type==='laser').sweep>0);tick(g,.64);assert.equal(g.run.kills,4,'The sweep also follows a lower group');
 g=scene([[820,467],[680,410],[570,350]]);g.laser();tick(g,.64);assert.equal(g.run.kills,3,'Left-facing sweeps work across the angle wrap');
+// The wider sweep reaches groups outside the former 37-degree limit in either direction.
+assert.equal(WEAPONS.maxSweep,1.3);
+for(const direction of [-1,1]){
+  const point=angle=>[1008+Math.cos(angle)*450,467+direction*Math.sin(angle)*450];
+  g=scene([[1180,467],point(1.15),point(1.6)]);g.laser();
+  f=g.effects.find(e=>e.type==='laser');assert.equal(Math.sign(f.sweep),direction);assert.equal(Math.abs(f.sweep),1.3);
+  tick(g,.64);assert.equal(g.run.kills,2,'Wide-angle groups are sliced while targets beyond the new limit survive');
+}
+g=scene([[1180,467],[1408,367]]);g.laser();f=g.effects.find(e=>e.type==='laser');
+assert(Math.abs(f.sweep+Math.atan2(100,400)*2)<1e-9,'An ordinary targeted sweep also doubles its angle');
+g=scene([]);g.laser();assert.equal(g.effects.find(e=>e.type==='laser').sweep,-.52,'The untargeted sweep doubles too');
 // Sequential lightning: one immediate strike, then distinct hops, capped at sixteen.
 g=scene(Array.from({length:18},(_,i)=>[1150+i*120,500]));assert(g.sparks());assert.equal(g.run.kills,1);assert.equal(g.sparkCd,1.2);assert(!g.sparks());
 f=g.effects.find(e=>e.type==='chain');assert.equal(f.nodes.length,16);assert.equal(new Set(f.nodes.map(n=>n.id)).size,16);

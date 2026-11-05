@@ -1,4 +1,4 @@
-import { WORLD, WEAPONS, armorSegments, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world101';
+import { WORLD, WEAPONS, armorSegments, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world102';
 const TAU=Math.PI*2;
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function path(c,points,fill,stroke,width=1){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();if(fill){c.fillStyle=fill;c.fill();}if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke();}}

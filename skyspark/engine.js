@@ -1,7 +1,7 @@
-import { BUILD, WORLD, SITE_COUNT, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world101';
+import { BUILD, WORLD, SITE_COUNT, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world102';
 export { BUILD, WORLD, SITE_COUNT, LEVELS, freshSave, readSave, unlockedLevel };
 export const HERO_FEET=48,HERO_EYES=-33;
-export const WEAPONS={punchDamage:1,sparksDamage:.8,blastDamage:1,blastCooldown:2.5,sparksCooldown:1.2,chainLimit:16,chainRange:320,laserCooldown:2.2,laserDamage:3,laserRange:1100,laserDuration:.6,maxSweep:.65};
+export const WEAPONS={punchDamage:1,sparksDamage:.8,blastDamage:1,blastCooldown:2.5,sparksCooldown:1.2,chainLimit:16,chainRange:320,laserCooldown:2.2,laserDamage:3,laserRange:1100,laserDuration:.6,maxSweep:1.3};
 const wrapAngle=a=>Math.atan2(Math.sin(a),Math.cos(a));
 export function laserAngle(f,age=f.age){const t=Math.min(1,age/WEAPONS.laserDuration);return f.from+f.sweep*t*t*(3-2*t);}
 export function armorSegments(e){const n=Math.min(12,e.maxHp),unit=e.maxHp/n;return Array.from({length:n},(_,i)=>Math.max(0,Math.min(1,(e.hp-i*unit)/unit)));}
@@ -184,6 +184,7 @@ export class SkyGame {
       const score=angles.filter(a=>a>=Math.min(0,end)-.035&&a<=Math.max(0,end)+.035).length;
       if(score>best||(score===best&&Math.abs(end)<Math.abs(sweep))){best=score;sweep=end;}
     }
+    sweep=clamp(sweep*2,-WEAPONS.maxSweep,WEAPONS.maxSweep);
     const f={type:'laser',from,sweep,previousAngle:from,angle:from,hit:[],age:0,life:.74};
     this.effects.push(f);this.laserHits(f,from,from);this.emit('laser');return true;
   }
