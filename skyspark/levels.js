@@ -1,4 +1,4 @@
-export const BUILD = 'world95';
+export const BUILD = 'world96';
 export const WORLD = { width: 9600, height: 1000, ground: 850 };
 export const SITE_COUNT = 18;
 export const LEVELS = [
@@ -55,7 +55,7 @@ export function readSave(raw){
   for(let i=0;i<3;i++){
     const r=raw.runs?.[i];if(!r||typeof r!=='object')continue;
     const run=s.runs[i];run.checkpoint=integer(r.checkpoint,0,SITE_COUNT);
-    run.bossHits=raw.schema<4?integer(r.bossHits,0,[4,6,8][i])*3:integer(r.bossHits,0,LEVELS[i].bossHp);
+    run.bossHits=raw.schema<4?integer(r.bossHits,0,[4,6,8][i])*3:(Number.isFinite(r.bossHits)?Math.round(clamp(r.bossHits,0,LEVELS[i].bossHp)*10)/10:0);
     run.complete=r.complete===true;
     if(run.complete){run.checkpoint=SITE_COUNT;run.bossHits=LEVELS[i].bossHp;if(!s.completed.includes(i))s.completed.push(i);}
     run.playSeconds=Number.isFinite(r.playSeconds)?clamp(r.playSeconds,0,1e8):0;

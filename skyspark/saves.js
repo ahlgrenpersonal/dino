@@ -1,4 +1,4 @@
-import {freshSave,readSave} from './levels.js?v=world95';
+import {freshSave,readSave} from './levels.js?v=world96';
 export function loadProgress(getStorage,key){
   let raw,storage;
   try{storage=getStorage();raw=JSON.parse(storage.getItem(key));}catch{return freshSave();}

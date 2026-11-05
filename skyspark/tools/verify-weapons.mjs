@@ -3,7 +3,7 @@ import {SkyGame,freshSave,readSave,LEVELS,WEAPONS,armorSegments} from '../engine
 const tick=(g,s)=>{for(let i=0;i<Math.ceil(s/.02);i++)g.update(.02);};
 function scene(points){
   const g=new SkyGame(freshSave());g.syncEncounters=()=>{};g.player.x=1000;g.player.y=500;g.auraCd=1e6;
-  g.enemies=points.map(([x,y],i)=>({id:`fixture-${i}`,x,y,homeX:x,homeY:y,type:'fixture',hp:1,maxHp:1,radius:20,hit:0,cd:1e6,phase:0}));return g;
+  g.enemies=points.map(([x,y],i)=>({id:`fixture-${i}`,x,y,homeX:x,homeY:y,type:'fixture',hp:.8,maxHp:.8,radius:20,hit:0,cd:1e6,phase:0}));return g;
 }
 // The starting ray pierces every collinear robot; the continuing sweep cuts an upper group.
 let g=scene([[1180,467],[1350,467],[1550,467],[1320,410],[1430,350],[1540,290],[1340,600]]);
@@ -22,7 +22,13 @@ g=scene([]);assert(!g.sparks());assert.equal(g.sparkCd,0,'No target does not was
 // One laser cast removes two armor points, never repeated damage every animation frame.
 g=scene([[1250,467]]);let boss=g.enemies[0];Object.assign(boss,{boss:true,type:'titan',hp:12,maxHp:12});g.laser();assert.equal(boss.hp,10);tick(g,.8);assert.equal(boss.hp,10);assert.equal(g.run.bossHits,2);assert(!g.laser());
 tick(g,1.5);assert(g.laser());assert.equal(boss.hp,8);
-g=scene([[1250,500]]);boss=g.enemies[0];Object.assign(boss,{boss:true,hp:12,maxHp:12});g.sparks();tick(g,.7);assert.equal(boss.hp,11,'A chain cannot bounce repeatedly on one boss');
+g=scene([[1250,500]]);boss=g.enemies[0];Object.assign(boss,{boss:true,hp:12,maxHp:12});g.sparks();tick(g,.7);assert.equal(boss.hp,11.2,'A chain cannot bounce repeatedly on one boss');
+const damageSave=readSave(g.snapshot());assert.equal(damageSave.runs[0].bossHits,.8,'Fractional armor damage survives reload');
+for(const [kind,amount] of [['ram',1],['chain',.8],['spark',.8],['sphere',.8],['laser',2]]){
+  const h=scene([[1250,500]]),b=h.enemies[0];Object.assign(b,{boss:true,hp:12,maxHp:12});h.damage(b,kind);assert.equal(b.hp,12-amount,`${kind} uses the normalized damage`);
+}
+g=scene([[1250,500]]);boss=g.enemies[0];Object.assign(boss,{boss:true,hp:12,maxHp:12});for(let n=0;n<15;n++){g.damage(boss,'chain');g.time+=1;}assert.equal(boss.hp,0,'Fractional hits finish a boss without a tiny remainder');
+assert.equal(WEAPONS.punchDamage,1);assert.equal(WEAPONS.sparksDamage,.8);assert.equal(WEAPONS.blastDamage,.8);
 assert(WEAPONS.laserCooldown>WEAPONS.sparksCooldown);assert(WEAPONS.laserDamage>1);
 for(let i=0;i<3;i++){
   assert.equal(LEVELS[i].bossHp,[12,18,24][i]);
