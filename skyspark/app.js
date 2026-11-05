@@ -1,8 +1,8 @@
-import { BUILD, WEAPONS, armorSegments, SkyGame, LEVELS, SITE_COUNT, unlockedLevel, freshSave, readSave } from './engine.js?v=world98';
-import { Renderer, hero } from './art.js?v=world98';
-import { Sound } from './audio.js?v=world98';
-import { loadProgress } from './saves.js?v=world98';
-const buildVersion = 'world98';
+import { BUILD, WEAPONS, armorSegments, SkyGame, LEVELS, SITE_COUNT, unlockedLevel, freshSave, readSave } from './engine.js?v=world99';
+import { Renderer, hero } from './art.js?v=world99';
+import { Sound } from './audio.js?v=world99';
+import { loadProgress } from './saves.js?v=world99';
+const buildVersion = 'world99';
 const SAVE_KEY='skyspark-save-v1',BACKUP_KEY='skyspark-before-restart-v1';
 const $=id=>document.getElementById(id),canvas=$('world'),panel=$('panel'),sound=new Sound();
 let storageOK=true,savePending=0,lastSave=0,last=performance.now(),panelMode='',toastUntil=0,celebrationUntil=0,notified=false,installPrompt=null,updatePending=false;
@@ -152,7 +152,7 @@ function hud(){
   $('hint').classList.toggle('dim',game.time>8&&!done&&storageOK);
   $('hint').textContent=!storageOK?'Saving is unavailable. Keep this page open to keep progress.':done?'Open the map to fly another level. Every return is a fresh adventure.':'Fly right · Tap a robot to smash';
   canvas.dataset.level=game.level.id;canvas.dataset.stage=String(run.checkpoint);canvas.dataset.robots=String(alive.length);canvas.dataset.flying=String(!game.player.landed);canvas.dataset.complete=String(done);
-  canvas.dataset.projectiles=String(game.projectiles.length);canvas.dataset.shieldHits=String(game.shieldHits);
+  canvas.dataset.projectiles=String(game.projectiles.length);canvas.dataset.shieldHits=String(game.shieldHits);canvas.dataset.shotsCleared=String(game.shotsCleared);
   canvas.dataset.kills=String(run.kills);canvas.dataset.boss=boss?.name||'';canvas.dataset.bossHp=String(boss?.hp||0);
   canvas.dataset.playerX=String(Math.round(game.player.x));canvas.dataset.playerY=String(Math.round(game.player.y));canvas.dataset.paused=String(game.paused);
   $('game').dataset.biome=game.level.biome;
