@@ -15,7 +15,7 @@ const itemStorageKey = "dino-collected-items";
 const inventoryStorageKey = "dino-inventory";
 const oldItemStorageKey = "dino-boom-berries-collected";
 const terrainStorageKey = "dino-destroyed-terrain";
-const buildVersion = "world18";
+const buildVersion = "world91";
 const worldColumns = 50;
 const worldRows = 1;
 const screenGrid = {
@@ -1468,12 +1468,13 @@ window.setInterval(gameTick, 250);
 async function clearAppShellCache() {
   if ("serviceWorker" in navigator) {
     const registrations = await navigator.serviceWorker.getRegistrations();
-    await Promise.all(registrations.map((registration) => registration.unregister()));
+    const ownScope = new URL("./", window.location.href).href;
+    await Promise.all(registrations.filter((registration) => registration.scope === ownScope).map((registration) => registration.unregister()));
   }
 
   if ("caches" in window) {
     const keys = await caches.keys();
-    await Promise.all(keys.map((key) => caches.delete(key)));
+    await Promise.all(keys.filter((key) => /^dino-(?:v|world)\d+$/.test(key)).map((key) => caches.delete(key)));
   }
 }
 
@@ -1528,7 +1529,7 @@ if ("serviceWorker" in navigator) {
         return;
       }
 
-      const registration = await navigator.serviceWorker.register("./sw.js?v=world18", {
+      const registration = await navigator.serviceWorker.register("./sw.js?v=world91", {
         updateViaCache: "none"
       });
 

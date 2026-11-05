@@ -56,7 +56,7 @@
   <body>
     <main>
       <h1>Dino Refresh</h1>
-      <p id="status">Clearing the old saved game files...</p>
+      <p id="status">Refreshing Dino while keeping saved progress...</p>
       <button type="button" id="refreshButton">Refresh Dino</button>
     </main>
 
@@ -65,16 +65,17 @@
       const refreshButton = document.querySelector("#refreshButton");
 
       async function clearSavedApp() {
-        statusText.textContent = "Clearing the old saved game files...";
+        statusText.textContent = "Refreshing Dino while keeping saved progress...";
 
         if ("serviceWorker" in navigator) {
           const registrations = await navigator.serviceWorker.getRegistrations();
-          await Promise.all(registrations.map((registration) => registration.unregister()));
+          const ownScope = new URL("./", window.location.href).href;
+          await Promise.all(registrations.filter((registration) => registration.scope === ownScope).map((registration) => registration.unregister()));
         }
 
         if ("caches" in window) {
           const keys = await caches.keys();
-          await Promise.all(keys.map((key) => caches.delete(key)));
+          await Promise.all(keys.filter((key) => /^dino-(?:v|world)\d+$/.test(key)).map((key) => caches.delete(key)));
         }
 
         statusText.textContent = "Opening the fresh game...";
