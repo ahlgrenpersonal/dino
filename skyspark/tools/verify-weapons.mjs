@@ -12,11 +12,13 @@ let f=g.effects.find(e=>e.type==='laser');assert(f.sweep<0);assert(Math.abs(f.sw
 tick(g,.64);assert(g.run.kills>=6,'Sweep follows the larger upper group');assert(g.enemies.some(e=>e.y===600),'The sweep stays narrow instead of covering both directions');
 g=scene([[1180,467],[1340,530],[1460,590],[1560,640]]);g.laser();assert(g.effects.find(e=>e.type==='laser').sweep>0);tick(g,.64);assert.equal(g.run.kills,4,'The sweep also follows a lower group');
 g=scene([[820,467],[680,410],[570,350]]);g.laser();tick(g,.64);assert.equal(g.run.kills,3,'Left-facing sweeps work across the angle wrap');
-// Sequential lightning: one immediate strike, then distinct hops, capped at eight.
-g=scene(Array.from({length:10},(_,i)=>[1150+i*120,500]));assert(g.sparks());assert.equal(g.run.kills,1);assert.equal(g.sparkCd,1.2);assert(!g.sparks());
-f=g.effects.find(e=>e.type==='chain');assert.equal(f.nodes.length,8);assert.equal(new Set(f.nodes.map(n=>n.id)).size,8);
+// Sequential lightning: one immediate strike, then distinct hops, capped at sixteen.
+g=scene(Array.from({length:18},(_,i)=>[1150+i*120,500]));assert(g.sparks());assert.equal(g.run.kills,1);assert.equal(g.sparkCd,1.2);assert(!g.sparks());
+f=g.effects.find(e=>e.type==='chain');assert.equal(f.nodes.length,16);assert.equal(new Set(f.nodes.map(n=>n.id)).size,16);
 g.paused=true;const age=f.age,cd=g.sparkCd;tick(g,2);assert.equal(f.age,age);assert.equal(g.sparkCd,cd);g.paused=false;
-tick(g,.54);assert.equal(g.run.kills,8);assert.equal(g.enemies.length,2);assert(!g.sparks());tick(g,.7);g.player.x=1900;assert(g.sparks());tick(g,.1);assert.equal(g.run.kills,10);
+tick(g,.54);assert.equal(g.run.kills,8,'The first eight strikes retain their consecutive timing');assert.equal(g.enemies.length,10);
+tick(g,.6);assert.equal(g.run.kills,16,'The chain continues to the sixteenth target');assert.equal(g.enemies.length,2);assert(!g.sparks());
+tick(g,.1);g.player.x=2900;assert(g.sparks());tick(g,.1);assert.equal(g.run.kills,18);
 g=scene([[1150,500],[1500,500]]);g.sparks();tick(g,.7);assert.equal(g.run.kills,1,'A jump cannot cross an empty gap beyond its range');
 g=scene([]);assert(!g.sparks());assert.equal(g.sparkCd,0,'No target does not waste the sparks cooldown');
 // One laser cast removes three armor points, never repeated damage every animation frame.
@@ -36,4 +38,4 @@ for(let i=0;i<3;i++){
   const save=readSave(raw);assert.equal(save.runs[i].bossHits,LEVELS[i].bossHp/2,'Older partial boss damage keeps its fraction');assert.equal(save.runs[i].kills,20);assert.equal(readSave(save).runs[i].bossHits,save.runs[i].bossHits,'Migration is applied only once');
   assert(armorSegments({hp:LEVELS[i].bossHp,maxHp:LEVELS[i].bossHp}).length<=12,'Stronger armor still fits the HUD');
 }
-console.log('Passed piercing and adaptive up/down/left laser sweeps, one three-damage hit per cast, staged eight-target lightning, jump range, cooldowns, paused chains, boss scaling and save migration.');
+console.log('Passed piercing and adaptive up/down/left laser sweeps, one three-damage hit per cast, staged sixteen-target lightning, jump range, cooldowns, paused chains, boss scaling and save migration.');

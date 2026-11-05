@@ -13,8 +13,8 @@ for(const age of [0,1.02]){g=scene();const f=beam(g);f.age=age;g.blast();tick(g,
 g=scene();shot(g,1250,467);shot(g,1450,400,'missile');const untouched=shot(g,1300,750);assert(g.laser());tick(g,.6);assert.equal(g.shotsCleared,2,'Laser targets and sweeps through incoming fire even without robots');assert(g.projectiles.includes(untouched));assert.equal(g.run.kills,0);
 g=scene();g.laser();shot(g,1300,400,'missile',0,2400);g.update(.04);assert.equal(g.shotsCleared,1,'Moving fire crossing the laser is cut rather than tunneling through');
 g=scene();const green=beam(g);assert(g.laser());assert(green.cancelled);tick(g,.7);assert.equal(g.shieldHits,0);
-g=scene();for(let i=0;i<8;i++)shot(g,1150+i*100,500,i%2?'missile':'orb');assert(g.sparks());tick(g,.6);assert.equal(g.projectiles.length,0);assert.equal(g.shotsCleared,8);assert.equal(g.run.kills,0);
+g=scene();for(let i=0;i<16;i++)shot(g,1150+i*100,500,i%2?'missile':'orb');assert(g.sparks());tick(g,1.14);assert.equal(g.projectiles.length,0);assert.equal(g.shotsCleared,16);assert.equal(g.run.kills,0);
 g=scene();const warning=beam(g);assert(g.sparks());assert(warning.cancelled);assert.equal(g.shotsCleared,1);tick(g,1.1);assert.equal(g.shieldHits,0);
-// Shots close to arcs are cleared in addition to the eight robot targets.
-g=scene();g.enemies=Array.from({length:8},(_,i)=>g.robot(`robot-${i}`,1150+i*90,500,'fixture'));for(const e of g.enemies)e.cd=1e6;shot(g,1250,530);assert(g.sparks());tick(g,.6);assert.equal(g.run.kills,8);assert.equal(g.shotsCleared,1);
-console.log('Passed Blast area/beam clearing, incoming-shot interception priority, pause, defensive laser sweeps, moving-shot crossings, lightning fire-only targets, eight-robot preservation and honest kill counters.');
+// Shots close to arcs are cleared in addition to the sixteen robot targets.
+g=scene();g.enemies=Array.from({length:16},(_,i)=>g.robot(`robot-${i}`,1150+i*90,500,'fixture'));for(const e of g.enemies)e.cd=1e6;shot(g,1250,530);assert(g.sparks());tick(g,1.14);assert.equal(g.run.kills,16);assert.equal(g.shotsCleared,1);
+console.log('Passed Blast area/beam clearing, incoming-shot interception priority, pause, defensive laser sweeps, moving-shot crossings, lightning fire-only targets, sixteen-robot preservation and honest kill counters.');
