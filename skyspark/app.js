@@ -191,11 +191,14 @@ async function checkUpdate(){
   try{
     const r=await fetch(`version.json?check=${Date.now()}`,{cache:'no-store'});if(!r.ok)return;
     const v=await r.json();if(typeof v.build!=='string'||v.build===buildVersion)return;
+    const reloadKey=`skyspark-updating-${v.build}`;
+    if(new URLSearchParams(location.search).get('updated')===v.build)return;
+    try{if(sessionStorage.getItem(reloadKey))return;sessionStorage.setItem(reloadKey,'1');}catch{}
     updatePending=true;save();
     const scope=new URL('./',location.href).href;
     for(const reg of await navigator.serviceWorker.getRegistrations())if(reg.scope===scope)await reg.unregister();
     for(const name of await caches.keys())if(name.startsWith('skyspark-'))await caches.delete(name);
-    location.replace(`index.html?fresh=${Date.now()}`);
+    location.replace(`index.html?fresh=${Date.now()}&updated=${encodeURIComponent(v.build)}`);
   }catch{updatePending=false;}
 }
 if('serviceWorker'in navigator){
