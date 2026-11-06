@@ -6,12 +6,12 @@
   <meta name="theme-color" content="#172f46">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="SkySpark">
-  <meta name="description" content="Fly through a sunset city, grassy lakes, snowy mountains, volcanic caldera and moonlit spaceport. Unleash your superpowers against five giant robot bosses.">
+  <meta name="description" content="Fly through eight colorful worlds, from sunlit cities to glowing reefs and a prism citadel. Unleash your superpowers against giant robot bosses and a robotic rival.">
   <title>SkySpark — Little hero. Big powers.</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=world108">
+  <link rel="stylesheet" href="styles.css?v=world109">
 </head>
 <body>
 <svg class="symbols" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -31,7 +31,7 @@
     <div class="header-tools"><span class="saved" id="saveStatus" aria-label="Progress saves on this device">● SAVED</span><button class="icon-button map-control" id="map" aria-label="Map — choose a world"><svg><use href="#map-icon"/></svg><i id="mapDot" hidden></i></button><button class="icon-button" id="sound" aria-label="Turn sound off" aria-pressed="true"><svg><use href="#sound-icon"/></svg></button><button class="icon-button" id="pause" aria-label="Pause game"><svg><use href="#pause-icon"/></svg></button></div>
   </header>
   <section id="playfield" aria-label="Superhero playground">
-    <canvas id="world" tabindex="0" aria-label="Fly through five worlds. Tap the sky to fly, a rooftop to land, or a robot to smash. Use arrow keys or WASD on a keyboard."></canvas>
+    <canvas id="world" tabindex="0" aria-label="Fly through eight worlds. Tap the sky to fly, a rooftop to land, or a robot to smash. Use arrow keys or WASD on a keyboard."></canvas>
     <div id="bossHud" hidden><span>IRON COLOSSUS</span><div id="bossSegments" role="progressbar" aria-label="Boss armor" aria-valuemin="0" aria-valuemax="12" aria-valuenow="12"></div></div>
     <div class="hero-chip"><span class="hero-dot">✦</span><span>Hero <small>UNSTOPPABLE</small></span></div>
     <div class="tally" aria-label="Robots defeated this flight"><svg><use href="#bolt"/></svg><b id="robotCount">0</b><span>ROBOTS</span></div>
@@ -49,6 +49,6 @@
 </main>
 <dialog id="panel" aria-labelledby="panelTitle"><div class="panel-head"><div><small id="panelEyebrow"></small><h1 id="panelTitle"></h1></div><button id="closePanel" class="close" aria-label="Close and return to game">✕</button></div><div id="panelBody"></div></dialog>
 <noscript>This game needs JavaScript to power the hero.</noscript>
-<script type="module" src="app.js?v=world108"></script>
+<script type="module" src="app.js?v=world109"></script>
 </body>
 </html>

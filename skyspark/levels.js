@@ -1,4 +1,4 @@
-export const BUILD = 'world108';
+export const BUILD = 'world109';
 export const WORLD = { width: 28800, height: 1000, ground: 850 };
 export const SITE_COUNT = 54;
 export const SITE_SPACING=520;
@@ -19,7 +19,16 @@ export const LEVELS = [
     tasks:['Wake the shore beacon','Light the obsidian signal','Restart the cooling spring','Restore the ash garden','Power the molten bridge','Open the crater signal']},
   {id:'spaceport',name:'Moonlit Spaceport',short:'Spaceport',icon:'✧',color:'#b4c4ff',biome:'space',boss:'Orbit Dreadnought',bossType:'dreadnought',bossHp:84,waves:3,squad:12,
     districts:['Moonrise Landing','Starship Docks','Crystal Radar','Orbital Gardens','Neon Runway','Launch Citadel'],
-    tasks:['Light the landing lamps','Power the ship docks','Wake the crystal radar','Restore the orbital garden','Open the neon runway','Start the launch signal']}
+    tasks:['Light the landing lamps','Power the ship docks','Wake the crystal radar','Restore the orbital garden','Open the neon runway','Start the launch signal']},
+  {id:'dunes',name:'Sandglass Dunes',short:'Dunes',icon:'◈',color:'#ffd08c',biome:'desert',boss:'Scarab Siege Walker',bossType:'scarab',bossHp:108,waves:3,squad:12,
+    districts:['Amber Oasis','Glass Spires','Sunken Gates','Copper Canyon','Dune Observatory','Scarab Palace'],
+    tasks:['Light the oasis lamps','Wake the glass spires','Open the sunken gates','Light the canyon signal','Wake the observatory','Free the palace beacon']},
+  {id:'reef',name:'Neon Reef',short:'Reef',icon:'≈',color:'#86f5dc',biome:'ocean',boss:'Abyss Leviathan',bossType:'leviathan',bossHp:136,waves:3,squad:12,
+    districts:['Coral Landing','Pearl Bridges','Jellyfish Bay','Tidal Towers','Beacon Lagoon','Leviathan Trench'],
+    tasks:['Light the coral lamps','Power the pearl bridge','Wake the bay beacon','Start the tidal towers','Restore the lagoon lights','Open the trench signal']},
+  {id:'citadel',name:'Prism Citadel',short:'Citadel',icon:'⬡',color:'#ffacf0',biome:'citadel',boss:'Chrome Echo',bossType:'rival',bossHp:180,waves:3,squad:12,
+    districts:['Prism Gate','Mirror Gardens','Ruby Skyway','Radiant Spires','Echo Foundry','Chrome Throne'],
+    tasks:['Open the prism gate','Light the mirror garden','Power the ruby skyway','Wake the radiant spires','Restore the foundry lights','Free the chrome throne']}
 ];
 export const CITY_ROOFS = Array.from({length:9},(_,n)=>[
   {x:60+n*3200,y:530,w:230},{x:800+n*3200,y:590,w:200},

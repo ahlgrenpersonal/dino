@@ -1,4 +1,4 @@
-import { BUILD, WORLD, SITE_COUNT, BOSS_X, DISTRICT_COUNT, SITE_SPACING, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world108';
+import { BUILD, WORLD, SITE_COUNT, BOSS_X, DISTRICT_COUNT, SITE_SPACING, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world109';
 export { BUILD, WORLD, SITE_COUNT, BOSS_X, LEVELS, freshSave, readSave, unlockedLevel };
 export const HERO_FEET=48,HERO_EYES=-33;
 export const WEAPONS={punchDamage:1,sparksDamage:.8,blastDamage:1,blastCooldown:2.2,blastRadius:562.5,sparksCooldown:1,chainLimit:20,chainRange:360,laserCooldown:2,laserDamage:5,laserRange:1100,laserDuration:.6,maxSweep:1.3};
@@ -11,8 +11,8 @@ export const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 export const ROCK_ATTACK={charge:1.05,interval:3.8,gravity:95,radius:32};
 export function excavatorWheel(e){return{x:e.x-330,y:e.y-280,radius:165};}
 export function bossShieldUp(e,time){
-  if(!['crab','dreadnought'].includes(e.type)||e.hp<=0||time<(e.shieldBrokenUntil||0))return false;
-  return time%6<(e.type==='crab'?3:4);
+  if(!['crab','dreadnought','scarab','leviathan','rival'].includes(e.type)||e.hp<=0||time<(e.shieldBrokenUntil||0))return false;
+  return time%6<(e.type==='crab'?3:e.type==='rival'?2.5:4);
 }
 // Local circles follow the new bosses' silhouettes, including moving wing tips.
 export function hitShapes(e,time=0){
@@ -20,6 +20,9 @@ export function hitShapes(e,time=0){
   if(e.type==='wyvern'){const wing=Math.sin(time*3)*28;return [[0,0,65],[0,-86,48],[0,98,46],...[-1,1].flatMap(f=>[[f*80,-8,70],[f*149,-38-wing*.5,65],[f*215,-59-wing,42]])];}
   if(e.type==='crab')return [[-125,45,85],[125,45,85],[0,0,105],[-195,-55,65],[195,-55,65]];
   if(e.type==='dreadnought')return [[0,0,150],[-155,5,90],[155,5,90],[0,-90,75]];
+  if(e.type==='scarab')return [[0,0,125],[-165,30,80],[165,30,80],[80,-145,60]];
+  if(e.type==='leviathan')return [[0,0,130],[-155,20,75],[155,20,75]];
+  if(e.type==='rival')return [[0,0,65],[0,-65,35]];
   return [[0,0,e.radius]];
 }
 function closestPoint(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=clamp(((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1),0,1);return{x:a.x+dx*t,y:a.y+dy*t};}
@@ -60,8 +63,10 @@ export class SkyGame {
   }
   restartLevel(){this.save.runs[this.save.level]=freshRun();this.setupRun();this.emit('level-enter',{level:this.save.level,replay:true});}
   robot(id,x,y,type='bot'){
-    const armored=this.save.level>=3&&[...id].reduce((n,c)=>n+c.charCodeAt(0),0)%(this.save.level===3?4:3)===0,hp=armored?2:.8;
-    return{id,x,y,homeX:x,homeY:y,type,armored,hp,maxHp:hp,radius:type==='drone'?26:25,hit:0,cd:.45+(x%7)*.16,phase:x*.03,paint:this.save.level};
+    const hash=[...id].reduce((n,c)=>n+c.charCodeAt(0),0);
+    const heavy=this.save.level>=5&&type==='bot'&&hash%12===0;
+    const armored=heavy||this.save.level>=3&&hash%(this.save.level===3?4:3)===0,hp=heavy?3:armored?2:.8;
+    return{id,x,y,homeX:x,homeY:y,type,heavy,armored,hp,maxHp:hp,radius:heavy?40:type==='drone'?26:25,hit:0,cd:.45+(x%7)*.16,phase:x*.03,paint:this.save.level};
   }
   syncEncounters(bounds){
     if(this.run.complete)return;
@@ -88,8 +93,8 @@ export class SkyGame {
     }
     if(BOSS_X>=left&&BOSS_X<=right){
       if(this.run.bossHits<l.bossHp&&!active.has(`${l.id}-boss`)){
-        const y={wyvern:400,excavator:720,crab:705,dreadnought:380}[l.bossType]||640;
-        this.enemies.push({id:`${l.id}-boss`,type:l.bossType,boss:true,name:l.boss,x:BOSS_X,y,homeX:BOSS_X,homeY:y,hp:l.bossHp-this.run.bossHits,maxHp:l.bossHp,radius:l.bossType==='excavator'?350:['crab','dreadnought'].includes(l.bossType)?250:115,hit:0,cd:.65,phase:0,attacks:0});
+        const y={wyvern:400,excavator:720,crab:705,dreadnought:380,scarab:680,leviathan:400,rival:450}[l.bossType]||640;
+        this.enemies.push({id:`${l.id}-boss`,type:l.bossType,boss:true,name:l.boss,x:BOSS_X,y,homeX:BOSS_X,homeY:y,hp:l.bossHp-this.run.bossHits,maxHp:l.bossHp,radius:l.bossType==='excavator'?350:l.bossType==='rival'?80:['crab','dreadnought','scarab','leviathan'].includes(l.bossType)?250:115,hit:0,cd:.65,phase:0,attacks:0});
       }
       for(let i=0;i<8;i++){
         const id=`${l.id}-${SITE_COUNT}-0-${i}`;
@@ -150,10 +155,11 @@ export class SkyGame {
     this.emit('destroy', { kind, giant:e.boss, combo:this.combo });
     return true;
   }
-  beamSegment(f){const angle=Math.atan2(f.ty-f.y,f.tx-f.x);return{a:{x:f.x,y:f.y},b:{x:f.x+Math.cos(angle)*1400,y:f.y+Math.sin(angle)*1400}};}
+  beamSegment(f){if(f.type==='enemy-blast')return{a:{x:f.x,y:f.y},b:{x:f.x,y:f.y}};const angle=Math.atan2(f.ty-f.y,f.tx-f.x);return{a:{x:f.x,y:f.y},b:{x:f.x+Math.cos(angle)*1400,y:f.y+Math.sin(angle)*1400}};}
+  hazardRadius(f){return f.type==='enemy-blast'?Math.max(45,Math.min(1,Math.max(0,f.age-f.charge)/f.fire)*f.radius):16;}
   incomingTargets(){
     const shots=this.projectiles.filter(q=>!q.cleared&&q.age<q.life).map(q=>({kind:'shot',id:q.id,x:q.x,y:q.y,radius:q.radius}));
-    const beams=this.effects.filter(f=>f.type==='enemy-beam'&&!f.cancelled&&f.age<f.life).map(f=>{const {a,b}=this.beamSegment(f);const near=closestPoint(this.player,a,b),d=distance(a,near),advance=distance(near,this.player)<100&&d>1?Math.min(250,d):0;return{kind:'beam',id:f.id,x:near.x+(a.x-near.x)/(d||1)*advance,y:near.y+(a.y-near.y)/(d||1)*advance,radius:16};});
+    const beams=this.effects.filter(f=>['enemy-beam','enemy-blast'].includes(f.type)&&!f.cancelled&&f.age<f.life).map(f=>{const {a,b}=this.beamSegment(f);const near=closestPoint(this.player,a,b),d=distance(a,near),advance=distance(near,this.player)<100&&d>1?Math.min(250,d):0;return{kind:'beam',id:f.id,x:near.x+(a.x-near.x)/(d||1)*advance,y:near.y+(a.y-near.y)/(d||1)*advance,radius:this.hazardRadius(f)};});
     return [...shots,...beams];
   }
   interceptFlash(x,y,kind){
@@ -165,12 +171,12 @@ export class SkyGame {
   clearBeam(f,kind,p){if(f.cancelled||f.age>=f.life)return false;f.cancelled=true;f.age=f.life;this.interceptFlash(p.x,p.y,kind);return true;}
   chainInterceptions(a,b){
     for(const q of this.projectiles)if(!q.cleared&&distance(q,closestPoint(q,a,b))<q.radius+65)this.clearProjectile(q,'chain');
-    for(const f of this.effects)if(f.type==='enemy-beam'&&!f.cancelled){const line=this.beamSegment(f),contact=segmentContact(a,b,line.a,line.b,65);if(contact)this.clearBeam(f,'chain',contact);}
+    for(const f of this.effects)if(['enemy-beam','enemy-blast'].includes(f.type)&&!f.cancelled){const line=this.beamSegment(f),contact=segmentContact(a,b,line.a,line.b,49+this.hazardRadius(f));if(contact)this.clearBeam(f,'chain',contact);}
   }
   blastInterceptions(f){
     const radius=Math.min(1,f.age/.55)*f.radius;
     for(const q of this.projectiles)if(!q.cleared&&distance(q,f)<radius+q.radius)this.clearProjectile(q,'sphere');
-    for(const beam of this.effects)if(beam.type==='enemy-beam'&&!beam.cancelled){const {a,b}=this.beamSegment(beam),p=closestPoint(f,a,b);if(distance(p,f)<radius+12)this.clearBeam(beam,'sphere',p);}
+    for(const beam of this.effects)if(['enemy-beam','enemy-blast'].includes(beam.type)&&!beam.cancelled){const {a,b}=this.beamSegment(beam),p=closestPoint(f,a,b);if(distance(p,f)<radius+this.hazardRadius(beam))this.clearBeam(beam,'sphere',p);}
   }
   sparks(bounds=this.viewport){
     this.setViewport(bounds);
@@ -229,10 +235,10 @@ export class SkyGame {
     }
     for(const q of this.projectiles)if(!q.cleared&&sectorHit(start,previous,current,q,q.radius,WEAPONS.laserRange))this.clearProjectile(q,'laser');
     const ends=[previous,current].map(a=>({x:start.x+Math.cos(a)*WEAPONS.laserRange,y:start.y+Math.sin(a)*WEAPONS.laserRange}));
-    for(const beam of this.effects)if(beam.type==='enemy-beam'&&!beam.cancelled){
+    for(const beam of this.effects)if(['enemy-beam','enemy-blast'].includes(beam.type)&&!beam.cancelled){
       const {a,b}=this.beamSegment(beam),near=closestPoint(start,a,b);
       const contact=ends.map(end=>segmentContact(start,end,a,b,20)).find(Boolean);
-      if(contact||[a,b,near].some(p=>sectorHit(start,previous,current,p,16,WEAPONS.laserRange)))this.clearBeam(beam,'laser',contact||near);
+      if(contact||[a,b,near].some(p=>sectorHit(start,previous,current,p,this.hazardRadius(beam),WEAPONS.laserRange)))this.clearBeam(beam,'laser',contact||near);
     }
     this.projectiles=this.projectiles.filter(q=>!q.cleared);
   }
@@ -244,6 +250,10 @@ export class SkyGame {
     this.emit('blast'); return true;
   }
   enemyMuzzle(e,beam=false,offset=0){
+    if(e.heavy)return{x:e.x+(this.player.x>=e.x?40:-40),y:e.y-20};
+    if(e.type==='rival')return{x:e.x,y:e.y-61};
+    if(e.type==='scarab')return{x:e.x+80,y:e.y-145};
+    if(e.type==='leviathan')return{x:e.x,y:e.y-59};
     if(beam)return {x:e.x,y:e.y-(e.type==='titan'?140:e.type==='wyvern'?75:85)};
     if(e.type==='wyvern')return{x:e.x+offset*128,y:e.y-10};
     if(e.type==='titan')return{x:e.x+offset*130,y:e.y-30};
@@ -253,6 +263,7 @@ export class SkyGame {
     return{x:e.x+(this.player.x>=e.x?25:-25),y:e.y-8};
   }
   fireEnemy(e){
+    if(['scarab','leviathan','rival'].includes(e.type)||e.heavy){this.fireAdvancedEnemy(e);return;}
     if(e.type==='excavator'){
       if(!this.isVisible(e))return;
       e.cd=ROCK_ATTACK.interval;e.rockWindupUntil=this.time+ROCK_ATTACK.charge;
@@ -275,6 +286,31 @@ export class SkyGame {
     }
     this.emit('enemy-fire');
   }
+  fireAdvancedEnemy(e){
+    if(!this.isVisible(e))return;
+    const turn=e.attacks||0;e.attacks=turn+1;
+    const rival=e.type==='rival',sea=e.type==='leviathan',tint=rival?'#ff8a32':sea?'#ff67c4':'#ffb33f';
+    e.cd=e.heavy?4.5:rival?3.8:sea?3.4:3.6;
+    const origin=this.enemyMuzzle(e,true);
+    if(e.heavy||!rival){
+      const count=e.heavy?1:sea?5:4;
+      for(let i=0;i<count&&this.projectiles.length<96;i++){
+        const a=Math.atan2(this.player.y-origin.y,this.player.x-origin.x)+(i-(count-1)/2)*.17;
+        this.projectiles.push({type:'orb',id:`shot-${++this.attackSequence}`,owner:e.id,...origin,vx:Math.cos(a)*170,vy:Math.sin(a)*170,radius:e.heavy?23:27,tint,shove:e.heavy?140:sea?300:200,age:0,life:8,trail:[]});
+      }
+    }
+    if(!e.heavy&&(rival||turn%2===0)){
+      const mode=rival?turn%3:0;
+      if(rival&&mode===2){
+        this.effects.push({type:'enemy-blast',id:`wave-${++this.attackSequence}`,owner:e.id,x:e.x,y:e.y,age:0,charge:1.1,fire:.3,life:1.5,radius:330,shove:400,tint:'#ff6d32',hit:false});
+      }else{
+        const spark=rival&&mode===1,width=this.viewport?this.viewport.right-this.viewport.left:900;
+        this.effects.push({type:'enemy-beam',id:`beam-${++this.attackSequence}`,owner:e.id,...origin,tx:this.player.x,ty:this.player.y,age:0,charge:rival?1.3:1.15,fire:.3,life:rival?1.8:1.6,hit:false,shove:rival?(spark?180:clamp(width*.9,650,1100)):(sea?300:200),tint:spark?'#ff49b3':tint,skin:spark?'spark':null});
+      }
+      this.emit('enemy-charge');
+    }
+    this.emit('enemy-fire');
+  }
   throwRocks(e,f){
     const origin=this.enemyMuzzle(e),travel=clamp(distance(origin,{x:f.tx,y:f.ty})/210,1.65,2.8);
     for(let i=0;i<3&&this.projectiles.length<96;i++){
@@ -283,11 +319,11 @@ export class SkyGame {
     }
     this.emit('rock-throw');
   }
-  bodyImpact(x,y,kind='orb',vx=this.player.x-x,vy=this.player.y-y,power=1){
+  bodyImpact(x,y,kind='orb',vx=this.player.x-x,vy=this.player.y-y,power=1,shove=0){
     const p=this.player;this.impactHits++;
     if(p.impactCooldown>0)return;
-    const speed=Math.hypot(vx,vy)||1,force=Math.min(360,({orb:140,missile:240,rock:300,beam:220}[kind]||140)*power);
-    p.kickX=vx/speed*force;p.kickY=vy/speed*force;p.impactCooldown=.16;p.hitFlash=.24;p.landed=false;
+    const speed=Math.hypot(vx,vy)||1,drag=shove>0?4:8,force=shove>0?clamp(shove,0,1100)*drag:Math.min(360,({orb:140,missile:240,rock:300,beam:220}[kind]||140)*power);
+    p.kickX=vx/speed*force;p.kickY=vy/speed*force;p.kickDrag=drag;p.impactCooldown=shove>0?.65:.16;p.hitFlash=.24;p.landed=false;
     this.shake=Math.max(this.shake,1.5);
     this.effects.push({type:'body-hit',x:p.x,y:p.y,angle:Math.atan2(-vy,-vx),age:0,life:.24});
     this.emit('body-hit'); // Invincible: the brief push replaces health loss and never locks movement.
@@ -318,19 +354,21 @@ export class SkyGame {
       const t=clamp(-(rx*dx+ry*dy)/(dx*dx+dy*dy||1),0,1);
       if(Math.hypot(rx+dx*t,ry+dy*t)<q.radius+27){
         if(q.type==='rock'&&p.flightSpeed>100)this.clearProjectile(q,'ram');
-        else{q.age=q.life;if(q.type==='rock')this.rockDebris(q);this.bodyImpact(q.x,q.y,q.type,q.vx,q.vy,q.power||1);}
+        else{q.age=q.life;if(q.type==='rock')this.rockDebris(q);this.bodyImpact(q.x,q.y,q.type,q.vx,q.vy,q.power||1,q.shove||0);}
       }
       if(q.type==='rock'&&q.age<q.life&&q.y>WORLD.ground-15&&q.vy>0){q.age=q.life;this.rockDebris(q);this.effects.push({type:'burst',x:q.x,y:WORLD.ground-12,age:0,life:.35,big:false,color:'#ddc3a0'});}
     }
     this.projectiles=this.projectiles.filter(q=>!q.cleared&&q.age<q.life&&Math.abs(q.x-p.x)<2100&&q.y>-500&&q.y<1500);
     for(const f of this.effects){
-      if(f.type!=='enemy-beam'||f.cancelled)continue;
+      if(!['enemy-beam','enemy-blast'].includes(f.type)||f.cancelled)continue;
       const owner=this.enemies.find(e=>e.id===f.owner&&e.hp>0);
-      if(owner){const origin=this.enemyMuzzle(owner,true);f.x=origin.x;f.y=origin.y;}
-      else if(f.age<f.charge){f.age=f.life;continue;}
+      if(!owner||this.run.complete){f.age=f.life;continue;}
+      // Lock the attack position and aim while charging: flying aside genuinely dodges it.
+      if(!f.shove){const origin=this.enemyMuzzle(owner,true);f.x=origin.x;f.y=origin.y;}
       if(f.hit||f.age<f.charge||f.age>f.charge+f.fire)continue;
       const angle=Math.atan2(f.ty-f.y,f.tx-f.x),dx=p.x-f.x,dy=p.y-f.y,along=dx*Math.cos(angle)+dy*Math.sin(angle),across=Math.abs(dx*Math.sin(angle)-dy*Math.cos(angle));
-      if(along>=0&&along<1400&&across<38){f.hit=true;this.bodyImpact(f.x,f.y,'beam',p.x-f.x,p.y-f.y,f.power||1);}
+      const contact=f.type==='enemy-blast'?distance(p,f)<this.hazardRadius(f)+27:along>=0&&along<1400&&across<38;
+      if(contact){f.hit=true;this.bodyImpact(f.x,f.y,'beam',dx,dy,f.power||1,f.shove||0);}
     }
   }
   ringFlight(){
@@ -357,7 +395,7 @@ export class SkyGame {
     }
     p.flightSpeed=Math.hypot(p.x-oldX,p.y-oldY)/Math.max(dt,.001);
     const flownX=p.x,flownY=p.y;
-    const decay=Math.exp(-8*dt),push=(1-decay)/8;
+    const drag=p.kickDrag||8,decay=Math.exp(-drag*dt),push=(1-decay)/drag;
     p.x+=p.kickX*push;p.y+=p.kickY*push;p.kickX*=decay;p.kickY*=decay;
     p.x=clamp(p.x,40,WORLD.width-40);p.y=clamp(p.y,105,WORLD.ground-HERO_FEET);
     if(p.x===40||p.x===WORLD.width-40)p.kickX=0;if(p.y===105||p.y===WORLD.ground-HERO_FEET)p.kickY=0;
@@ -384,6 +422,9 @@ export class SkyGame {
       if(e.type==='wyvern'){e.x=e.homeX+Math.sin(this.time*.65)*170;e.y=e.homeY+Math.sin(this.time*.95)*140;}
       if(e.type==='crab')e.x=e.homeX+Math.sin(this.time*.6)*70;
       if(e.type==='dreadnought'){e.x=e.homeX+Math.sin(this.time*.5)*100;e.y=e.homeY+Math.sin(this.time*.8)*75;}
+      if(e.type==='scarab')e.x=e.homeX+Math.sin(this.time*.45)*45;
+      if(e.type==='leviathan'){e.x=e.homeX+Math.sin(this.time*.45)*85;e.y=e.homeY+Math.sin(this.time*.7)*95;}
+      if(e.type==='rival'){e.x=e.homeX+Math.sin(this.time*.65)*95;e.y=e.homeY+Math.sin(this.time*.8)*145;}
       // Only a deliberate new approach punches. Retreat beyond the silhouette to rearm.
       const shapes=hitShapes(e,this.time),gap=Math.min(...shapes.map(([sx,sy,r])=>Math.hypot(p.x-e.x-sx,p.y-e.y-sy)-r));
       if(gap>110)this.ramContacts.delete(e.id);
@@ -424,7 +465,7 @@ export class SkyGame {
       }
       if(this.run.bossHits===this.level.bossHp){
         this.run.complete=true;
-        this.projectiles=[];this.effects=this.effects.filter(f=>f.type!=='enemy-beam'&&f.type!=='rock-windup');
+        this.projectiles=[];this.effects=this.effects.filter(f=>!['enemy-beam','enemy-blast','rock-windup'].includes(f.type));
         if(!this.save.completed.includes(this.save.level))this.save.completed.push(this.save.level);
         this.emit('level-complete',{level:this.save.level});
       }

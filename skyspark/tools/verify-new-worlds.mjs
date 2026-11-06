@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import {SkyGame,freshSave,readSave,LEVELS,WORLD,BOSS_X,bossShieldUp} from '../engine.js';
 
-assert.equal(LEVELS.length,5);
+assert(LEVELS.length>=5);
 assert.deepEqual(LEVELS.slice(0,3).map(l=>l.bossHp),[24,36,48]);
-assert.deepEqual(LEVELS.slice(3).map(l=>[l.id,l.biome,l.bossType,l.bossHp]),[
+assert.deepEqual(LEVELS.slice(3,5).map(l=>[l.id,l.biome,l.bossType,l.bossHp]),[
   ['caldera','volcano','crab',64],['spaceport','space','dreadnought',84]
 ]);
 const bounds={left:BOSS_X-1500,right:WORLD.width,top:0,bottom:1000};
@@ -42,12 +42,12 @@ function scene(level){
   assert(escape.player.x>1000,'Flight controls can immediately escape a stronger impact');
 }
 
-// The five-run shape accepts a legacy three-world schema-5 save, appends fresh worlds,
+// The current run shape accepts a legacy three-world schema-5 save, appends fresh worlds,
 // and unlocks only Caldera after the original three campaigns are complete.
 const oldShape=freshSave();oldShape.completed=[0,1,2];oldShape.level=2;
 oldShape.runs[0].kills=81;oldShape.runs[1].bossHits=12;oldShape.runs[2].position={x:12000,y:400};
 const oldThree=readSave({...oldShape,runs:oldShape.runs.slice(0,3)});
-assert.equal(oldThree.runs.length,5);assert.equal(oldThree.runs[0].kills,81);assert.equal(oldThree.runs[1].bossHits,12);
+assert.equal(oldThree.runs.length,LEVELS.length);assert.equal(oldThree.runs[0].kills,81);assert.equal(oldThree.runs[1].bossHits,12);
 assert.equal(oldThree.runs[2].position.x,12000);assert.equal(oldThree.runs[3].position.x,290);assert.equal(oldThree.runs[4].position.x,290);
 assert.equal(new SkyGame(oldThree).selectLevel(3),true);assert.equal(new SkyGame(oldThree).selectLevel(4),false,'An old completed 3-world save unlocks world four only');
 assert.equal(new SkyGame(freshSave()).selectLevel(3),false,'A fresh save cannot skip the first three worlds');
@@ -106,9 +106,9 @@ for(const level of [3,4]){
   assert(g.run.complete,`${LEVELS[level].name} boss can be defeated with ordinary powers`);
   assert.equal(g.run.bossHits,LEVELS[level].bossHp);assert(g.save.completed.includes(level));
   const saved=g.snapshot(),restored=new SkyGame(saved);assert(restored.run.complete);
-  assert.equal(restored.save.runs.length,5);assert(restored.enemies.length===0);
+  assert.equal(restored.save.runs.length,LEVELS.length);assert(restored.enemies.length===0);
   assert(restored.selectLevel(level),'A completed advanced world remains replayable');
   assert(!restored.run.complete);assert.equal(restored.run.bossHits,0);assert.equal(restored.run.kills,0);assert.equal(restored.run.checkpoint,0);
 }
 
-console.log('Passed five-world schema extension and replay saves, unlock boundary, armor damage strengths, crab/dreadnought volleys and charged beam timing, boss shield cycles and Blast disruption, capped controllable knockback, and off-screen protection.');
+console.log('Passed legacy three-world save extension and replay saves, unlock boundary, armor damage strengths, crab/dreadnought volleys and charged beam timing, boss shield cycles and Blast disruption, capped controllable knockback, and off-screen protection.');

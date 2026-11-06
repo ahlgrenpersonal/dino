@@ -12,7 +12,7 @@ flow.start(1);flow.cancel();assert(!flow.tick(5),'Opening the map early or enter
 flow.start(2);assert(flow.tick(3.5),'A slow animation frame still returns after three real seconds');
 
 let save=freshSave(),html=worldMenuHTML(save);
-assert.equal((html.match(/data-level=/g)||[]).length,LEVELS.length,'All five worlds are visible from the start');
+assert.equal((html.match(/data-level=/g)||[]).length,LEVELS.length,'All worlds are visible from the start');
 assert.equal((html.match(/ disabled/g)||[]).length,LEVELS.length-1);assert(!html.includes('just-finished'));
 for(let level=0;level<LEVELS.length;level++){
   save.level=level;save.completed=Array.from({length:level},(_,i)=>i);save.runs[level].bossHits=LEVELS[level].bossHp;
