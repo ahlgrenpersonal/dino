@@ -1,4 +1,4 @@
-import { BUILD, WORLD, SITE_COUNT, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world104';
+import { BUILD, WORLD, SITE_COUNT, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world105';
 export { BUILD, WORLD, SITE_COUNT, LEVELS, freshSave, readSave, unlockedLevel };
 export const HERO_FEET=48,HERO_EYES=-33;
 export const WEAPONS={punchDamage:1,sparksDamage:.8,blastDamage:1,blastCooldown:2.2,blastRadius:562.5,sparksCooldown:1,chainLimit:16,chainRange:320,laserCooldown:2,laserDamage:5,laserRange:1100,laserDuration:.6,maxSweep:1.3};
@@ -8,9 +8,11 @@ export function armorSegments(e){const n=Math.min(12,e.maxHp),unit=e.maxHp/n;ret
 export const roofSurface=r=>r.y-17;
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+export const ROCK_ATTACK={charge:1.05,interval:3.8,gravity:95,radius:32};
+export function excavatorWheel(e){return{x:e.x-330,y:e.y-280,radius:165};}
 // Local circles follow the new bosses' silhouettes, including moving wing tips.
 export function hitShapes(e,time=0){
-  if(e.type==='excavator')return [[-80,60,105],[15,-10,110],...(e.hp>e.maxHp/3?[[105,-55,48],[155,-80+Math.sin(time*.9)*16,48],[230,20,60]]:[])];
+  if(e.type==='excavator')return [[-330,-280,190],[-185,-185,76],[-75,-100,115],[70,-10,150],[185,80,120],[-130,85,115],[80,-245,65],[80,-345,55]];
   if(e.type==='wyvern'){const wing=Math.sin(time*3)*28;return [[0,0,65],[0,-86,48],[0,98,46],...[-1,1].flatMap(f=>[[f*80,-8,70],[f*149,-38-wing*.5,65],[f*215,-59-wing,42]])];}
   return [[0,0,e.radius]];
 }
@@ -75,7 +77,7 @@ export class SkyGame {
       }
     }
     if(9220>=left&&9220<=right){
-      if(this.run.bossHits<l.bossHp&&!active.has(`${l.id}-boss`))this.enemies.push({id:`${l.id}-boss`,type:l.bossType,boss:true,name:l.boss,x:9220,y:l.bossType==='wyvern'?400:l.bossType==='excavator'?720:640,homeX:9220,homeY:l.bossType==='wyvern'?400:l.bossType==='excavator'?720:640,hp:l.bossHp-this.run.bossHits,maxHp:l.bossHp,radius:l.bossType==='excavator'?150:115,hit:0,cd:.65,phase:0,attacks:0});
+      if(this.run.bossHits<l.bossHp&&!active.has(`${l.id}-boss`))this.enemies.push({id:`${l.id}-boss`,type:l.bossType,boss:true,name:l.boss,x:9220,y:l.bossType==='wyvern'?400:l.bossType==='excavator'?720:640,homeX:9220,homeY:l.bossType==='wyvern'?400:l.bossType==='excavator'?720:640,hp:l.bossHp-this.run.bossHits,maxHp:l.bossHp,radius:l.bossType==='excavator'?350:115,hit:0,cd:.65,phase:0,attacks:0});
       for(let i=0;i<8;i++){
         const id=`${l.id}-${SITE_COUNT}-0-${i}`;
         if(!this.defeated.has(id)&&!active.has(id))this.enemies.push(this.robot(id,8940+(i%4)*175,i<4?800:270+(i%3)*70,i<4?'bot':'drone'));
@@ -141,7 +143,8 @@ export class SkyGame {
     this.shotsCleared++;this.effects.push({type:'intercept',x,y,kind,age:0,life:.32});
     if(this.time-this.interceptSoundAt>.08){this.interceptSoundAt=this.time;this.emit('intercept');}
   }
-  clearProjectile(q,kind){if(q.cleared||q.age>=q.life)return false;q.cleared=true;q.age=q.life;this.interceptFlash(q.x,q.y,kind);return true;}
+  clearProjectile(q,kind){if(q.cleared||q.age>=q.life)return false;q.cleared=true;q.age=q.life;if(q.type==='rock')this.rockDebris(q);this.interceptFlash(q.x,q.y,kind);return true;}
+  rockDebris(q){for(let i=0;i<9;i++){const a=i*2.399;this.particles.push({x:q.x,y:q.y,vx:Math.cos(a)*(55+i*8),vy:Math.sin(a)*110-45,age:0,life:.45+i*.025,size:4+i%5,color:i%2?'#b8a087':'#615d5a',metal:true});}}
   clearBeam(f,kind,p){if(f.cancelled||f.age>=f.life)return false;f.cancelled=true;f.age=f.life;this.interceptFlash(p.x,p.y,kind);return true;}
   chainInterceptions(a,b){
     for(const q of this.projectiles)if(!q.cleared&&distance(q,closestPoint(q,a,b))<q.radius+65)this.clearProjectile(q,'chain');
@@ -155,8 +158,8 @@ export class SkyGame {
   sparks(bounds=this.viewport){
     this.setViewport(bounds);
     if(this.paused||this.sparkCd>0)return false;
-    const visible=e=>!bounds||e.x+e.radius>bounds.left&&e.x-e.radius<bounds.right&&e.y+e.radius>bounds.top&&e.y-e.radius<bounds.bottom;
-    const pool=[...this.enemies.filter(e=>e.hp>0&&this.isVisible(e)).map(e=>({kind:'robot',id:e.id,x:e.x,y:e.y,radius:e.radius})),...this.incomingTargets().filter(visible)];
+    const visible=e=>this.isVisible(e,bounds);
+    const pool=[...this.enemies.filter(e=>e.hp>0&&this.isVisible(e)).map(e=>({...e,kind:'robot'})),...this.incomingTargets().filter(visible)];
     const next=(from,range,visited,first=false)=>pool.filter(e=>!visited.has(e.id)&&distance(e,from)<range&&(!first||visible(e))).sort((a,b)=>(a.kind==='robot'?0:1)-(b.kind==='robot'?0:1)||distance(a,from)-distance(b,from))[0];
     const nodes=[],visited=new Set();let target=next(this.player,700,visited,true);if(!target)return false;
     while(target&&nodes.length<WEAPONS.chainLimit){nodes.push({...target});visited.add(target.id);target=next(target,WEAPONS.chainRange,visited);}
@@ -227,10 +230,16 @@ export class SkyGame {
     if(beam)return {x:e.x,y:e.y-(e.type==='titan'?140:e.type==='wyvern'?75:85)};
     if(e.type==='wyvern')return{x:e.x+offset*128,y:e.y-10};
     if(e.type==='titan')return{x:e.x+offset*130,y:e.y-30};
-    if(e.type==='excavator')return{x:e.x-25+offset*55,y:e.y-90};
+    if(e.type==='excavator'){const wheel=excavatorWheel(e);return{x:wheel.x-95,y:wheel.y-115};}
     return{x:e.x+(this.player.x>=e.x?25:-25),y:e.y-8};
   }
   fireEnemy(e){
+    if(e.type==='excavator'){
+      if(!this.isVisible(e))return;
+      e.cd=ROCK_ATTACK.interval;e.rockWindupUntil=this.time+ROCK_ATTACK.charge;
+      this.effects.push({type:'rock-windup',owner:e.id,tx:this.player.x,ty:this.player.y,age:0,charge:ROCK_ATTACK.charge,life:ROCK_ATTACK.charge+.35,fired:false});
+      this.emit('rock-charge');return;
+    }
     const volley=e.boss?(e.type==='excavator'?3:2):1,turn=e.attacks||0;
     e.attacks=turn+1;e.cd=e.boss?2.6:3.5+(Math.abs(e.phase)%1.4);
     if(e.boss&&e.type!=='excavator'&&turn%2===0){
@@ -246,6 +255,14 @@ export class SkyGame {
     }
     this.emit('enemy-fire');
   }
+  throwRocks(e,f){
+    const origin=this.enemyMuzzle(e),travel=clamp(distance(origin,{x:f.tx,y:f.ty})/210,1.65,2.8);
+    for(let i=0;i<3&&this.projectiles.length<96;i++){
+      const flight=travel+(i-1)*.12,tx=f.tx+(i-1)*80;
+      this.projectiles.push({type:'rock',id:`shot-${++this.attackSequence}`,owner:e.id,...origin,vx:(tx-origin.x)/flight,vy:(f.ty-origin.y-.5*ROCK_ATTACK.gravity*flight*flight)/flight,gravity:ROCK_ATTACK.gravity,radius:ROCK_ATTACK.radius+i*3,age:0,life:6,spin:i*2.1,trail:[]});
+    }
+    this.emit('rock-throw');
+  }
   shieldImpact(x,y){
     this.shieldHits++;const audible=this.player.shield<.18;
     this.player.shield=.65;this.shake=Math.max(this.shake,1.5);
@@ -254,9 +271,14 @@ export class SkyGame {
   }
   updateEnemyAttacks(dt,oldX,oldY){
     const p=this.player;
+    for(const f of this.effects)if(f.type==='rock-windup'&&!f.fired){
+      const owner=this.enemies.find(e=>e.id===f.owner&&e.hp>0);
+      if(!owner||this.run.complete||!this.isVisible(owner)){f.age=f.life;f.fired=true;if(owner)owner.rockWindupUntil=0;continue;}
+      if(f.age>=f.charge){f.fired=true;this.throwRocks(owner,f);}
+    }
     for(const q of this.projectiles){
       if(q.cleared)continue;
-      q.age+=dt;const x=q.x,y=q.y;q.x+=q.vx*dt;q.y+=q.vy*dt;
+      q.age+=dt;const x=q.x,y=q.y;q.x+=q.vx*dt;q.y+=q.vy*dt+.5*(q.gravity||0)*dt*dt;q.vy+=(q.gravity||0)*dt;
       q.trail.push({x,y});q.trail=q.trail.slice(-9);
       // Resolve weapon defense before contact with the hero, including incoming shots crossing a field.
       for(const f of this.effects){
@@ -271,7 +293,11 @@ export class SkyGame {
       // Relative swept collision lets fast flight genuinely dodge a slow projectile.
       const rx=x-oldX,ry=y-oldY,dx=q.x-x-(p.x-oldX),dy=q.y-y-(p.y-oldY);
       const t=clamp(-(rx*dx+ry*dy)/(dx*dx+dy*dy||1),0,1);
-      if(Math.hypot(rx+dx*t,ry+dy*t)<q.radius+27){q.age=q.life;this.shieldImpact(q.x,q.y);}
+      if(Math.hypot(rx+dx*t,ry+dy*t)<q.radius+27){
+        if(q.type==='rock'&&Math.hypot(p.vx,p.vy)>100)this.clearProjectile(q,'ram');
+        else{q.age=q.life;if(q.type==='rock')this.rockDebris(q);this.shieldImpact(q.x,q.y);}
+      }
+      if(q.type==='rock'&&q.age<q.life&&q.y>WORLD.ground-15&&q.vy>0){q.age=q.life;this.rockDebris(q);this.effects.push({type:'burst',x:q.x,y:WORLD.ground-12,age:0,life:.35,big:false,color:'#ddc3a0'});}
     }
     this.projectiles=this.projectiles.filter(q=>!q.cleared&&q.age<q.life&&Math.abs(q.x-p.x)<2100&&q.y>-500&&q.y<1500);
     for(const f of this.effects){
@@ -324,7 +350,7 @@ export class SkyGame {
       if(e.type==='drone')e.y=e.homeY+Math.sin(this.time*1.8+e.phase)*22;
       if(e.type==='bot')e.x=e.homeX+Math.sin(this.time*.7+e.phase)*20;
       if(e.type==='titan')e.y=e.homeY+Math.sin(this.time*1.2)*5;
-      if(e.type==='excavator')e.x=e.homeX+Math.sin(this.time*.5)*65;
+      if(e.type==='excavator')e.x=e.homeX+Math.sin(this.time*.5)*25;
       if(e.type==='wyvern'){e.x=e.homeX+Math.sin(this.time*.65)*170;e.y=e.homeY+Math.sin(this.time*.95)*140;}
       // Swept collisions keep fast flight attacks reliable, including a short tap through a robot.
       const dx=p.x-oldX,dy=p.y-oldY;
@@ -332,7 +358,7 @@ export class SkyGame {
         const t=clamp(((e.x+sx-oldX)*dx+(e.y+sy-oldY)*dy)/(dx*dx+dy*dy||1),0,1);
         return Math.hypot(e.x+sx-oldX-dx*t,e.y+sy-oldY-dy*t)<r+25;
       }))this.damage(e,'ram');
-      const visible=!bounds||e.x+e.radius>bounds.left-160&&e.x-e.radius<bounds.right+160&&e.y+e.radius>bounds.top-160&&e.y-e.radius<bounds.bottom+160;
+      const visible=this.isVisible(e);
       if(!this.run.complete&&e.hp>0&&e.cd<=0&&visible&&distance(p,e)<(e.boss?1400:1100))this.fireEnemy(e);
     }
     this.aim=this.nearest(900,bounds)?.id||null;
@@ -365,7 +391,7 @@ export class SkyGame {
       }
       if(this.run.bossHits===this.level.bossHp){
         this.run.complete=true;
-        this.projectiles=[];this.effects=this.effects.filter(f=>f.type!=='enemy-beam');
+        this.projectiles=[];this.effects=this.effects.filter(f=>f.type!=='enemy-beam'&&f.type!=='rock-windup');
         if(!this.save.completed.includes(this.save.level))this.save.completed.push(this.save.level);
         this.emit('level-complete',{level:this.save.level});
       }

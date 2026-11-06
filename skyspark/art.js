@@ -1,4 +1,4 @@
-import { WORLD, WEAPONS, armorSegments, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world104';
+import { WORLD, WEAPONS, armorSegments, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world105';
 const TAU=Math.PI*2;
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function path(c,points,fill,stroke,width=1){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();if(fill){c.fillStyle=fill;c.fill();}if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke();}}
@@ -92,20 +92,56 @@ function tree(c,x,y,s=1){
   for(const [dx,dy,r] of [[-22,-65,28],[15,-78,32],[0,-100,31]]){oval(c,dx+4,dy+5,r,r,'#456b63');oval(c,dx-4,dy-4,r*.83,r*.84,'#729b73');oval(c,dx-12,dy-11,r*.5,r*.53,'#9eb786');}c.restore();
 }
 function pine(c,x,y,s=1){c.save();c.translate(x,y);c.scale(s,s);line(c,0,0,0,-90,'#6d6171',8);for(let i=0;i<3;i++){const by=-25-i*30;path(c,[[-38+i*5,by],[0,by-62],[38-i*5,by]],i%2?'#466e72':'#31566a');path(c,[[-12,by-43],[0,by-62],[13,by-42]],'#dce7e3');}c.restore();}
+function miningRock(c,x,y,r,angle=0){
+  c.save();c.translate(x,y);c.rotate(angle);
+  const shape=[[-.82,-.5],[-.18,-.97],[.65,-.72],[1,.12],[.53,.84],[-.3,.94],[-.94,.25]].map(([a,b])=>[a*r,b*r]);
+  path(c,shape,grad(c,-r,-r,r,r,[[0,'#dbb18a'],[.4,'#8c7b6e'],[1,'#454b54']]),'#343c46',3);
+  path(c,[[-.82*r,-.5*r],[-.18*r,-.97*r],[.65*r,-.72*r],[.14*r,-.13*r]],'#e2bf9670');
+  path(c,[[-.3*r,.94*r],[.14*r,-.13*r],[r,.12*r],[.53*r,.84*r]],'#333e4a66');
+  line(c,-r*.35,-r*.45,r*.14,-r*.13,'#ffd6a482',2);line(c,r*.14,-r*.13,-r*.07,r*.43,'#403b3b',2);c.restore();
+}
 function excavator(c,e,time){
   c.save();c.translate(e.x,e.y);if(e.hit>0)c.globalAlpha=.65;
-  const gold=grad(c,-150,-100,120,70,[[0,'#ffe3a0'],[.45,'#dca651'],[1,'#8b653d']]);
-  oval(c,0,127,210,14,'#23384244');box(c,-166,64,326,66,28,'#263c49','#788e8e');
-  for(let i=0;i<8;i++){oval(c,-140+i*39,97,22,23,'#516878');oval(c,-140+i*39,97,10,11,'#8ca19f');}
-  box(c,-150,5,260,68,13,gold,'#4b5960');box(c,-98,-104,128,114,13,gold,'#4b5960');
-  path(c,[[-80,-91],[8,-91],[15,-21],[-80,-21]],grad(c,0,-90,0,0,[[0,'#81b9c9'],[1,'#264a68']]),'#233d51',4);line(c,-36,-90,-36,-23,'#dac994',5);
-  box(c,-127,-15,32,50,5,'#536976');for(let i=0;i<4;i++)line(c,-120,-6+i*9,-102,-6+i*9,'#a4b3a7',3);
-  glow(c,-7,33,50,'#ffe58c44');oval(c,-7,33,24,24,'#55413c');oval(c,-7,33,16,16,'#fff1a6');
-  const swing=Math.sin(time*.9)*16;
-  if(e.hp>e.maxHp/3){line(c,54,-1,140,-112+swing,'#4e5960',37);line(c,54,-1,140,-112+swing,'#e4b765',28);line(c,140,-112+swing,219,-19,'#5a6266',26);line(c,140,-112+swing,219,-19,'#f2d08c',18);path(c,[[199,-27],[259,-12],[265,41],[218,52],[194,20]],gold,'#4b5960',4);for(let i=0;i<3;i++)path(c,[[218+i*15,49],[225+i*15,65],[232+i*15,45]],'#dbe1cd');}
-  else lightning(c,55,0,110,-40,time,'#b8ffff',4);
-  if(e.hp<e.maxHp*5/6)path(c,[[-142,8],[-82,5],[-110,47],[-141,30]],'#4c5a60');
-  line(c,-77,-53,-55,-53,'#fff0a3',5);line(c,-18,-53,2,-53,'#fff0a3',5);
+  const steel=grad(c,-240,-310,270,120,[[0,'#899da7'],[.22,'#3e5364'],[.65,'#263747'],[1,'#172838']]);
+  const gold=grad(c,-150,-200,120,90,[[0,'#efd084'],[.5,'#b68d45'],[1,'#6e5635']]);
+  const charge=Math.max(0,Math.min(1,1-((e.rockWindupUntil||0)-time)/1.05)),winding=(e.rockWindupUntil||0)>time;
+  oval(c,10,132,320,22,'#19344755');
+  // Two enormous crawler assemblies, with exposed rollers and steel tread plates.
+  for(const [x,y,w] of [[-245,57,330],[40,70,265]]){
+    box(c,x,y,w,76,32,'#172936','#83938d');
+    for(let i=0;i<Math.floor(w/35);i++){const px=x+23+i*34;oval(c,px,y+39,24,26,'#536572');oval(c,px,y+39,11,13,'#b3b7a0');line(c,px-9,y+6,px+14,y+6,'#70818a',5);line(c,px-9,y+70,px+14,y+70,'#526671',5);}
+  }
+  box(c,-200,-35,480,108,15,steel,'#182d3d');box(c,-167,-92,277,71,7,gold,'#283c45');
+  for(let i=0;i<9;i++){const x=-155+i*47;path(c,[[x,7],[x+21,7],[x-4,36],[x-25,36]],'#efc65c');}
+  for(let i=0;i<6;i++)box(c,120+i*23,-14,12,48,3,'#172d3c','#7a8c91');
+  // Industrial tower, upper control room and angry amber observation windows.
+  box(c,35,-350,128,287,7,steel,'#213747');box(c,20,-373,164,72,9,gold,'#213747');
+  path(c,[[35,-360],[169,-360],[155,-319],[47,-319]],'#172c3d','#b0bdac',3);
+  line(c,48,-348,87,-337,'#ff9d58',7);line(c,113,-337,151,-348,'#ff9d58',7);
+  for(let i=0;i<6;i++){line(c,57,-289+i*33,140,-289+i*33,'#83928c',3);line(c,65,-287+i*33,65,-266+i*33,'#d8b86b',3);}
+  line(c,100,-374,100,-485,'#667c85',11);line(c,100,-485,-338,-280,'#b1bcb0',3);line(c,100,-485,279,-118,'#b1bcb0',3);
+  box(c,225,-151,74,121,9,steel,'#1c3345');for(let i=0;i<4;i++)line(c,236,-132+i*23,286,-132+i*23,'#8a9994',3);
+  // A long lattice conveyor boom connects the wheel to the main machine.
+  const ax=-330,ay=-252,bx=102,by=-78,dx=bx-ax,dy=by-ay,len=Math.hypot(dx,dy),nx=-dy/len,ny=dx/len;
+  line(c,ax,ay,bx,by,'#172b3a',71);line(c,ax,ay,bx,by,gold,55);line(c,ax,ay,bx,by,'#263845',23);
+  for(let i=0;i<9;i++){const t=i/9,u=(i+1)/9;line(c,ax+dx*t+nx*25,ay+dy*t+ny*25,ax+dx*u-nx*25,ay+dy*u-ny*25,'#92a39e',5);}
+  line(c,ax+nx*34,ay+ny*34,bx+nx*34,by+ny*34,'#d8c189',5);
+  // The wheel stays intact as armor breaks: its motion remains readable through the whole fight.
+  c.save();c.translate(-330,-280);c.rotate(time*.9);
+  oval(c,0,0,172,172,'#172c3c');c.beginPath();c.arc(0,0,152,0,TAU);c.strokeStyle='#a2a49a';c.lineWidth=17;c.stroke();
+  for(let i=0;i<12;i++){
+    const a=i*TAU/12;c.save();c.rotate(a);line(c,35,0,148,0,'#71868c',12);line(c,44,-6,135,-6,'#bfba9b',3);
+    path(c,[[148,-21],[189,-29],[204,-5],[184,27],[155,24]],gold,'#213645',5);path(c,[[164,-10],[189,-16],[190,5],[174,16]],'#263b49');
+    if(i%3===0)miningRock(c,175,0,23,-a+time*.5);c.restore();
+  }
+  oval(c,0,0,49,49,steel);oval(c,0,0,30,30,'#c2a362');oval(c,0,0,15,15,winding?'#fff5c2':'#ffbf74');
+  c.restore();
+  if(winding){
+    const a=-.8-charge*1.2,x=-330+Math.cos(a)*174,y=-280+Math.sin(a)*174;
+    glow(c,x,y,69,'#ffb55b66');miningRock(c,x,y,35,-time);c.beginPath();c.arc(-330,-280,216,-2.1,-.8);c.strokeStyle='#ffd68e';c.lineWidth=5;c.stroke();
+  }
+  if(e.hp<e.maxHp*.65){path(c,[[-170,-72],[-58,-75],[-88,-18],[-166,-26]],'#152a3b');lightning(c,-155,-52,-73,-30,time,'#ffb86d',3);}
+  if(e.hp<e.maxHp*.3){lightning(c,45,-250,142,-180,time,'#b9ffff',4);glow(c,100,-205,70,'#ffb35a33');}
   c.restore();
 }
 function stormwing(c,e,time){
@@ -163,7 +199,7 @@ export function worldPicture(canvas,index){
     for(let i=0;i<24;i++)oval(c,(i*127)%720,12+(i*59)%200,1.6,1.6,'#ffffffaa');
   }
   // Matching boss silhouettes help a non-reader recognize each adventure.
-  c.save();c.translate(575,city?146:plains?180:129);const scale=city?.4:plains?.38:.4;c.scale(scale,scale);
+  c.save();c.translate(plains?584:575,city?146:plains?191:129);const scale=city?.4:plains?.27:.4;c.scale(scale,scale);
   robot(c,{x:0,y:0,type:city?'titan':plains?'excavator':'wyvern',hp:24,maxHp:24,phase:0,hit:0},.2);c.restore();
   glow(c,220,108,72,'#b4ffff33');hero(c,220,111,69,0,{facing:1,flying:true,portrait:true});
   c.restore();
@@ -177,6 +213,7 @@ export class Renderer {
     const r=this.canvas.getBoundingClientRect(),dpr=Math.min(globalThis.devicePixelRatio||1,2);
     if(r.width<1||r.height<1)return;
     this.width=r.width;this.height=r.height;this.scale=Math.min(r.width/620,r.height/730);this.scale=Math.max(.48,Math.min(this.scale,1.3));
+    this.baseScale=this.scale;
     const w=Math.round(r.width*dpr),h=Math.round(r.height*dpr);
     if(this.canvas.width!==w||this.canvas.height!==h){this.canvas.width=w;this.canvas.height=h;this.backdrop=null;}
   }
@@ -184,8 +221,10 @@ export class Renderer {
   screenToWorld(x,y){return{x:this.camera.x+(x-this.width/2)/this.scale,y:this.camera.y+(y-this.height/2)/this.scale};}
   worldToScreen(x,y){return{x:(x-this.camera.x)*this.scale+this.width/2,y:(y-this.camera.y)*this.scale+this.height/2};}
   follow(g,dt,snap=false){
+    const mining=g.enemies.find(e=>e.type==='excavator'&&e.hp>0&&Math.abs(e.x-g.player.x)<1150);
+    this.scale=this.baseScale*(mining?.72:1);
     const b=this.height/this.scale/2,w=this.width/this.scale/2,p=g.player;
-    const tx=clamp(p.x+p.facing*65,w,WORLD.width-w),ty=clamp(p.y-80,Math.min(b,480),Math.max(480,WORLD.height-b));
+    const tx=clamp(p.x+(mining?Math.sign(mining.x-p.x)*190:p.facing*65),w,WORLD.width-w),ty=clamp(p.y-80,Math.min(b,480),Math.max(480,WORLD.height-b));
     const k=snap?1:1-Math.exp(-dt*5);
     this.camera.x+=(tx-this.camera.x)*k;this.camera.y+=(ty-this.camera.y)*k;
   }
@@ -317,7 +356,10 @@ export class Renderer {
       if(q.cleared)continue;
       const b=this.bounds();if(q.x<b.left-80||q.x>b.right+80||q.y<b.top-80||q.y>b.bottom+80)continue;
       for(let i=1;i<q.trail.length;i++){const a=q.trail[i-1],t=q.trail[i];line(c,a.x,a.y,t.x,t.y,q.type==='missile'?'#ffd28c55':'#ffe5ab44',2+i*.5);}
-      if(q.type==='missile'){
+      if(q.type==='rock'){
+        for(let i=0;i<3;i++)oval(c,q.x-q.vx*(.07+i*.06),q.y-q.vy*(.07+i*.06),q.radius*(.6-i*.12),q.radius*(.5-i*.1),'#d3b39022');
+        miningRock(c,q.x,q.y,q.radius,q.spin+g.time*2);
+      }else if(q.type==='missile'){
         glow(c,q.x,q.y,36,'#ffd39344');c.save();c.translate(q.x,q.y);c.rotate(Math.atan2(q.vy,q.vx));
         path(c,[[-16,-6],[-41-Math.sin(g.time*40)*7,0],[-16,6]],'#ffbd65');path(c,[[-17,-3],[-33,0],[-17,3]],'#fff4b1');
         path(c,[[-7,-6],[-18,-16],[7,-6]],'#8db498','#3a5564',2);path(c,[[-7,6],[-18,16],[7,6]],'#8db498','#3a5564',2);
@@ -330,6 +372,10 @@ export class Renderer {
     for(const f of g.effects){
       if(f.cancelled)continue;
       const k=1-f.age/f.life;c.save();c.globalAlpha=k;
+      if(f.type==='rock-windup'&&!f.fired){
+        const owner=g.enemies.find(e=>e.id===f.owner&&e.hp>0);
+        if(owner){const origin=g.enemyMuzzle(owner);c.setLineDash([10,14]);c.beginPath();c.moveTo(origin.x,origin.y);c.quadraticCurveTo((origin.x+f.tx)/2,Math.min(origin.y,f.ty)-105,f.tx,f.ty);c.strokeStyle='#ffd79a66';c.lineWidth=3;c.stroke();c.setLineDash([]);c.beginPath();c.arc(f.tx,f.ty,48+Math.sin(g.time*8)*5,0,TAU);c.strokeStyle='#ffd59b99';c.lineWidth=3;c.stroke();}
+      }
       if(f.type==='zap'){lightning(c,f.x,f.y,f.tx,f.ty,g.time,'#4edcff',9);lightning(c,f.x,f.y,f.tx,f.ty,g.time,'#e1ffff',3);}
       if(f.type==='laser'){
         const eye=eyePosition(p),tx=eye.x+Math.cos(f.angle)*WEAPONS.laserRange,ty=eye.y+Math.sin(f.angle)*WEAPONS.laserRange;

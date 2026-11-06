@@ -42,6 +42,8 @@ export class Sound {
     if(kind==='intercept')this.note(1150,t,.1,.045,'triangle',1600);
     if(kind==='enemy-fire')this.note(190,t,.13,.035,'triangle',95);
     if(kind==='enemy-charge')this.note(330,t,.85,.045,'sine',850);
+    if(kind==='rock-charge'){this.note(70,t,1,.09,'sawtooth',135);this.note(170,t+.4,.5,.05,'triangle',230);}
+    if(kind==='rock-throw'){this.note(120,t,.35,.14,'triangle',40);this.note(55,t,.45,.13,'sine',32);}
     if(kind==='shield'){this.note(760,t,.18,.065,'sine',1250);this.note(1140,t+.03,.2,.035);}
     if(kind==='blast'){this.note(90,t,.8,.65,'sine',32);this.note(400,t,.7,.08,'triangle',70);}
     if(kind==='destroy'){this.note(220,t,.15,.15,'triangle',55);this.note(880,t,.12,.06,'sine');}
