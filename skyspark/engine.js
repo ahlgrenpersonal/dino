@@ -1,7 +1,7 @@
-import { BUILD, WORLD, SITE_COUNT, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world103';
+import { BUILD, WORLD, SITE_COUNT, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world104';
 export { BUILD, WORLD, SITE_COUNT, LEVELS, freshSave, readSave, unlockedLevel };
 export const HERO_FEET=48,HERO_EYES=-33;
-export const WEAPONS={punchDamage:1,sparksDamage:.8,blastDamage:1,blastCooldown:2.5,sparksCooldown:1.2,chainLimit:16,chainRange:320,laserCooldown:2.2,laserDamage:5,laserRange:1100,laserDuration:.6,maxSweep:1.3};
+export const WEAPONS={punchDamage:1,sparksDamage:.8,blastDamage:1,blastCooldown:2.2,blastRadius:562.5,sparksCooldown:1,chainLimit:16,chainRange:320,laserCooldown:2,laserDamage:5,laserRange:1100,laserDuration:.6,maxSweep:1.3};
 const wrapAngle=a=>Math.atan2(Math.sin(a),Math.cos(a));
 export function laserAngle(f,age=f.age){const t=Math.min(1,age/WEAPONS.laserDuration);return f.from+f.sweep*t*t*(3-2*t);}
 export function armorSegments(e){const n=Math.min(12,e.maxHp),unit=e.maxHp/n;return Array.from({length:n},(_,i)=>Math.max(0,Math.min(1,(e.hp-i*unit)/unit)));}
@@ -29,7 +29,7 @@ function sectorHit(start,previous,current,p,radius,range){
 export function heroLean(p){return p.landed?0:clamp(p.vx/1050,-.5,.5);}
 export function eyePosition(p){const a=heroLean(p),x=p.facing*8,y=HERO_EYES;return{x:p.x+x*Math.cos(a)-y*Math.sin(a),y:p.y+x*Math.sin(a)+y*Math.cos(a)};}
 export class SkyGame {
-  constructor(save,onEvent=()=>{}){this.save=readSave(save);this.onEvent=onEvent;this.time=0;this.paused=false;this.setupRun();}
+  constructor(save,onEvent=()=>{}){this.save=readSave(save);this.onEvent=onEvent;this.time=0;this.paused=false;this.viewport=null;this.setupRun();}
   get level(){return LEVELS[this.save.level];}
   get run(){return this.save.runs[this.save.level];}
   get site(){return this.sites[clamp(Math.round((this.player.x-430)/500),0,SITE_COUNT-1)];}
@@ -94,12 +94,21 @@ export class SkyGame {
     this.player.landed = false;
     this.emit('move');
   }
-  nearest(range = 650, bounds) {
-    return this.enemies.filter(e => e.hp > 0 && distance(e,this.player) < range && (!bounds || e.x+e.radius>bounds.left && e.x-e.radius<bounds.right && e.y+e.radius>bounds.top && e.y-e.radius<bounds.bottom))
+  setViewport(bounds){if(bounds)this.viewport={...bounds};}
+  isVisible(e,bounds=this.viewport){
+    if(!bounds)return true; // Headless simulations can supply their own viewport.
+    return hitShapes(e,this.time).some(([dx,dy,r])=>{
+      const x=e.x+dx,y=e.y+dy;
+      return Math.hypot(x-clamp(x,bounds.left,bounds.right),y-clamp(y,bounds.top,bounds.bottom))<r;
+    });
+  }
+  nearest(range = 650, bounds=this.viewport) {
+    return this.enemies.filter(e => e.hp > 0 && distance(e,this.player) < range && this.isVisible(e,bounds))
       .sort((a,b) => distance(a,this.player)-distance(b,this.player))[0] || null;
   }
   damage(e, kind, amount=kind==='laser'?WEAPONS.laserDamage:kind==='chain'||kind==='spark'?WEAPONS.sparksDamage:kind==='sphere'?WEAPONS.blastDamage:WEAPONS.punchDamage) {
-    if (e.hp <= 0) return false;
+    // Recheck at impact, not just when aiming: piercing rays and delayed chains can leave the screen.
+    if (e.hp <= 0 || !this.isVisible(e)) return false;
     e.lastHits ||= {};
     if (this.time-(e.lastHits[kind]??-10) < (kind==='ram'?.85:kind==='spark'?.8:.5)) return false;
     e.lastHits[kind]=this.time;
@@ -143,10 +152,11 @@ export class SkyGame {
     for(const q of this.projectiles)if(!q.cleared&&distance(q,f)<radius+q.radius)this.clearProjectile(q,'sphere');
     for(const beam of this.effects)if(beam.type==='enemy-beam'&&!beam.cancelled){const {a,b}=this.beamSegment(beam),p=closestPoint(f,a,b);if(distance(p,f)<radius+12)this.clearBeam(beam,'sphere',p);}
   }
-  sparks(bounds){
+  sparks(bounds=this.viewport){
+    this.setViewport(bounds);
     if(this.paused||this.sparkCd>0)return false;
     const visible=e=>!bounds||e.x+e.radius>bounds.left&&e.x-e.radius<bounds.right&&e.y+e.radius>bounds.top&&e.y-e.radius<bounds.bottom;
-    const pool=[...this.enemies.filter(e=>e.hp>0).map(e=>({kind:'robot',id:e.id,x:e.x,y:e.y,radius:e.radius})),...this.incomingTargets()];
+    const pool=[...this.enemies.filter(e=>e.hp>0&&this.isVisible(e)).map(e=>({kind:'robot',id:e.id,x:e.x,y:e.y,radius:e.radius})),...this.incomingTargets().filter(visible)];
     const next=(from,range,visited,first=false)=>pool.filter(e=>!visited.has(e.id)&&distance(e,from)<range&&(!first||visible(e))).sort((a,b)=>(a.kind==='robot'?0:1)-(b.kind==='robot'?0:1)||distance(a,from)-distance(b,from))[0];
     const nodes=[],visited=new Set();let target=next(this.player,700,visited,true);if(!target)return false;
     while(target&&nodes.length<WEAPONS.chainLimit){nodes.push({...target});visited.add(target.id);target=next(target,WEAPONS.chainRange,visited);}
@@ -159,6 +169,7 @@ export class SkyGame {
       const node=f.nodes[f.fired],from=f.fired?f.nodes[f.fired-1]:{x:f.x,y:f.y};
       if(node.kind==='robot'){
         const enemy=this.enemies.find(e=>e.id===node.id&&e.hp>0);
+        if(enemy&&!this.isVisible(enemy)){f.nodes.length=f.fired;f.life=f.age+.4;break;}
         if(enemy){node.x=enemy.x;node.y=enemy.y;this.damage(enemy,'chain');}
       }else if(node.kind==='shot'){
         const q=this.projectiles.find(q=>q.id===node.id&&!q.cleared);if(q){node.x=q.x;node.y=q.y;this.clearProjectile(q,'chain');}
@@ -169,9 +180,10 @@ export class SkyGame {
     }
     this.projectiles=this.projectiles.filter(q=>!q.cleared);
   }
-  laser(bounds) {
+  laser(bounds=this.viewport) {
+    this.setViewport(bounds);
     if(this.paused||this.laserCd>0)return false;
-    const inView=e=>!bounds||e.x+e.radius>bounds.left&&e.x-e.radius<bounds.right&&e.y+e.radius>bounds.top&&e.y-e.radius<bounds.bottom;
+    const inView=e=>this.isVisible(e,bounds);
     const target=this.enemies.find(e=>e.id===this.aim&&e.hp>0&&distance(e,this.player)<900&&inView(e))||this.nearest(900,bounds)||this.incomingTargets().filter(e=>inView(e)&&distance(e,this.player)<900).sort((a,b)=>distance(a,this.player)-distance(b,this.player))[0];
     this.laserCd=WEAPONS.laserCooldown;
     const p=this.player;if(target)p.facing=target.x>=p.x?1:-1;
@@ -204,10 +216,11 @@ export class SkyGame {
     }
     this.projectiles=this.projectiles.filter(q=>!q.cleared);
   }
-  blast() {
+  blast(bounds=this.viewport) {
+    this.setViewport(bounds);
     if (this.paused || this.blastCd>0) return false;
     this.blastCd = WEAPONS.blastCooldown; this.shake = 6; this.player.flare = .8;
-    const f={type:'sphere',x:this.player.x,y:this.player.y,age:0,life:.85,radius:450,hit:[]};this.effects.push(f);this.blastInterceptions(f);this.projectiles=this.projectiles.filter(q=>!q.cleared);
+    const f={type:'sphere',x:this.player.x,y:this.player.y,age:0,life:.85,radius:WEAPONS.blastRadius,hit:[]};this.effects.push(f);this.blastInterceptions(f);this.projectiles=this.projectiles.filter(q=>!q.cleared);
     this.emit('blast'); return true;
   }
   enemyMuzzle(e,beam=false,offset=0){
@@ -277,6 +290,7 @@ export class SkyGame {
     this.emit('rings-start');return true;
   }
   update(dt, keys = {}, bounds) {
+    this.setViewport(bounds);
     if(this.paused)return;
     dt=clamp(dt,0,.04);this.time+=dt;if(!this.run.complete)this.run.playSeconds+=dt;
     this.laserCd=Math.max(0,this.laserCd-dt);this.sparkCd=Math.max(0,this.sparkCd-dt);this.blastCd=Math.max(0,this.blastCd-dt);this.auraCd-=dt;

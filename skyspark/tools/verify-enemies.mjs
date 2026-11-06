@@ -24,5 +24,5 @@ for(const type of ['titan','excavator','wyvern']){
   const cancelled=scene(type,true);cancelled.g.update(.02);cancelled.g.projectiles=[];cancelled.g.damage(cancelled.e,'laser',cancelled.e.maxHp);tick(cancelled.g,1.4);assert.equal(cancelled.g.shieldHits,0,'Destroying a charging boss cancels its beam');
 }
 const cap=scene();for(let i=0;i<150;i++)cap.g.fireEnemy(cap.e);assert.equal(cap.g.projectiles.length,96,'Projectile count stays bounded');
-const blast=scene();assert(blast.g.blast());assert.equal(blast.g.blastCd,2.5);assert.equal(WEAPONS.blastCooldown,2.5);tick(blast.g,2.4);assert(!blast.g.blast());tick(blast.g,.12);assert(blast.g.blast(),'Big Blast recharges in 2.5 seconds');
-console.log('Passed ranged ground/drone fire, slow large shots, real shield impacts, dodging, pause, all boss volleys, telegraphed green beams, defeated-boss cancellation, projectile limits and 2.5-second Blast recharge.');
+const blast=scene();assert(blast.g.blast());assert.equal(blast.g.blastCd,2.2);assert.equal(WEAPONS.blastCooldown,2.2);tick(blast.g,2.18);assert(!blast.g.blast());tick(blast.g,.04);assert(blast.g.blast(),'Big Blast recharges in 2.2 seconds');
+console.log('Passed ranged ground/drone fire, slow large shots, real shield impacts, dodging, pause, all boss volleys, telegraphed green beams, defeated-boss cancellation, projectile limits and 2.2-second Blast recharge.');

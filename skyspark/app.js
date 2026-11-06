@@ -1,9 +1,9 @@
-import { BUILD, WEAPONS, armorSegments, SkyGame, LEVELS, readSave } from './engine.js?v=world103';
-import { Renderer, worldPicture } from './art.js?v=world103';
-import { VictoryReturn, worldMenuHTML } from './world-menu.js?v=world103';
-import { Sound } from './audio.js?v=world103';
-import { loadProgress } from './saves.js?v=world103';
-const buildVersion = 'world103';
+import { BUILD, WEAPONS, armorSegments, SkyGame, LEVELS, readSave } from './engine.js?v=world104';
+import { Renderer, worldPicture } from './art.js?v=world104';
+import { VictoryReturn, worldMenuHTML } from './world-menu.js?v=world104';
+import { Sound } from './audio.js?v=world104';
+import { loadProgress } from './saves.js?v=world104';
+const buildVersion = 'world104';
 const SAVE_KEY='skyspark-save-v1',BACKUP_KEY='skyspark-before-restart-v1';
 const $=id=>document.getElementById(id),canvas=$('world'),panel=$('panel'),sound=new Sound();
 let storageOK=true,savePending=0,lastSave=0,last=performance.now(),panelMode='',toastUntil=0,celebrationUntil=0,notified=false,installPrompt=null,updatePending=false;
@@ -105,7 +105,7 @@ function bindPower(id,activate){
   b.addEventListener('click',e=>{if(e.detail===0&&!b.disabled)activate();});
 }
 bindPower('sparks',()=>game.sparks(renderer.bounds()));
-bindPower('laser',()=>game.laser(renderer.bounds()));bindPower('blast',()=>game.blast());
+bindPower('laser',()=>game.laser(renderer.bounds()));bindPower('blast',()=>game.blast(renderer.bounds()));
 let pointer=null,downAt=null;
 function point(e){const r=canvas.getBoundingClientRect();return renderer.screenToWorld(e.clientX-r.left,e.clientY-r.top);}
 canvas.addEventListener('pointerdown',e=>{
@@ -126,7 +126,7 @@ document.addEventListener('keydown',e=>{
   if(e.repeat)return;
   if(key==='x'){game.sparks(renderer.bounds());e.preventDefault();}
   if(key==='l'||key==='z'){game.laser(renderer.bounds());e.preventDefault();}
-  if(key===' '){game.blast();e.preventDefault();}
+  if(key===' '){game.blast(renderer.bounds());e.preventDefault();}
   if(key==='m'){showMap();e.preventDefault();}
 });
 document.addEventListener('keyup',e=>{const key=e.key.length===1?e.key.toLowerCase():e.key;if(keyNames[key])delete keys[keyNames[key]];});

@@ -1,4 +1,4 @@
-import { WORLD, WEAPONS, armorSegments, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world103';
+import { WORLD, WEAPONS, armorSegments, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world104';
 const TAU=Math.PI*2;
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function path(c,points,fill,stroke,width=1){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();if(fill){c.fillStyle=fill;c.fill();}if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke();}}
@@ -299,7 +299,7 @@ export class Renderer {
     if(g.target){const a=g.target;c.setLineDash([4,7]);line(c,g.player.x,g.player.y,a.x,a.y,'#d4f9f344',2);c.setLineDash([]);c.beginPath();c.arc(a.x,a.y,16+Math.sin(g.time*5)*3,0,TAU);c.strokeStyle='#e0fff2aa';c.lineWidth=2;c.stroke();}
     const aim=g.enemies.find(e=>e.id===g.aim);
     for(const e of g.enemies){
-      if(e.hp<=0||e.x+e.radius+80<this.bounds().left||e.x-e.radius-80>this.bounds().right)continue;
+      if(e.hp<=0||!g.isVisible(e,this.bounds()))continue;
       if(aim===e){c.beginPath();c.ellipse(e.x,e.y,e.radius+12,e.radius+12,0,0,TAU);c.setLineDash([8,9]);c.strokeStyle='#ffe4ad99';c.lineWidth=2;c.stroke();c.setLineDash([]);}
       robot(c,e,g.time);
       if(e.boss){

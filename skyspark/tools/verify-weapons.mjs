@@ -24,17 +24,18 @@ g=scene([[1180,467],[1408,367]]);g.laser();f=g.effects.find(e=>e.type==='laser')
 assert(Math.abs(f.sweep+Math.atan2(100,400)*2)<1e-9,'An ordinary targeted sweep also doubles its angle');
 g=scene([]);g.laser();assert.equal(g.effects.find(e=>e.type==='laser').sweep,-.52,'The untargeted sweep doubles too');
 // Sequential lightning: one immediate strike, then distinct hops, capped at sixteen.
-g=scene(Array.from({length:18},(_,i)=>[1150+i*120,500]));assert(g.sparks());assert.equal(g.run.kills,1);assert.equal(g.sparkCd,1.2);assert(!g.sparks());
+g=scene(Array.from({length:18},(_,i)=>[1150+i*120,500]));assert(g.sparks());assert.equal(g.run.kills,1);assert.equal(g.sparkCd,1);assert(!g.sparks());
 f=g.effects.find(e=>e.type==='chain');assert.equal(f.nodes.length,16);assert.equal(new Set(f.nodes.map(n=>n.id)).size,16);
 g.paused=true;const age=f.age,cd=g.sparkCd;tick(g,2);assert.equal(f.age,age);assert.equal(g.sparkCd,cd);g.paused=false;
 tick(g,.54);assert.equal(g.run.kills,8,'The first eight strikes retain their consecutive timing');assert.equal(g.enemies.length,10);
-tick(g,.6);assert.equal(g.run.kills,16,'The chain continues to the sixteenth target');assert.equal(g.enemies.length,2);assert(!g.sparks());
+tick(g,.6);assert.equal(g.run.kills,16,'The chain continues to the sixteenth target');assert.equal(g.enemies.length,2);assert.equal(g.sparkCd,0);
 tick(g,.1);g.player.x=2900;assert(g.sparks());tick(g,.1);assert.equal(g.run.kills,18);
 g=scene([[1150,500],[1500,500]]);g.sparks();tick(g,.7);assert.equal(g.run.kills,1,'A jump cannot cross an empty gap beyond its range');
 g=scene([]);assert(!g.sparks());assert.equal(g.sparkCd,0,'No target does not waste the sparks cooldown');
+g=scene([[1250,500]]);Object.assign(g.enemies[0],{boss:true,hp:12,maxHp:12});g.sparks();tick(g,.98);assert(!g.sparks());tick(g,.04);assert(g.sparks(),'Sparks recharges in one second');
 // One laser cast removes five armor points, never repeated damage every animation frame.
 g=scene([[1250,467]]);let boss=g.enemies[0];Object.assign(boss,{boss:true,type:'titan',hp:12,maxHp:12});g.laser();assert.equal(boss.hp,7);tick(g,.8);assert.equal(boss.hp,7);assert.equal(g.run.bossHits,5);assert(!g.laser());
-tick(g,1.5);assert(g.laser());assert.equal(boss.hp,2);
+tick(g,1.18);assert(!g.laser());tick(g,.04);assert(g.laser());assert.equal(boss.hp,2);
 g=scene([[1250,500]]);boss=g.enemies[0];Object.assign(boss,{boss:true,hp:12,maxHp:12});g.sparks();tick(g,.7);assert.equal(boss.hp,11.2,'A chain cannot bounce repeatedly on one boss');
 const damageSave=readSave(g.snapshot());assert.equal(damageSave.runs[0].bossHits,.8,'Fractional armor damage survives reload');
 for(const [kind,amount] of [['ram',1],['chain',.8],['spark',.8],['sphere',1],['laser',5]]){
