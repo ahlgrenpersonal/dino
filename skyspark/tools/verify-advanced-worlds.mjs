@@ -3,7 +3,7 @@ import {SkyGame,freshSave,readSave,LEVELS,WORLD,BOSS_X,bossShieldUp} from '../en
 
 assert.equal(LEVELS.length,8);
 assert.deepEqual(LEVELS.slice(5).map(l=>[l.biome,l.bossType,l.bossHp]),[
-  ['desert','scarab',108],['ocean','leviathan',136],['citadel','rival',180]
+  ['desert','scarab',90],['ocean','leviathan',100],['citadel','rival',200]
 ]);
 const bounds={left:BOSS_X-1500,right:WORLD.width,top:0,bottom:1000};
 function scene(level){
@@ -52,7 +52,9 @@ for(const level of [5,6,7]){
   const {g,boss}=scene(level);boss.cd=.1;let seconds=0;
   while(!g.run.complete&&seconds<300){
     const p=g.player,view={left:p.x-650,right:p.x+650,top:0,bottom:1000};
-    const dx=boss.x-400-p.x,dy=boss.y-p.y;
+    if(level===7){SkyGame.prototype.syncEncounters.call(g,view);g.enemies=g.enemies.filter(e=>e.boss);}
+    const active=g.enemies.find(e=>e.boss&&e.hp>0)||boss;
+    const dx=active.x-400-p.x,dy=active.y-p.y;
     g.sparks(view);g.laser(view);g.blast(view);
     g.update(.02,{right:dx>55,left:dx< -55,down:dy>90,up:dy< -90},view);seconds+=.02;
   }

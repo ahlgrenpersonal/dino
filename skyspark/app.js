@@ -1,9 +1,9 @@
-import { BUILD, WEAPONS, armorSegments, bossShieldUp, SkyGame, LEVELS, readSave } from './engine.js?v=world109';
-import { Renderer, worldPicture } from './art.js?v=world109';
-import { VictoryReturn, worldMenuHTML } from './world-menu.js?v=world109';
-import { Sound } from './audio.js?v=world109';
-import { loadProgress } from './saves.js?v=world109';
-const buildVersion = 'world109';
+import { BUILD, WEAPONS, armorSegments, bossShieldUp, SkyGame, LEVELS, readSave } from './engine.js?v=world110';
+import { Renderer, worldPicture } from './art.js?v=world110';
+import { VictoryReturn, worldMenuHTML } from './world-menu.js?v=world110';
+import { Sound } from './audio.js?v=world110';
+import { loadProgress } from './saves.js?v=world110';
+const buildVersion = 'world110';
 const SAVE_KEY='skyspark-save-v1',BACKUP_KEY='skyspark-before-restart-v1';
 const $=id=>document.getElementById(id),canvas=$('world'),panel=$('panel'),sound=new Sound();
 let storageOK=true,savePending=0,lastSave=0,last=performance.now(),panelMode='',toastUntil=0,celebrationUntil=0,notified=false,installPrompt=null,updatePending=false;
@@ -26,6 +26,7 @@ function celebrate(top,title,text){$('celebrationTop').textContent=top;$('celebr
 function onEvent(e){
   sound.effect(e.type,e);
   if(['destroy','titan-hit','checkpoint'].includes(e.type))soonSave();
+  if(e.type==='boss-retreat'){soonSave();toast('Chrome Echo escaped! He’ll be back…',3);}
   if(e.type==='milestone')soonSave();
   if(e.type==='level-complete'){
     justFinished=e.level;victoryReturn.start(e.level);clearKeys();game.target=null;

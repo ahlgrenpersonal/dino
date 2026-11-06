@@ -1,4 +1,4 @@
-import { BUILD, WORLD, SITE_COUNT, BOSS_X, DISTRICT_COUNT, SITE_SPACING, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world109';
+import { BUILD, WORLD, SITE_COUNT, BOSS_X, DISTRICT_COUNT, SITE_SPACING, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world110';
 export { BUILD, WORLD, SITE_COUNT, BOSS_X, LEVELS, freshSave, readSave, unlockedLevel };
 export const HERO_FEET=48,HERO_EYES=-33;
 export const WEAPONS={punchDamage:1,sparksDamage:.8,blastDamage:1,blastCooldown:2.2,blastRadius:562.5,sparksCooldown:1,chainLimit:20,chainRange:360,laserCooldown:2,laserDamage:5,laserRange:1100,laserDuration:.6,maxSweep:1.3};
@@ -43,11 +43,20 @@ export class SkyGame {
   constructor(save,onEvent=()=>{}){this.save=readSave(save);this.onEvent=onEvent;this.time=0;this.paused=false;this.viewport=null;this.setupRun();}
   get level(){return LEVELS[this.save.level];}
   get run(){return this.save.runs[this.save.level];}
+  get bossEncounter(){
+    let offset=0;
+    for(const [index,part] of (this.level.bossEncounters||[{x:BOSS_X,hp:this.level.bossHp}]).entries()){
+      if(this.run.bossHits<offset+part.hp)return{...part,index,offset};
+      offset+=part.hp;
+    }
+    return null;
+  }
   get site(){return this.sites[clamp(Math.round((this.player.x-430)/500),0,SITE_COUNT-1)];}
   setupRun(){
     this.sites=sitesFor(this.save.level);this.roofs=roofsFor(this.save.level);
     this.player={...this.run.position,vx:0,vy:0,flightSpeed:0,facing:1,landed:false,flare:0,hitFlash:0,kickX:0,kickY:0,impactCooldown:0,trail:[]};
     this.ramContacts=new Set();
+    this.rivalEscapeUntil=0;
     this.target=null;this.aim=null;this.effects=[];this.particles=[];this.enemies=[];this.projectiles=[];this.impactHits=0;this.shotsCleared=0;this.attackSequence=0;this.interceptSoundAt=-1;this.rings=[];this.defeated=new Set(this.run.cleared);
     this.laserCd=0;this.sparkCd=0;this.blastCd=0;this.auraCd=.7;this.combo=0;this.comboTime=0;this.shake=0;this.ringRun=false;this.ringsTaken=0;
     this.syncEncounters();
@@ -91,11 +100,16 @@ export class SkyGame {
         this.enemies.push(this.robot(id,clamp(x,60,WORLD.width-60),y,air?'drone':'bot'));
       }
     }
-    if(BOSS_X>=left&&BOSS_X<=right){
-      if(this.run.bossHits<l.bossHp&&!active.has(`${l.id}-boss`)){
+    const encounter=this.bossEncounter,bossId=l.bossType==='rival'?`${l.id}-boss-${encounter?.index}`:`${l.id}-boss`;
+    // A skipped or old-save encounter catches up instead of requiring a long backtrack.
+    const bossX=encounter&&encounter.x<left?Math.min(BOSS_X,this.player.x+450):encounter?.x;
+    if(encounter&&bossX>=left&&bossX<=right&&this.time>=this.rivalEscapeUntil){
+      if(!active.has(bossId)){
         const y={wyvern:400,excavator:720,crab:705,dreadnought:380,scarab:680,leviathan:400,rival:450}[l.bossType]||640;
-        this.enemies.push({id:`${l.id}-boss`,type:l.bossType,boss:true,name:l.boss,x:BOSS_X,y,homeX:BOSS_X,homeY:y,hp:l.bossHp-this.run.bossHits,maxHp:l.bossHp,radius:l.bossType==='excavator'?350:l.bossType==='rival'?80:['crab','dreadnought','scarab','leviathan'].includes(l.bossType)?250:115,hit:0,cd:.65,phase:0,attacks:0});
+        this.enemies.push({id:bossId,type:l.bossType,boss:true,name:l.boss,x:bossX,y,homeX:bossX,homeY:y,hp:encounter.hp-(this.run.bossHits-encounter.offset),maxHp:encounter.hp,damageOffset:encounter.offset,encounter:encounter.index,radius:l.bossType==='excavator'?350:l.bossType==='rival'?80:['crab','dreadnought','scarab','leviathan'].includes(l.bossType)?250:115,hit:0,cd:.65,phase:0,attacks:0});
       }
+    }
+    if(BOSS_X>=left&&BOSS_X<=right){
       for(let i=0;i<8;i++){
         const id=`${l.id}-${SITE_COUNT}-0-${i}`;
         if(!this.defeated.has(id)&&!active.has(id))this.enemies.push(this.robot(id,BOSS_X-280+(i%4)*175,i<4?800:270+(i%3)*70,i<4?'bot':'drone'));
@@ -141,10 +155,17 @@ export class SkyGame {
     this.shake = Math.max(this.shake, e.boss ? 7 : 2);
     this.effects.push({ type: 'burst', x: e.x, y: e.y, age: 0, life: .55, big: e.boss, color: kind === 'laser' ? '#ffb3cf' : '#96faff' });
     if (e.boss) {
-      this.run.bossHits = Math.round((e.maxHp-e.hp)*10)/10;
+      this.run.bossHits = Math.round(((e.damageOffset||0)+e.maxHp-e.hp)*10)/10;
       this.emit('titan-hit', { hits: this.run.bossHits });
     }
     if (e.hp > 0) return true;
+    if(e.type==='rival'&&e.encounter<2){
+      this.rivalEscapeUntil=this.time+1.8;
+      this.projectiles=this.projectiles.filter(q=>q.owner!==e.id);
+      this.effects=this.effects.filter(f=>f.owner!==e.id);
+      this.effects.push({type:'rival-teleport',robot:{...e,hp:e.maxHp,hit:0},x:e.x,y:e.y,age:0,life:1.2});
+      this.emit('boss-retreat',{encounter:e.encounter});return true;
+    }
     this.save.total++; this.run.kills++; this.combo++; this.comboTime = 3.5; this.save.best = Math.max(this.save.best,this.combo);
     if (!e.boss){this.defeated.add(e.id);this.run.cleared.push(e.id);}
     if(kind==='laser')this.effects.push({type:'split',x:e.x,y:e.y,age:0,life:e.boss?1:.7,robot:{...e,hp:e.maxHp,hit:0}});

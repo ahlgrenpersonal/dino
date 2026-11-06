@@ -1,4 +1,4 @@
-import { WORLD, WEAPONS, armorSegments, bossShieldUp, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world109';
+import { WORLD, WEAPONS, armorSegments, bossShieldUp, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world110';
 const TAU=Math.PI*2;
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function path(c,points,fill,stroke,width=1){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();if(fill){c.fillStyle=fill;c.fill();}if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke();}}
@@ -470,7 +470,7 @@ export class Renderer {
   worldToScreen(x,y){return{x:(x-this.camera.x)*this.scale+this.width/2,y:(y-this.camera.y)*this.scale+this.height/2};}
   follow(g,dt,snap=false){
     const mining=g.enemies.find(e=>e.type==='excavator'&&e.hp>0&&Math.abs(e.x-g.player.x)<1150);
-    const shieldBoss=g.enemies.find(e=>(['crab','dreadnought','scarab','leviathan','rival'].includes(e.type))&&e.hp>0&&Math.abs(e.x-g.player.x)<950);
+    const shieldBoss=g.enemies.find(e=>(['crab','dreadnought','scarab','leviathan','rival'].includes(e.type))&&e.hp>0&&Math.abs(e.x-g.player.x)<950)||g.effects.find(f=>f.type==='rival-teleport'&&f.age<f.life&&Math.abs(f.x-g.player.x)<950)?.robot;
     const expandedBoss=shieldBoss&&['scarab','leviathan','rival'].includes(shieldBoss.type);
     this.scale=this.baseScale*(mining?.72:expandedBoss?(shieldBoss.type==='rival'?.76:.65):shieldBoss?.82:1);
     const b=this.height/this.scale/2,w=this.width/this.scale/2,p=g.player;
@@ -723,6 +723,13 @@ export class Renderer {
     for(const f of g.effects){
       if(f.cancelled)continue;
       const k=1-f.age/f.life;c.save();c.globalAlpha=k;
+      if(f.type==='rival-teleport'){
+        const pulse=Math.sin(Math.min(1,f.age/.6)*Math.PI),r=30+pulse*100;
+        glow(c,f.x,f.y,Math.max(1,r*1.5),'#ff7bc755');
+        c.beginPath();c.ellipse(f.x,f.y,Math.max(1,r*.55),Math.max(1,r),0,0,TAU);c.strokeStyle='#ffc4ec';c.lineWidth=5;c.stroke();
+        for(let i=0;i<8;i++){const a=i*TAU/8+f.age*4;line(c,f.x+Math.cos(a)*r*.7,f.y+Math.sin(a)*r*.7,f.x+Math.cos(a)*r*1.2,f.y+Math.sin(a)*r*1.2,'#ffae61',3);}
+        if(f.age<.55){c.save();c.globalAlpha*=Math.max(0,1-f.age/.55);robot(c,{...f.robot,x:f.x,y:f.y},g.time);c.restore();}
+      }
       if(f.type==='rock-windup'&&!f.fired){
         const owner=g.enemies.find(e=>e.id===f.owner&&e.hp>0);
         if(owner){const origin=g.enemyMuzzle(owner);c.setLineDash([10,14]);c.beginPath();c.moveTo(origin.x,origin.y);c.quadraticCurveTo((origin.x+f.tx)/2,Math.min(origin.y,f.ty)-105,f.tx,f.ty);c.strokeStyle='#ffd79a66';c.lineWidth=3;c.stroke();c.setLineDash([]);c.beginPath();c.arc(f.tx,f.ty,48+Math.sin(g.time*8)*5,0,TAU);c.strokeStyle='#ffd59b99';c.lineWidth=3;c.stroke();}
