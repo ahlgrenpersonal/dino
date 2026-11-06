@@ -1,4 +1,4 @@
-export const BUILD = 'world106';
+export const BUILD = 'world107';
 export const WORLD = { width: 28800, height: 1000, ground: 850 };
 export const SITE_COUNT = 54;
 export const SITE_SPACING=520;
@@ -13,7 +13,13 @@ export const LEVELS = [
     tasks:['Wake the meadow wind chimes','Clear the lake spring','Start the windmill','Light the lakeside lantern','Restore the flower meadow','Free the quarry spring'] },
   { id:'mountains', name:'Stormpeak Range', short:'Mountains', icon:'▲', color:'#d6b8ff', biome:'mountains', boss:'Stormwing', bossType:'wyvern', bossHp:48, waves:3, squad:10,
     districts:['Pine Valley','Crystal Cliffs','Cloud Bridge','Snowcap Pass','Aurora Ridge','Stormwing Summit'],
-    tasks:['Light the valley watchfire','Wake the crystal beacon','Power the cloud bridge','Light the snowcap lantern','Restore the aurora beacon','Open the summit signal'] }
+    tasks:['Light the valley watchfire','Wake the crystal beacon','Power the cloud bridge','Light the snowcap lantern','Restore the aurora beacon','Open the summit signal'] },
+  {id:'caldera',name:'Ember Caldera',short:'Volcano',icon:'◆',color:'#ffb176',biome:'volcano',boss:'Magma Bastion',bossType:'crab',bossHp:64,waves:3,squad:10,
+    districts:['Ember Shore','Obsidian Steps','Lava Falls','Ash Gardens','Molten Bridge','Crater Forge'],
+    tasks:['Wake the shore beacon','Light the obsidian signal','Restart the cooling spring','Restore the ash garden','Power the molten bridge','Open the crater signal']},
+  {id:'spaceport',name:'Moonlit Spaceport',short:'Spaceport',icon:'✧',color:'#b4c4ff',biome:'space',boss:'Orbit Dreadnought',bossType:'dreadnought',bossHp:84,waves:3,squad:12,
+    districts:['Moonrise Landing','Starship Docks','Crystal Radar','Orbital Gardens','Neon Runway','Launch Citadel'],
+    tasks:['Light the landing lamps','Power the ship docks','Wake the crystal radar','Restore the orbital garden','Open the neon runway','Start the launch signal']}
 ];
 export const CITY_ROOFS = Array.from({length:9},(_,n)=>[
   {x:60+n*3200,y:530,w:230},{x:800+n*3200,y:590,w:200},
@@ -22,7 +28,7 @@ export const CITY_ROOFS = Array.from({length:9},(_,n)=>[
 ]).flat();
 export function roofsFor(level){
   if(level===0)return CITY_ROOFS;
-  return Array.from({length:SITE_COUNT},(_,i)=>({x:160+i*SITE_SPACING,y:level===1?660+(i%3)*45:390+(i%4)*90,w:160+(i%2)*50}));
+  return Array.from({length:SITE_COUNT},(_,i)=>({x:160+i*SITE_SPACING,y:level===1?660+(i%3)*45:level===3?490+(i%4)*65:level===4?390+(i%4)*85:390+(i%4)*90,w:160+(i%2)*50}));
 }
 export function sitesFor(level){
   const l=LEVELS[level];
@@ -38,7 +44,7 @@ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const integer=(n,a,b,fallback=0)=>Number.isInteger(n)?clamp(n,a,b):fallback;
 export const freshRun=()=>({checkpoint:0,frontier:290,cleared:[],restored:[],kills:0,bossHits:0,complete:false,position:{x:290,y:690},playSeconds:0});
 export const freshSave=()=>({schema:5,level:0,completed:[],total:0,best:0,sound:true,runs:LEVELS.map(()=>freshRun())});
-export function unlockedLevel(save){let n=0;while(n<2&&save.completed.includes(n))n++;return n;}
+export function unlockedLevel(save){let n=0;while(n<LEVELS.length-1&&save.completed.includes(n))n++;return n;}
 export function readSave(raw){
   const s=freshSave();if(!raw||![1,2,3,4,5].includes(raw.schema))return s;
   s.total=integer(raw.total,0,1e7);s.best=integer(raw.best,0,1e7);s.sound=raw.sound!==false;
@@ -54,8 +60,8 @@ export function readSave(raw){
     // Reuse the schema-2 migration below so older completed sections stay cleared.
     return readSave({...s,schema:2});
   }
-  s.completed=Array.isArray(raw.completed)?[...new Set(raw.completed.filter(n=>Number.isInteger(n)&&n>=0&&n<3))]:[];
-  for(let i=0;i<3;i++){
+  s.completed=Array.isArray(raw.completed)?[...new Set(raw.completed.filter(n=>Number.isInteger(n)&&n>=0&&n<LEVELS.length))]:[];
+  for(let i=0;i<LEVELS.length;i++){
     const r=raw.runs?.[i];if(!r||typeof r!=='object')continue;
     const old=raw.schema<5,sections=old?18:SITE_COUNT;
     const run=s.runs[i];run.checkpoint=integer(r.checkpoint,0,sections);

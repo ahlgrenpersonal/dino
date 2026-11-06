@@ -12,16 +12,16 @@ flow.start(1);flow.cancel();assert(!flow.tick(5),'Opening the map early or enter
 flow.start(2);assert(flow.tick(3.5),'A slow animation frame still returns after three real seconds');
 
 let save=freshSave(),html=worldMenuHTML(save);
-assert.equal((html.match(/data-level=/g)||[]).length,3,'All three worlds are visible from the start');
-assert.equal((html.match(/ disabled/g)||[]).length,2);assert(!html.includes('just-finished'));
-for(let level=0;level<3;level++){
+assert.equal((html.match(/data-level=/g)||[]).length,LEVELS.length,'All five worlds are visible from the start');
+assert.equal((html.match(/ disabled/g)||[]).length,LEVELS.length-1);assert(!html.includes('just-finished'));
+for(let level=0;level<LEVELS.length;level++){
   save.level=level;save.completed=Array.from({length:level},(_,i)=>i);save.runs[level].bossHits=LEVELS[level].bossHp;
   const game=new SkyGame(save);game.update(.02);assert(game.run.complete);
   save=game.snapshot();html=worldMenuHTML(save,level);
   assert.equal((html.match(/just-finished/g)||[]).length,1);
   assert.equal((html.match(/world-medal/g)||[]).length,1,'Only the just-finished world gets the trophy');
   assert(html.includes(`data-level="${level}" aria-label="${level+1}. ${LEVELS[level].name} — just completed, play again"`));
-  assert.equal((html.match(/ disabled/g)||[]).length,Math.max(0,1-level));
+  assert.equal((html.match(/ disabled/g)||[]).length,Math.max(0,LEVELS.length-2-level));
   assert(game.selectLevel(level),'Completed world is immediately replayable');assert(!game.run.complete);assert.equal(game.run.kills,0);
 }
 const victory=new SkyGame(freshSave());victory.syncEncounters=()=>{};
@@ -32,5 +32,5 @@ assert.equal(victory.projectiles.length,0,'Victory clears leftover enemy fire');
 victory.enemies[0].cd=0;victory.update(.02);assert.equal(victory.projectiles.length,0,'No shooting during the celebration');
 const gradient={addColorStop(){}};
 const context=new Proxy({}, {get:(_,name)=>name==='createLinearGradient'||name==='createRadialGradient'?()=>gradient:(...args)=>{for(const n of args)if(typeof n==='number')assert(Number.isFinite(n),`${String(name)} has a finite coordinate`);}});
-for(let i=0;i<3;i++)worldPicture({width:720,height:240,getContext:()=>context},i);
-console.log('Passed three-second real-time victory return, pause and cancellation, one-shot transitions, all three illustrated cards, unlocks, recent-only medal and automatic replay.');
+for(let i=0;i<LEVELS.length;i++)worldPicture({width:720,height:240,getContext:()=>context},i);
+console.log(`Passed three-second real-time victory return, pause and cancellation, one-shot transitions, all ${LEVELS.length} illustrated cards, unlocks, recent-only medal and automatic replay.`);

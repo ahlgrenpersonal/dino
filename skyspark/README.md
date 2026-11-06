@@ -2,7 +2,7 @@
 
 A touch-first, invincible superhero flying game. All scenery and characters are drawn by Canvas; music is synthesized locally. No photos, external fonts, analytics or runtime inference.
 
-The three worlds are each 28,800 units wide, with 54 spatial robot encounters and smoothly repeating scenery. Sunbeam City ends with Iron Colossus (24 armor), Emerald Plains with the gigantic bucket-wheel Earthmover (36), and Stormpeak Range with Stormwing (48). Ordinary robot totals are 864 / 1,080 / 1,620, plus eight boss defenders per world. Only nearby encounters stay active. Bosses appear at the far end independently of skipped enemies.
+The five worlds are each 28,800 units wide, with 54 spatial robot encounters and smoothly repeating scenery. Sunbeam City ends with Iron Colossus (24 armor), Emerald Plains with the gigantic bucket-wheel Earthmover (36), and Stormpeak Range with Stormwing (48). Ember Caldera ends with Magma Bastion (64 armor), and Moonlit Spaceport ends with Orbit Dreadnought (84). Ordinary robot totals are 864 / 1,080 / 1,620 / 1,620 / 1,944, plus eight boss defenders per world. Only nearby encounters stay active. Bosses appear at the far end independently of skipped enemies.
 
 Sparks jumps consecutively through up to 20 visible targets, reaching 760 units initially and 360 between jumps; recharge is 1 second. Laser sweeps up to 75 degrees, pierces targets for 5 damage each, and recharges in 2 seconds. Big Blast expands to radius 562.5, deals 1 damage and recharges in 2.2 seconds. Sparks damage is 0.8; flying punches deal 1. A punch counts once on a deliberate entry; retreat at least 110 units clear of the silhouette before another punch. Hovering, enemy movement and knockback do not punch, and there is no passive proximity damage. Every weapon clears incoming fire. All enemy damage checks current viewport visibility, including delayed effects; chains cannot carry damage off-screen.
 
@@ -12,6 +12,8 @@ Tap the sky to fly, a rooftop to land or a robot to smash. Keyboard: arrows/WASD
 
 Schema 5 migrates old progress to the expanded worlds once, preserving relative position, unlocks, defeated regions, flight tally, sound preference and proportional boss damage. Manual restart keeps a recoverable backup. Saves stay on the device.
 
-Serve over localhost or HTTPS. Install with Safari Share > Add to Home Screen or a supported browser install menu. The isolated service worker supports offline play and updates without clearing local progress. Build: world106.
+Serve over localhost or HTTPS. Install with Safari Share > Add to Home Screen or a supported browser install menu. The isolated service worker supports offline play and updates without clearing local progress. Build: world107.
 
 Run npm test for campaigns, weapons, viewport protection, world expansion/migration, impacts and escape controls, mining boss fights, incoming-fire defense, world chooser and audio recovery. node tools/verify-workers.mjs <release-root> additionally checks shared-origin PWA isolation. Browser checks do not replace a physical iPhone Home Screen playtest.
+
+Worlds four and five mix in visibly plated robots with 2 health: one punch, blast or Sparks hit leaves them alive, while a five-damage laser defeats them immediately. New bosses fire larger, slow fans of projectiles and cause stronger but capped pushes. Magma Bastion raises its shield for three seconds out of six; the Dreadnought raises it for four. Shields reduce incoming damage to 45%, never zero. Big Blast breaks them for two seconds. Their exposed hulls and claws remain hittable only while visible. Old three-world saves keep all unlocks and add the two new runs without resetting progress.

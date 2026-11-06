@@ -1,4 +1,4 @@
-import { BUILD, WORLD, SITE_COUNT, BOSS_X, DISTRICT_COUNT, SITE_SPACING, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world106';
+import { BUILD, WORLD, SITE_COUNT, BOSS_X, DISTRICT_COUNT, SITE_SPACING, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world107';
 export { BUILD, WORLD, SITE_COUNT, BOSS_X, LEVELS, freshSave, readSave, unlockedLevel };
 export const HERO_FEET=48,HERO_EYES=-33;
 export const WEAPONS={punchDamage:1,sparksDamage:.8,blastDamage:1,blastCooldown:2.2,blastRadius:562.5,sparksCooldown:1,chainLimit:20,chainRange:360,laserCooldown:2,laserDamage:5,laserRange:1100,laserDuration:.6,maxSweep:1.3};
@@ -10,10 +10,16 @@ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 export const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 export const ROCK_ATTACK={charge:1.05,interval:3.8,gravity:95,radius:32};
 export function excavatorWheel(e){return{x:e.x-330,y:e.y-280,radius:165};}
+export function bossShieldUp(e,time){
+  if(!['crab','dreadnought'].includes(e.type)||e.hp<=0||time<(e.shieldBrokenUntil||0))return false;
+  return time%6<(e.type==='crab'?3:4);
+}
 // Local circles follow the new bosses' silhouettes, including moving wing tips.
 export function hitShapes(e,time=0){
   if(e.type==='excavator')return [[-330,-280,190],[-185,-185,76],[-75,-100,115],[70,-10,150],[185,80,120],[-130,85,115],[80,-245,65],[80,-345,55]];
   if(e.type==='wyvern'){const wing=Math.sin(time*3)*28;return [[0,0,65],[0,-86,48],[0,98,46],...[-1,1].flatMap(f=>[[f*80,-8,70],[f*149,-38-wing*.5,65],[f*215,-59-wing,42]])];}
+  if(e.type==='crab')return [[-125,45,85],[125,45,85],[0,0,105],[-195,-55,65],[195,-55,65]];
+  if(e.type==='dreadnought')return [[0,0,150],[-155,5,90],[155,5,90],[0,-90,75]];
   return [[0,0,e.radius]];
 }
 function closestPoint(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=clamp(((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1),0,1);return{x:a.x+dx*t,y:a.y+dy*t};}
@@ -53,7 +59,10 @@ export class SkyGame {
     this.save.level=index;this.setupRun();this.emit('level-enter',{level:index,replay});return true;
   }
   restartLevel(){this.save.runs[this.save.level]=freshRun();this.setupRun();this.emit('level-enter',{level:this.save.level,replay:true});}
-  robot(id,x,y,type='bot'){return{id,x,y,homeX:x,homeY:y,type,hp:.8,maxHp:.8,radius:type==='drone'?26:25,hit:0,cd:.45+(x%7)*.16,phase:x*.03,paint:this.save.level};}
+  robot(id,x,y,type='bot'){
+    const armored=this.save.level>=3&&[...id].reduce((n,c)=>n+c.charCodeAt(0),0)%(this.save.level===3?4:3)===0,hp=armored?2:.8;
+    return{id,x,y,homeX:x,homeY:y,type,armored,hp,maxHp:hp,radius:type==='drone'?26:25,hit:0,cd:.45+(x%7)*.16,phase:x*.03,paint:this.save.level};
+  }
   syncEncounters(bounds){
     if(this.run.complete)return;
     // Every nearby section is independent. Leaving a robot behind never blocks the route.
@@ -78,7 +87,10 @@ export class SkyGame {
       }
     }
     if(BOSS_X>=left&&BOSS_X<=right){
-      if(this.run.bossHits<l.bossHp&&!active.has(`${l.id}-boss`))this.enemies.push({id:`${l.id}-boss`,type:l.bossType,boss:true,name:l.boss,x:BOSS_X,y:l.bossType==='wyvern'?400:l.bossType==='excavator'?720:640,homeX:BOSS_X,homeY:l.bossType==='wyvern'?400:l.bossType==='excavator'?720:640,hp:l.bossHp-this.run.bossHits,maxHp:l.bossHp,radius:l.bossType==='excavator'?350:115,hit:0,cd:.65,phase:0,attacks:0});
+      if(this.run.bossHits<l.bossHp&&!active.has(`${l.id}-boss`)){
+        const y={wyvern:400,excavator:720,crab:705,dreadnought:380}[l.bossType]||640;
+        this.enemies.push({id:`${l.id}-boss`,type:l.bossType,boss:true,name:l.boss,x:BOSS_X,y,homeX:BOSS_X,homeY:y,hp:l.bossHp-this.run.bossHits,maxHp:l.bossHp,radius:l.bossType==='excavator'?350:['crab','dreadnought'].includes(l.bossType)?250:115,hit:0,cd:.65,phase:0,attacks:0});
+      }
       for(let i=0;i<8;i++){
         const id=`${l.id}-${SITE_COUNT}-0-${i}`;
         if(!this.defeated.has(id)&&!active.has(id))this.enemies.push(this.robot(id,BOSS_X-280+(i%4)*175,i<4?800:270+(i%3)*70,i<4?'bot':'drone'));
@@ -115,6 +127,10 @@ export class SkyGame {
     e.lastHits ||= {};
     if (this.time-(e.lastHits[kind]??-10) < (kind==='ram'?0:kind==='spark'?.8:.5)) return false;
     e.lastHits[kind]=this.time;
+    if(bossShieldUp(e,this.time)){
+      if(kind==='sphere'){e.shieldBrokenUntil=this.time+2;this.effects.push({type:'shield-break',x:e.x,y:e.y,age:0,life:.5});this.emit('shield-break');}
+      else amount=Math.max(.1,Math.round(amount*.45*10)/10);
+    }
     e.hp=Math.max(0,Math.round((e.hp-amount)*10)/10); e.hit = e.boss ? .35 : .1;
     this.player.flare = .35;
     this.shake = Math.max(this.shake, e.boss ? 7 : 2);
@@ -232,6 +248,8 @@ export class SkyGame {
     if(e.type==='wyvern')return{x:e.x+offset*128,y:e.y-10};
     if(e.type==='titan')return{x:e.x+offset*130,y:e.y-30};
     if(e.type==='excavator'){const wheel=excavatorWheel(e);return{x:wheel.x-95,y:wheel.y-115};}
+    if(e.type==='crab')return{x:e.x+offset*185,y:e.y-55};
+    if(e.type==='dreadnought')return{x:e.x+offset*155,y:e.y+25};
     return{x:e.x+(this.player.x>=e.x?25:-25),y:e.y-8};
   }
   fireEnemy(e){
@@ -241,18 +259,19 @@ export class SkyGame {
       this.effects.push({type:'rock-windup',owner:e.id,tx:this.player.x,ty:this.player.y,age:0,charge:ROCK_ATTACK.charge,life:ROCK_ATTACK.charge+.35,fired:false});
       this.emit('rock-charge');return;
     }
-    const volley=e.boss?(e.type==='excavator'?3:2):1,turn=e.attacks||0;
-    e.attacks=turn+1;e.cd=e.boss?2.6:3.5+(Math.abs(e.phase)%1.4);
-    if(e.boss&&e.type!=='excavator'&&turn%2===0){
+    const advanced=['crab','dreadnought'].includes(e.type),volley=e.boss?(e.type==='crab'?5:e.type==='dreadnought'?4:2):1,turn=e.attacks||0;
+    e.attacks=turn+1;e.cd=advanced?(e.type==='crab'?2.7:2.3):e.boss?2.6:3.5+(Math.abs(e.phase)%1.4);
+    if(e.boss&&!['excavator','crab'].includes(e.type)&&turn%2===0){
       const origin=this.enemyMuzzle(e,true);
-      this.effects.push({type:'enemy-beam',id:`beam-${++this.attackSequence}`,owner:e.id,...origin,tx:this.player.x,ty:this.player.y,age:0,charge:.95,fire:.35,life:1.4,hit:false});
+      if(e.type!=='crab')this.effects.push({type:'enemy-beam',id:`beam-${++this.attackSequence}`,owner:e.id,...origin,tx:this.player.x,ty:this.player.y,age:0,charge:advanced?1.15:.95,fire:.35,life:advanced?1.6:1.4,hit:false,power:advanced?1.5:1});
       this.emit('enemy-charge');
     }
     for(let i=0;i<volley&&this.projectiles.length<96;i++){
       const origin=this.enemyMuzzle(e,false,e.boss?(i===0?-1:1):0);
       const angle=Math.atan2(this.player.y-origin.y,this.player.x-origin.x)+(i-(volley-1)/2)*(e.boss ? .13 : 0);
-      const speed=e.boss?210:e.type==='drone'?185:165;
-      this.projectiles.push({type:e.boss?'missile':'orb',id:`shot-${++this.attackSequence}`,owner:e.id,...origin,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,radius:e.boss?15:12,age:0,life:7,trail:[]});
+      const speed=advanced?185:e.boss?210:e.type==='drone'?185:165;
+      const orb=e.type==='crab'||e.type==='dreadnought'&&i%2===0;
+      this.projectiles.push({type:e.boss&&!orb?'missile':'orb',id:`shot-${++this.attackSequence}`,owner:e.id,...origin,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,radius:advanced?(orb?22:19):e.boss?15:12,power:advanced?1.5:this.save.level>=3?1.25:1,tint:e.type==='crab'?'#ffae63':e.type==='dreadnought'?'#b9a8ff':null,age:0,life:7,trail:[]});
     }
     this.emit('enemy-fire');
   }
@@ -264,10 +283,10 @@ export class SkyGame {
     }
     this.emit('rock-throw');
   }
-  bodyImpact(x,y,kind='orb',vx=this.player.x-x,vy=this.player.y-y){
+  bodyImpact(x,y,kind='orb',vx=this.player.x-x,vy=this.player.y-y,power=1){
     const p=this.player;this.impactHits++;
     if(p.impactCooldown>0)return;
-    const speed=Math.hypot(vx,vy)||1,force={orb:140,missile:240,rock:300,beam:220}[kind]||140;
+    const speed=Math.hypot(vx,vy)||1,force=Math.min(360,({orb:140,missile:240,rock:300,beam:220}[kind]||140)*power);
     p.kickX=vx/speed*force;p.kickY=vy/speed*force;p.impactCooldown=.16;p.hitFlash=.24;p.landed=false;
     this.shake=Math.max(this.shake,1.5);
     this.effects.push({type:'body-hit',x:p.x,y:p.y,angle:Math.atan2(-vy,-vx),age:0,life:.24});
@@ -299,7 +318,7 @@ export class SkyGame {
       const t=clamp(-(rx*dx+ry*dy)/(dx*dx+dy*dy||1),0,1);
       if(Math.hypot(rx+dx*t,ry+dy*t)<q.radius+27){
         if(q.type==='rock'&&p.flightSpeed>100)this.clearProjectile(q,'ram');
-        else{q.age=q.life;if(q.type==='rock')this.rockDebris(q);this.bodyImpact(q.x,q.y,q.type,q.vx,q.vy);}
+        else{q.age=q.life;if(q.type==='rock')this.rockDebris(q);this.bodyImpact(q.x,q.y,q.type,q.vx,q.vy,q.power||1);}
       }
       if(q.type==='rock'&&q.age<q.life&&q.y>WORLD.ground-15&&q.vy>0){q.age=q.life;this.rockDebris(q);this.effects.push({type:'burst',x:q.x,y:WORLD.ground-12,age:0,life:.35,big:false,color:'#ddc3a0'});}
     }
@@ -311,7 +330,7 @@ export class SkyGame {
       else if(f.age<f.charge){f.age=f.life;continue;}
       if(f.hit||f.age<f.charge||f.age>f.charge+f.fire)continue;
       const angle=Math.atan2(f.ty-f.y,f.tx-f.x),dx=p.x-f.x,dy=p.y-f.y,along=dx*Math.cos(angle)+dy*Math.sin(angle),across=Math.abs(dx*Math.sin(angle)-dy*Math.cos(angle));
-      if(along>=0&&along<1400&&across<38){f.hit=true;this.bodyImpact(f.x,f.y,'beam',p.x-f.x,p.y-f.y);}
+      if(along>=0&&along<1400&&across<38){f.hit=true;this.bodyImpact(f.x,f.y,'beam',p.x-f.x,p.y-f.y,f.power||1);}
     }
   }
   ringFlight(){
@@ -361,6 +380,8 @@ export class SkyGame {
       if(e.type==='titan')e.y=e.homeY+Math.sin(this.time*1.2)*5;
       if(e.type==='excavator')e.x=e.homeX+Math.sin(this.time*.5)*25;
       if(e.type==='wyvern'){e.x=e.homeX+Math.sin(this.time*.65)*170;e.y=e.homeY+Math.sin(this.time*.95)*140;}
+      if(e.type==='crab')e.x=e.homeX+Math.sin(this.time*.6)*70;
+      if(e.type==='dreadnought'){e.x=e.homeX+Math.sin(this.time*.5)*100;e.y=e.homeY+Math.sin(this.time*.8)*75;}
       // Only a deliberate new approach punches. Retreat beyond the silhouette to rearm.
       const shapes=hitShapes(e,this.time),gap=Math.min(...shapes.map(([sx,sy,r])=>Math.hypot(p.x-e.x-sx,p.y-e.y-sy)-r));
       if(gap>110)this.ramContacts.delete(e.id);

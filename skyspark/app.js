@@ -1,9 +1,9 @@
-import { BUILD, WEAPONS, armorSegments, SkyGame, LEVELS, readSave } from './engine.js?v=world106';
-import { Renderer, worldPicture } from './art.js?v=world106';
-import { VictoryReturn, worldMenuHTML } from './world-menu.js?v=world106';
-import { Sound } from './audio.js?v=world106';
-import { loadProgress } from './saves.js?v=world106';
-const buildVersion = 'world106';
+import { BUILD, WEAPONS, armorSegments, bossShieldUp, SkyGame, LEVELS, readSave } from './engine.js?v=world107';
+import { Renderer, worldPicture } from './art.js?v=world107';
+import { VictoryReturn, worldMenuHTML } from './world-menu.js?v=world107';
+import { Sound } from './audio.js?v=world107';
+import { loadProgress } from './saves.js?v=world107';
+const buildVersion = 'world107';
 const SAVE_KEY='skyspark-save-v1',BACKUP_KEY='skyspark-before-restart-v1';
 const $=id=>document.getElementById(id),canvas=$('world'),panel=$('panel'),sound=new Sound();
 let storageOK=true,savePending=0,lastSave=0,last=performance.now(),panelMode='',toastUntil=0,celebrationUntil=0,notified=false,installPrompt=null,updatePending=false;
@@ -54,6 +54,7 @@ function showMap(){
   victoryReturn.cancel();$('celebration').classList.remove('show','victory');$('victoryCountdown').hidden=true;
   $('mapDot').hidden=true;openPanel('map','Choose a world','LET’S FLY',worldMenuHTML(game.save,justFinished));
   for(const picture of panel.querySelectorAll('[data-world]'))worldPicture(picture,Number(picture.dataset.world));
+  if(justFinished!==null&&justFinished>=2)panel.querySelector(`[data-level="${Math.min(justFinished+1,LEVELS.length-1)}"]`)?.scrollIntoView({block:'nearest'});
 }
 function updateCountdown(){
   const count=Math.ceil(victoryReturn.remaining);
@@ -154,6 +155,7 @@ function hud(){
   canvas.dataset.level=game.level.id;canvas.dataset.stage=String(run.checkpoint);canvas.dataset.robots=String(alive.length);canvas.dataset.flying=String(!game.player.landed);canvas.dataset.complete=String(done);
   canvas.dataset.projectiles=String(game.projectiles.length);canvas.dataset.impactHits=String(game.impactHits);canvas.dataset.shotsCleared=String(game.shotsCleared);
   canvas.dataset.kills=String(run.kills);canvas.dataset.boss=boss?.name||'';canvas.dataset.bossHp=String(boss?.hp||0);
+  canvas.dataset.bossShield=String(!!boss&&bossShieldUp(boss,game.time));
   canvas.dataset.playerX=String(Math.round(game.player.x));canvas.dataset.playerY=String(Math.round(game.player.y));canvas.dataset.paused=String(game.paused);
   $('game').dataset.biome=game.level.biome;
   $('sound').dataset.state=sound.ctx?.state||'idle';$('sound').dataset.active=String(sound.active);$('sound').dataset.beat=String(sound.beat);
