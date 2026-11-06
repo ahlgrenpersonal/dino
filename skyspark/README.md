@@ -12,7 +12,7 @@ Tap the sky to fly, a rooftop to land or a robot to smash. Keyboard: arrows/WASD
 
 Schema 5 migrates old progress to the expanded worlds once, preserving relative position, unlocks, defeated regions, flight tally, sound preference and proportional boss damage. Manual restart keeps a recoverable backup. Saves stay on the device.
 
-Serve over localhost or HTTPS. Install with Safari Share > Add to Home Screen or a supported browser install menu. The isolated service worker supports offline play and updates without clearing local progress. Build: world107.
+Serve over localhost or HTTPS. Install with Safari Share > Add to Home Screen or a supported browser install menu. The isolated service worker supports offline play and updates without clearing local progress. Build: world108.
 
 Run npm test for campaigns, weapons, viewport protection, world expansion/migration, impacts and escape controls, mining boss fights, incoming-fire defense, world chooser and audio recovery. node tools/verify-workers.mjs <release-root> additionally checks shared-origin PWA isolation. Browser checks do not replace a physical iPhone Home Screen playtest.
 

@@ -14,6 +14,19 @@ for(const [kind,size] of [['orb',17.5],['missile',30],['rock',37.5],['beam',27.5
   for(const [vx,vy] of [[1,0],[-1,0],[0,1],[0,-1]]){const g=empty(),p=g.player,before={x:p.x,y:p.y};g.bodyImpact(p.x-vx*20,p.y-vy*20,kind,vx,vy);tick(g,1.5);const shift=(p.x-before.x)*vx+(p.y-before.y)*vy;assert(Math.abs(shift-size)<.1,`${kind} has small directional displacement`);assert.equal(p.hp,undefined);assert.equal(p.shield,undefined);assert.equal(g.save.total,0);}
 }
 let g=empty();g.bodyImpact(1520,500,'rock',-1,0);tick(g,.5,{right:true});assert(g.player.x>1600,'Controls overpower the push immediately');
+for(const facing of [-1,1]){
+  for(const kind of ['orb','missile','rock','beam']){
+    const hit=empty(),p=hit.player;p.facing=facing;const startX=p.x;
+    hit.bodyImpact(p.x+facing*20,p.y,kind,-facing,0);
+    for(let i=0;i<75;i++){hit.update(.02);assert.equal(p.facing,facing,`${kind} recoil preserves facing throughout recovery`);}
+    assert((p.x-startX)*facing<0,'Frontal hit still pushes backwards');
+    hit.laser();const laser=hit.effects.find(f=>f.type==='laser');
+    assert(Math.cos(laser.from)*facing>.99,'Untargeted laser still fires forwards after recoil');
+    tick(hit,.1,facing>0?{left:true}:{right:true});assert.equal(p.facing,-facing,'Deliberate reverse flight still turns the hero');
+  }
+  const tapped=empty();tapped.player.facing=-facing;tapped.moveTo(tapped.player.x+facing*200,tapped.player.y);tick(tapped,.1);assert.equal(tapped.player.facing,facing,'Tap-to-fly still sets facing');
+  const vertical=empty();vertical.player.facing=facing;vertical.bodyImpact(1500+facing*20,500,'rock',-facing,0);tick(vertical,.2,{up:true});assert.equal(vertical.player.facing,facing,'Vertical flight during recoil preserves facing');
+}
 for(const pos of [{x:40,y:105},{x:WORLD.width-40,y:802},{x:180,y:480}]){g=empty();Object.assign(g.player,pos);g.bodyImpact(pos.x+20,pos.y+20,'rock',-1,-1);tick(g,2);assert(g.player.x>=40&&g.player.x<=WORLD.width-40&&g.player.y>=105&&g.player.y<=802);tick(g,.5,{right:true,down:true});assert(g.player.x>pos.x||pos.x===WORLD.width-40);assert(g.player.y>=105);}
 g=empty();g.bodyImpact(1480,500,'missile',1,0);g.paused=true;const paused=JSON.stringify(g.player);tick(g,2);assert.equal(JSON.stringify(g.player),paused);g.paused=false;tick(g,1);assert(g.player.x>1500);
 console.log('Passed triple-length world seams, 20-target Sparks, schema-4 migration without double scaling, directional body impacts, weapon-specific knockback, pause, boundaries and immediate escape controls.');

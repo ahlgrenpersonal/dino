@@ -1,4 +1,4 @@
-export const BUILD = 'world107';
+export const BUILD = 'world108';
 export const WORLD = { width: 28800, height: 1000, ground: 850 };
 export const SITE_COUNT = 54;
 export const SITE_SPACING=520;

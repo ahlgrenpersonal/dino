@@ -1,9 +1,9 @@
-import { BUILD, WEAPONS, armorSegments, bossShieldUp, SkyGame, LEVELS, readSave } from './engine.js?v=world107';
-import { Renderer, worldPicture } from './art.js?v=world107';
-import { VictoryReturn, worldMenuHTML } from './world-menu.js?v=world107';
-import { Sound } from './audio.js?v=world107';
-import { loadProgress } from './saves.js?v=world107';
-const buildVersion = 'world107';
+import { BUILD, WEAPONS, armorSegments, bossShieldUp, SkyGame, LEVELS, readSave } from './engine.js?v=world108';
+import { Renderer, worldPicture } from './art.js?v=world108';
+import { VictoryReturn, worldMenuHTML } from './world-menu.js?v=world108';
+import { Sound } from './audio.js?v=world108';
+import { loadProgress } from './saves.js?v=world108';
+const buildVersion = 'world108';
 const SAVE_KEY='skyspark-save-v1',BACKUP_KEY='skyspark-before-restart-v1';
 const $=id=>document.getElementById(id),canvas=$('world'),panel=$('panel'),sound=new Sound();
 let storageOK=true,savePending=0,lastSave=0,last=performance.now(),panelMode='',toastUntil=0,celebrationUntil=0,notified=false,installPrompt=null,updatePending=false;

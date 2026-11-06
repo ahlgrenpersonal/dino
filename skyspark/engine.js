@@ -1,4 +1,4 @@
-import { BUILD, WORLD, SITE_COUNT, BOSS_X, DISTRICT_COUNT, SITE_SPACING, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world107';
+import { BUILD, WORLD, SITE_COUNT, BOSS_X, DISTRICT_COUNT, SITE_SPACING, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world108';
 export { BUILD, WORLD, SITE_COUNT, BOSS_X, LEVELS, freshSave, readSave, unlockedLevel };
 export const HERO_FEET=48,HERO_EYES=-33;
 export const WEAPONS={punchDamage:1,sparksDamage:.8,blastDamage:1,blastCooldown:2.2,blastRadius:562.5,sparksCooldown:1,chainLimit:20,chainRange:360,laserCooldown:2,laserDamage:5,laserRange:1100,laserDuration:.6,maxSweep:1.3};
@@ -364,7 +364,9 @@ export class SkyGame {
     if(p.y>=WORLD.ground-HERO_FEET-1&&ky>=0&&!this.target)p.landed=true;
     if(kx||ky) for(const r of this.roofs) if(ky>0&&p.x>r.x&&p.x<r.x+r.w&&oldY+HERO_FEET<=roofSurface(r)&&p.y+HERO_FEET>=roofSurface(r)){p.y=roofSurface(r)-HERO_FEET;p.landed=true;}
     p.vx=(p.x-oldX)/Math.max(dt,.001);p.vy=(p.y-oldY)/Math.max(dt,.001);
-    if(Math.abs(p.vx)>4)p.facing=Math.sign(p.vx);
+    // Face deliberate flight, never the recoil added by an incoming hit.
+    const flightVx=(flownX-oldX)/Math.max(dt,.001);
+    if(Math.abs(flightVx)>4)p.facing=Math.sign(flightVx);
     p.trail.push({x:p.x,y:p.y,age:0});for(const t of p.trail)t.age+=dt;p.trail=p.trail.filter(t=>t.age<.3).slice(-18);
     if(!this.run.complete){
       const checkpoint=this.run.checkpoint;
