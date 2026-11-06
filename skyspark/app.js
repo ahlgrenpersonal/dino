@@ -1,9 +1,9 @@
-import { BUILD, WEAPONS, armorSegments, bossShieldUp, SkyGame, LEVELS, readSave } from './engine.js?v=world110';
-import { Renderer, worldPicture } from './art.js?v=world110';
-import { VictoryReturn, worldMenuHTML } from './world-menu.js?v=world110';
-import { Sound } from './audio.js?v=world110';
-import { loadProgress } from './saves.js?v=world110';
-const buildVersion = 'world110';
+import { BUILD, WEAPONS, armorSegments, bossShieldUp, SkyGame, LEVELS, readSave } from './engine.js?v=world111';
+import { Renderer, worldPicture } from './art.js?v=world111';
+import { VictoryReturn, worldMenuHTML } from './world-menu.js?v=world111';
+import { Sound } from './audio.js?v=world111';
+import { loadProgress } from './saves.js?v=world111';
+const buildVersion = 'world111';
 const SAVE_KEY='skyspark-save-v1',BACKUP_KEY='skyspark-before-restart-v1';
 const $=id=>document.getElementById(id),canvas=$('world'),panel=$('panel'),sound=new Sound();
 let storageOK=true,savePending=0,lastSave=0,last=performance.now(),panelMode='',toastUntil=0,celebrationUntil=0,notified=false,installPrompt=null,updatePending=false;
@@ -157,6 +157,8 @@ function hud(){
   canvas.dataset.projectiles=String(game.projectiles.length);canvas.dataset.impactHits=String(game.impactHits);canvas.dataset.shotsCleared=String(game.shotsCleared);
   canvas.dataset.kills=String(run.kills);canvas.dataset.boss=boss?.name||'';canvas.dataset.bossHp=String(boss?.hp||0);
   canvas.dataset.bossShield=String(!!boss&&bossShieldUp(boss,game.time));
+  canvas.dataset.bossRound=String(boss?.encounter===undefined?0:boss.encounter+1);canvas.dataset.bossDamage=String(run.bossHits);
+  canvas.dataset.teleporting=String(game.effects.filter(f=>f.type==='rival-teleport'&&!f.cancelled&&f.age<f.life).length);
   canvas.dataset.playerX=String(Math.round(game.player.x));canvas.dataset.playerY=String(Math.round(game.player.y));canvas.dataset.paused=String(game.paused);
   $('game').dataset.biome=game.level.biome;
   $('sound').dataset.state=sound.ctx?.state||'idle';$('sound').dataset.active=String(sound.active);$('sound').dataset.beat=String(sound.beat);

@@ -43,4 +43,33 @@ const explosion=scene(199,BOSS_X-250);const final=explosion.g.enemies.find(e=>e.
 const catchup=scene(0,BOSS_X-250);assert(catchup.g.enemies.some(e=>e.boss));catchup.g.damage(catchup.g.enemies.find(e=>e.boss),'laser',1000);tick(catchup.g,2);assert(catchup.g.enemies.some(e=>e.boss&&e.encounter===1));
 const old=freshSave();old.level=7;old.completed=[0,1,2,3,4,5,6,7];old.runs[7].complete=true;old.runs[7].bossHits=180;
 const migrated=readSave(old);assert(migrated.runs[7].complete);assert.equal(migrated.runs[7].bossHits,200);const replay=new SkyGame(migrated);replay.selectLevel(7);assert.equal(replay.bossEncounter.index,0);assert.equal(replay.run.bossHits,0);
+// An unfinished encounter may despawn during a retreat, but its damage and identity survive.
+for(const phase of [0,1,2]){
+  const part=LEVELS[7].bossEncounters[phase],offset=phase*40;
+  const {g}=scene(offset+7,part.x-250),original=g.enemies.find(e=>e.boss);
+  assert(original);assert.equal(original.hp,part.hp-7);
+  g.player.x=part.x-3000;g.syncEncounters();assert(!g.enemies.some(e=>e.boss));
+  g.player.x=part.x-250;g.syncEncounters();
+  const returned=g.enemies.find(e=>e.boss);assert.equal(returned.id,original.id);assert.equal(returned.hp,part.hp-7);
+  for(let i=0;i<20;i++)g.syncEncounters();assert.equal(g.enemies.filter(e=>e.boss).length,1,'Repeated synchronization never duplicates the encounter');
+  const hidden={left:part.x-800,right:part.x-500,top:0,bottom:1000};g.setViewport(hidden);
+  for(const kind of ['laser','chain','sphere','ram'])assert.equal(g.damage(returned,kind,1000),false);
+  assert.equal(g.run.bossHits,offset+7);assert.equal(returned.hp,part.hp-7,'A hidden rival cannot teleport or die from off-screen damage');
+}
+// Pause freezes the teleport and its spawn lock; nearby final-site catch-up stays sequential.
+{
+  const {g,events}=scene(0,BOSS_X-250);g.time=3;
+  for(let phase=0;phase<2;phase++){
+    const boss=g.enemies.find(e=>e.boss&&e.hp>0);assert.equal(boss.encounter,phase);
+    g.damage(boss,'laser',1000);g.syncEncounters();assert(!g.enemies.some(e=>e.boss&&e.hp>0));
+    const escape=g.effects.find(f=>f.type==='rival-teleport'),age=escape.age,time=g.time;
+    g.paused=true;tick(g,3);assert.equal(g.time,time);assert.equal(escape.age,age);assert(!g.enemies.some(e=>e.boss&&e.hp>0));
+    g.paused=false;tick(g,1.7);assert(!g.enemies.some(e=>e.boss&&e.hp>0));
+    tick(g,.14);assert.equal(g.enemies.filter(e=>e.boss&&e.hp>0).length,1);assert.equal(g.enemies.find(e=>e.boss&&e.hp>0).encounter,phase+1);
+    assert(!g.effects.some(f=>f.type==='rival-teleport'),'Retreat artwork ends before the next encounter appears');
+  }
+  assert.equal(g.run.bossHits,80);assert.equal(g.run.kills,0);assert(!g.run.complete);
+  assert.equal(events.filter(e=>e.type==='boss-retreat').length,2);
+  const restored=new SkyGame(g.snapshot());assert.equal(restored.enemies.find(e=>e.boss).hp,120);
+}
 console.log('Passed 40/40/120 spaced rival battles, teleport retreats without kills/victory/slicing, final laser split and ordinary explosion, overkill isolation, save/reload, catch-up and completed-save replay.');
