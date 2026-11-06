@@ -1,9 +1,9 @@
-import { BUILD, WEAPONS, armorSegments, SkyGame, LEVELS, readSave } from './engine.js?v=world105';
-import { Renderer, worldPicture } from './art.js?v=world105';
-import { VictoryReturn, worldMenuHTML } from './world-menu.js?v=world105';
-import { Sound } from './audio.js?v=world105';
-import { loadProgress } from './saves.js?v=world105';
-const buildVersion = 'world105';
+import { BUILD, WEAPONS, armorSegments, SkyGame, LEVELS, readSave } from './engine.js?v=world106';
+import { Renderer, worldPicture } from './art.js?v=world106';
+import { VictoryReturn, worldMenuHTML } from './world-menu.js?v=world106';
+import { Sound } from './audio.js?v=world106';
+import { loadProgress } from './saves.js?v=world106';
+const buildVersion = 'world106';
 const SAVE_KEY='skyspark-save-v1',BACKUP_KEY='skyspark-before-restart-v1';
 const $=id=>document.getElementById(id),canvas=$('world'),panel=$('panel'),sound=new Sound();
 let storageOK=true,savePending=0,lastSave=0,last=performance.now(),panelMode='',toastUntil=0,celebrationUntil=0,notified=false,installPrompt=null,updatePending=false;
@@ -61,7 +61,7 @@ function updateCountdown(){
   for(const [i,dot] of [...$('victoryCountdown').children].entries())dot.classList.toggle('spent',i>=count);
 }
 function showPause(){
-  openPanel('pause','A little breather','SKYSPARK',`<button class="panel-action" data-action="resume">▶ Keep flying</button><button class="panel-action secondary" data-action="map">⌖ Open the adventure map</button><div class="help"><p><strong>↗ Fly:</strong> tap the sky. Tap a rooftop to land.</p><p><strong>⚡ Smash:</strong> fly straight into a robot.</p><p><strong>Sparks:</strong> lightning jumps through up to sixteen robots.</p><p><strong>Laser:</strong> sweeps through robots and cuts through armor.</p><p><strong>Big Blast:</strong> clears the robots all around you.</p><p>Your shield keeps you safe. No fuel. No falling. No lost progress.</p><p>Keyboard: arrows / WASD · X sparks · L laser · Space blast · M map · Esc pause.</p></div><div class="settings-row"><span>Music & sound</span><button data-action="sound">${sound.enabled?'On':'Off'}</button></div><div class="settings-row"><span>Gentle motion</span><button data-action="motion">${renderer.reduced?'On':'Off'}</button></div><button class="panel-action secondary" data-action="restart">Start this level again</button>${hasBackup()?'<button class="panel-action secondary" data-action="restore">Restore previous save</button>':''}<div class="install-note">Install on iPhone: Safari → Share → Add to Home Screen. Your adventure saves on this device.${installPrompt?'<button class="panel-action secondary" data-action="install">Install SkySpark</button>':''}</div><p class="fineprint">${storageOK?'Progress saves automatically on this device.':'Saving is unavailable. Keep this page open to retain progress.'}<br>SkySpark · ${BUILD} · Original artwork & synthesized sound.</p>`);
+  openPanel('pause','A little breather','SKYSPARK',`<button class="panel-action" data-action="resume">▶ Keep flying</button><button class="panel-action secondary" data-action="map">⌖ Open the adventure map</button><div class="help"><p><strong>↗ Fly:</strong> tap the sky. Tap a rooftop to land.</p><p><strong>⚡ Smash:</strong> fly straight into a robot.</p><p><strong>Sparks:</strong> lightning jumps through up to twenty robots.</p><p><strong>Laser:</strong> sweeps through robots and cuts through armor.</p><p><strong>Big Blast:</strong> clears the robots all around you.</p><p>You are invincible. Hits give you a little nudge. No fuel. No falling. No lost progress.</p><p>Keyboard: arrows / WASD · X sparks · L laser · Space blast · M map · Esc pause.</p></div><div class="settings-row"><span>Music & sound</span><button data-action="sound">${sound.enabled?'On':'Off'}</button></div><div class="settings-row"><span>Gentle motion</span><button data-action="motion">${renderer.reduced?'On':'Off'}</button></div><button class="panel-action secondary" data-action="restart">Start this level again</button>${hasBackup()?'<button class="panel-action secondary" data-action="restore">Restore previous save</button>':''}<div class="install-note">Install on iPhone: Safari → Share → Add to Home Screen. Your adventure saves on this device.${installPrompt?'<button class="panel-action secondary" data-action="install">Install SkySpark</button>':''}</div><p class="fineprint">${storageOK?'Progress saves automatically on this device.':'Saving is unavailable. Keep this page open to retain progress.'}<br>SkySpark · ${BUILD} · Original artwork & synthesized sound.</p>`);
 }
 function hasBackup(){try{return !!localStorage.getItem(BACKUP_KEY);}catch{return false;}}
 function resetPresentation(){
@@ -80,7 +80,7 @@ function restart(){
   }catch{toast('Could not protect your save. Your current adventure is still here.',5);$('panelBody').insertAdjacentHTML('beforeend','<p class="restart-note">Your save could not be backed up. Nothing was restarted.</p>');}
 }
 function restore(){
-  try{const raw=JSON.parse(localStorage.getItem(BACKUP_KEY));if(![1,2,3,4].includes(raw?.schema))throw Error();const previous=readSave(raw);localStorage.setItem(SAVE_KEY,JSON.stringify(previous));game=new SkyGame(previous,onEvent);resetPresentation();closePanel();toast('Your previous adventure is back.',4);}catch{toast('That backup is unavailable. Your adventure has not changed.',5);}
+  try{const raw=JSON.parse(localStorage.getItem(BACKUP_KEY));if(![1,2,3,4,5].includes(raw?.schema))throw Error();const previous=readSave(raw);localStorage.setItem(SAVE_KEY,JSON.stringify(previous));game=new SkyGame(previous,onEvent);resetPresentation();closePanel();toast('Your previous adventure is back.',4);}catch{toast('That backup is unavailable. Your adventure has not changed.',5);}
 }
 $('panelBody').addEventListener('click',async e=>{
   const button=e.target.closest('button');if(!button||button.disabled)return;
@@ -139,7 +139,7 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installProm
 function hud(){
   const run=game.run,alive=game.enemies.filter(e=>e.hp>0),boss=alive.find(e=>e.boss),done=run.complete;
   $('robotCount').textContent=String(run.kills);
-  $('sparks').disabled=game.sparkCd>0||game.paused||victoryReturn.active;$('sparkLabel').textContent=game.sparkCd>0?'RECHARGING':'JUMP THROUGH 16';
+  $('sparks').disabled=game.sparkCd>0||game.paused||victoryReturn.active;$('sparkLabel').textContent=game.sparkCd>0?'RECHARGING':'JUMP THROUGH 20';
   $('sparkCharge').style.transform=`scaleX(${game.sparkCd/WEAPONS.sparksCooldown})`;
   $('laserCharge').style.transform=`scaleX(${game.laserCd/WEAPONS.laserCooldown})`;
   $('laser').disabled=game.laserCd>0||game.paused||victoryReturn.active;$('laserLabel').textContent=game.laserCd>0?'RECHARGING':'SWEEP & SLICE';
@@ -152,7 +152,7 @@ function hud(){
   $('hint').classList.toggle('dim',game.time>8&&!done&&storageOK);
   $('hint').textContent=!storageOK?'Saving is unavailable. Keep this page open to keep progress.':done?'★':'Fly right · Tap a robot to smash';
   canvas.dataset.level=game.level.id;canvas.dataset.stage=String(run.checkpoint);canvas.dataset.robots=String(alive.length);canvas.dataset.flying=String(!game.player.landed);canvas.dataset.complete=String(done);
-  canvas.dataset.projectiles=String(game.projectiles.length);canvas.dataset.shieldHits=String(game.shieldHits);canvas.dataset.shotsCleared=String(game.shotsCleared);
+  canvas.dataset.projectiles=String(game.projectiles.length);canvas.dataset.impactHits=String(game.impactHits);canvas.dataset.shotsCleared=String(game.shotsCleared);
   canvas.dataset.kills=String(run.kills);canvas.dataset.boss=boss?.name||'';canvas.dataset.bossHp=String(boss?.hp||0);
   canvas.dataset.playerX=String(Math.round(game.player.x));canvas.dataset.playerY=String(Math.round(game.player.y));canvas.dataset.paused=String(game.paused);
   $('game').dataset.biome=game.level.biome;

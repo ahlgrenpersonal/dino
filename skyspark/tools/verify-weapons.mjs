@@ -23,14 +23,15 @@ for(const direction of [-1,1]){
 g=scene([[1180,467],[1408,367]]);g.laser();f=g.effects.find(e=>e.type==='laser');
 assert(Math.abs(f.sweep+Math.atan2(100,400)*2)<1e-9,'An ordinary targeted sweep also doubles its angle');
 g=scene([]);g.laser();assert.equal(g.effects.find(e=>e.type==='laser').sweep,-.52,'The untargeted sweep doubles too');
-// Sequential lightning: one immediate strike, then distinct hops, capped at sixteen.
-g=scene(Array.from({length:18},(_,i)=>[1150+i*120,500]));assert(g.sparks());assert.equal(g.run.kills,1);assert.equal(g.sparkCd,1);assert(!g.sparks());
-f=g.effects.find(e=>e.type==='chain');assert.equal(f.nodes.length,16);assert.equal(new Set(f.nodes.map(n=>n.id)).size,16);
+// Sequential lightning: one immediate strike, then distinct hops, capped at twenty.
+g=scene(Array.from({length:22},(_,i)=>[1150+i*120,500]));assert(g.sparks());assert.equal(g.run.kills,1);assert.equal(g.sparkCd,1);assert(!g.sparks());
+f=g.effects.find(e=>e.type==='chain');assert.equal(f.nodes.length,20);assert.equal(new Set(f.nodes.map(n=>n.id)).size,20);
 g.paused=true;const age=f.age,cd=g.sparkCd;tick(g,2);assert.equal(f.age,age);assert.equal(g.sparkCd,cd);g.paused=false;
-tick(g,.54);assert.equal(g.run.kills,8,'The first eight strikes retain their consecutive timing');assert.equal(g.enemies.length,10);
-tick(g,.6);assert.equal(g.run.kills,16,'The chain continues to the sixteenth target');assert.equal(g.enemies.length,2);assert.equal(g.sparkCd,0);
-tick(g,.1);g.player.x=2900;assert(g.sparks());tick(g,.1);assert.equal(g.run.kills,18);
-g=scene([[1150,500],[1500,500]]);g.sparks();tick(g,.7);assert.equal(g.run.kills,1,'A jump cannot cross an empty gap beyond its range');
+tick(g,.54);assert.equal(g.run.kills,8,'The first eight strikes retain their consecutive timing');assert.equal(g.enemies.length,14);
+tick(g,.6);assert.equal(g.run.kills,16,'The chain reaches sixteen targets at the expected pace');assert.equal(g.enemies.length,6);
+tick(g,.4);assert.equal(g.run.kills,20,'The chain continues to the twentieth target');assert.equal(g.enemies.length,2);assert.equal(g.sparkCd,0);
+tick(g,.1);g.player.x=3900;assert(g.sparks());tick(g,.1);assert.equal(g.run.kills,22);
+g=scene([[1150,500],[1520,500]]);g.sparks();tick(g,.7);assert.equal(g.run.kills,1,'A jump cannot cross an empty gap beyond its range');
 g=scene([]);assert(!g.sparks());assert.equal(g.sparkCd,0,'No target does not waste the sparks cooldown');
 g=scene([[1250,500]]);Object.assign(g.enemies[0],{boss:true,hp:12,maxHp:12});g.sparks();tick(g,.98);assert(!g.sparks());tick(g,.04);assert(g.sparks(),'Sparks recharges in one second');
 // One laser cast removes five armor points, never repeated damage every animation frame.
@@ -45,9 +46,9 @@ g=scene([[1250,500]]);boss=g.enemies[0];Object.assign(boss,{boss:true,hp:12,maxH
 assert.equal(WEAPONS.punchDamage,1);assert.equal(WEAPONS.sparksDamage,.8);assert.equal(WEAPONS.blastDamage,1);
 assert(WEAPONS.laserCooldown>WEAPONS.sparksCooldown);assert.equal(WEAPONS.laserDamage,5);
 for(let i=0;i<3;i++){
-  assert.equal(LEVELS[i].bossHp,[12,18,24][i]);
+  assert.equal(LEVELS[i].bossHp,[24,36,48][i]);
   const raw={schema:3,level:i,completed:Array.from({length:i},(_,j)=>j),runs:[]};raw.runs[i]={bossHits:[2,3,4][i],position:{x:9200,y:500},cleared:[],kills:20};
   const save=readSave(raw);assert.equal(save.runs[i].bossHits,LEVELS[i].bossHp/2,'Older partial boss damage keeps its fraction');assert.equal(save.runs[i].kills,20);assert.equal(readSave(save).runs[i].bossHits,save.runs[i].bossHits,'Migration is applied only once');
   assert(armorSegments({hp:LEVELS[i].bossHp,maxHp:LEVELS[i].bossHp}).length<=12,'Stronger armor still fits the HUD');
 }
-console.log('Passed piercing and adaptive up/down/left laser sweeps, one five-damage hit per cast, staged sixteen-target lightning, jump range, cooldowns, paused chains, boss scaling and save migration.');
+console.log('Passed piercing and adaptive up/down/left laser sweeps, one five-damage hit per cast, staged twenty-target lightning, jump range, cooldowns, paused chains, boss scaling and save migration.');
