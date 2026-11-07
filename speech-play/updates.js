@@ -26,6 +26,25 @@ export function createUpdateCheck(check, { now = Date.now, intervalMs = 60000 } 
   };
 }
 
+// Bound both response headers and body reads so a stalled poll cannot block later checks.
+export async function readBuild(url, { fetcher = fetch, Controller = AbortController, set = setTimeout, clear = clearTimeout, timeoutMs = 6000 } = {}) {
+  let timeout;
+  try {
+    const controller = new Controller();
+    const expired = new Promise(resolve => {
+      timeout = set(() => { controller.abort(); resolve(null); }, timeoutMs);
+    });
+    const requested = Promise.resolve().then(async () => {
+      const response = await fetcher(url, { cache: 'no-store', signal: controller.signal });
+      if (!response.ok) return null;
+      const data = await response.json();
+      return typeof data?.build === 'string' && /^world\d+$/.test(data.build) ? data.build : null;
+    });
+    return await Promise.race([requested, expired]);
+  } catch { return null; }
+  finally { if (timeout !== undefined) clear(timeout); }
+}
+
 // A worker may finish installing before update() resolves or its listener is attached.
 export function activateUpdate(registration, { timeoutMs = 10000, set = setTimeout, clear = clearTimeout } = {}) {
   if (!registration) return Promise.resolve(false);

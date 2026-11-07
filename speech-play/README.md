@@ -74,7 +74,9 @@ All runtime paths, manifest scope, and service-worker registration are relative.
 The service worker owns only this folder and its own scope-specific caches.
 After the first complete online load, activities, words, and both videos work
 offline. Navigation uses a bounded network request with an installed-shell
-fallback. Updates preserve localStorage and require an explicit update action.
+fallback. Updates preserve localStorage. Reloading older running code requires an explicit
+update action; an already-current page can finish activating its offline shell
+without interrupting play.
 
 Bump the build in `core.js`, `app.js` and its imports, HTML asset queries,
 manifest start URL, service-worker shell/cache, and `version.json` together.

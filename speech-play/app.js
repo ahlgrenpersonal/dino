@@ -1,11 +1,11 @@
-import { renderBubbles } from './bubbles.js?v=world14';
-import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, bubbleMessage, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline } from './core.js?v=world14';
-import { art, icon, garden } from './art.js?v=world14';
-import { createSpeaker } from './audio.js?v=world14';
-import { observeUpdates, createUpdateCheck, activateUpdate } from './updates.js?v=world14';
+import { renderBubbles } from './bubbles.js?v=world15';
+import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, bubbleMessage, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline } from './core.js?v=world15';
+import { art, icon, garden } from './art.js?v=world15';
+import { createSpeaker } from './audio.js?v=world15';
+import { observeUpdates, createUpdateCheck, activateUpdate, readBuild } from './updates.js?v=world15';
 
 const $ = selector => document.querySelector(selector);
-const buildVersion = 'world14';
+const buildVersion = 'world15';
 // Show the loaded code version, including when a newer document meets an older cached module.
 document.querySelectorAll('[data-build-label]').forEach(label => { label.textContent = `Version ${BUILD}`; });
 const timeline = createTimeline();
@@ -24,6 +24,7 @@ let resumeActivity = false;
 let beforeInstall = null;
 let registration = null;
 let pendingUpdate = false;
+let applyingUpdate = false;
 let toastUndo = null;
 const flagLabels = { enjoyed: 'Wanted more', shared: 'Shared a moment', gesture: 'Gesture', sound: 'Sound', word: 'Word attempt' };
 // Reuse the gesture-unlocked media element for delayed turns on mobile browsers.
@@ -323,26 +324,31 @@ const checkUpdate = createUpdateCheck(fetchVersion);
 window.addEventListener('online', () => { connectionStatus(); checkUpdate({ force: true }); });
 window.addEventListener('offline', connectionStatus);
 async function fetchVersion() {
-  try {
-    const response = await fetch(`./version.json?check=${Date.now()}`, { cache: 'no-store' });
-    if (!response.ok) return;
-    const data = await response.json();
-    if (typeof data.build === 'string' && data.build !== buildVersion) offerUpdate();
-  } catch { /* Offline play does not require a version check. */ }
+  const liveBuild = await readBuild(`./version.json?check=${Date.now()}`);
+  if (liveBuild === null) return;
+  if (liveBuild !== buildVersion) offerUpdate();
+  else if (!applyingUpdate) {
+    // The running code is already current; finish its offline shell without interrupting play.
+    registration?.waiting?.postMessage({ type: 'ACTIVATE' });
+    pendingUpdate = false;
+    $('#updateNotice').replaceChildren(); $('#updateNotice').hidden = true;
+  }
 }
 function offerUpdate() {
   if (pendingUpdate) return;
   pendingUpdate = true;
   const button = document.createElement('button'); button.className = 'text-button'; button.id = 'updateButton'; button.textContent = 'Update ready';
   button.addEventListener('click', async () => {
-    stopTurn(); button.disabled = true; button.textContent = 'Updating…';
+    stopTurn(); applyingUpdate = true; button.disabled = true; button.textContent = 'Updating…';
     try {
-      if (!await activateUpdate(registration)) {
-        if (!registration?.installing && !registration?.waiting) location.reload();
+      if (!registration) location.reload();
+      else if (!await activateUpdate(registration)) {
+        // Another window may already have activated the worker. The explicit tap can reload it.
+        if (!registration.waiting && !registration.installing && navigator.onLine) location.reload();
         else throw new Error('Update not ready');
       }
     } catch {
-      button.disabled = false; button.textContent = 'Try update again';
+      applyingUpdate = false; button.disabled = false; button.textContent = 'Try update again';
       toast('The update is unavailable. Try again when online.');
     }
   });
@@ -351,10 +357,10 @@ function offerUpdate() {
 }
 if ('serviceWorker' in navigator) {
   let reloading = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => { connectionStatus(); if (pendingUpdate && !reloading) { reloading = true; location.reload(); } });
+  navigator.serviceWorker.addEventListener('controllerchange', () => { connectionStatus(); if (applyingUpdate && !reloading) { reloading = true; location.reload(); } else checkUpdate({ force: true }); });
   navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' }).then(result => {
     registration = result;
-    observeUpdates(result, { hasController: () => Boolean(navigator.serviceWorker.controller), onWaiting: offerUpdate });
+    observeUpdates(result, { hasController: () => Boolean(navigator.serviceWorker.controller), onWaiting: () => checkUpdate({ force: true }) });
     navigator.serviceWorker.ready.then(connectionStatus);
     checkUpdate();
   }).catch(() => { $('#connectionStatus').textContent = 'Offline setup unavailable'; });

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { observeUpdates, createUpdateCheck, activateUpdate } from '../updates.js';
+import { observeUpdates, createUpdateCheck, readBuild, activateUpdate } from '../updates.js';
 
 function fixture() {
   const registration = new EventTarget();
@@ -72,6 +72,86 @@ test('a failed poll releases its pending request and a backwards clock cannot su
   now = 500;
   assert.equal(await check(), true);
   assert.equal(calls, 3);
+});
+
+function buildFixture(fetcher) {
+  const timers = new Map();
+  let timerId = 0;
+  const options = { fetcher, timeoutMs: 6000,
+    set(callback, ms) { const id = ++timerId; timers.set(id, { callback, ms }); return id; },
+    clear(id) { timers.delete(id); }
+  };
+  return { timers,
+    read() { return readBuild('./version.json?check=123', options); },
+    expire() { for (const { callback } of [...timers.values()]) callback(); }
+  };
+}
+
+test('build polling bypasses HTTP cache, supplies an abort signal, and clears its timer on success', async () => {
+  let requested;
+  const f = buildFixture(async (url, options) => {
+    requested = { url, options };
+    return { ok: true, json: async () => ({ build: 'world15' }) };
+  });
+  assert.equal(await f.read(), 'world15');
+  assert.equal(requested.url, './version.json?check=123');
+  assert.equal(requested.options.cache, 'no-store');
+  assert.equal(requested.options.signal.aborted, false);
+  assert.equal(f.timers.size, 0);
+});
+
+test('invalid version payloads, HTTP errors, network failures and unreadable JSON return null', async () => {
+  for (const payload of [null, [], {}, 'world15', { build: 15 }, { build: '' }, { build: 'anything' }, { build: 'world15?extra' }]) {
+    const f = buildFixture(async () => ({ ok: true, json: async () => payload }));
+    assert.equal(await f.read(), null);
+    assert.equal(f.timers.size, 0);
+  }
+  for (const fetcher of [
+    async () => ({ ok: false, json: async () => { throw new Error('should not read an HTTP failure body'); } }),
+    async () => { throw new Error('offline'); },
+    async () => ({ ok: true, json: async () => { throw new Error('invalid JSON'); } })
+  ]) {
+    const f = buildFixture(fetcher);
+    assert.equal(await f.read(), null);
+    assert.equal(f.timers.size, 0);
+  }
+});
+
+test('a stalled header or body read is aborted and bounded even if the fetcher ignores abort', async () => {
+  for (const body of [false, true]) {
+    let signal, release;
+    const neverUntilReleased = new Promise(resolve => { release = resolve; });
+    const f = buildFixture(async (_url, options) => {
+      signal = options.signal;
+      return body ? { ok: true, json: () => neverUntilReleased } : neverUntilReleased;
+    });
+    const pending = f.read();
+    await Promise.resolve();
+    assert.equal([...f.timers.values()][0].ms, 6000);
+    f.expire();
+    assert.equal(await pending, null);
+    assert.equal(signal.aborted, true);
+    assert.equal(f.timers.size, 0);
+    release(body ? { build: 'world99' } : { ok: true, json: async () => ({ build: 'world99' }) });
+    assert.equal(await pending, null, 'A late response must not turn a timed-out poll into an update');
+  }
+});
+
+test('a timed-out build poll releases the shared check so a later forced check can recover', async () => {
+  let calls = 0;
+  const f = buildFixture(async () => ++calls === 1
+    ? new Promise(() => {})
+    : { ok: true, json: async () => ({ build: 'world15' }) });
+  let live = null;
+  const check = createUpdateCheck(async () => { live = await f.read(); });
+  const pending = check();
+  await Promise.resolve(); await Promise.resolve();
+  f.expire();
+  assert.equal(await pending, true);
+  assert.equal(live, null);
+  assert.equal(await check({ force: true }), true);
+  assert.equal(live, 'world15');
+  assert.equal(calls, 2);
 });
 
 function activationFixture() {
