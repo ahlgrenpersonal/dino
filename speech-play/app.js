@@ -1,11 +1,11 @@
-import { renderBubbles } from './bubbles.js?v=world9';
-import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from './core.js?v=world9';
-import { art, icon, garden } from './art.js?v=world9';
-import { createSpeaker } from './audio.js?v=world9';
-import { observeUpdates } from './updates.js?v=world9';
+import { renderBubbles } from './bubbles.js?v=world10';
+import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from './core.js?v=world10';
+import { art, icon, garden } from './art.js?v=world10';
+import { createSpeaker } from './audio.js?v=world10';
+import { observeUpdates } from './updates.js?v=world10';
 
 const $ = selector => document.querySelector(selector);
-const buildVersion = 'world9';
+const buildVersion = 'world10';
 // Show the loaded code version, including when a newer document meets an older cached module.
 document.querySelectorAll('[data-build-label]').forEach(label => { label.textContent = `Version ${BUILD}`; });
 const timeline = createTimeline();

@@ -1,4 +1,4 @@
-export const BUILD = 'world9';
+export const BUILD = 'world10';
 export const KEYS = Object.freeze({ preferences: 'speech-play.preferences.v1', observations: 'speech-play.observations.v1' });
 export const FLAGS = Object.freeze(['enjoyed', 'shared', 'gesture', 'sound', 'word']);
 export const VIDEO_FILES = Object.freeze({ 'cow-moo': 'cow-moo.mp4', 'puppet-ma': 'puppet-ma.mp4' });
@@ -26,7 +26,7 @@ export const ACTIVITIES = Object.freeze([
   ] },
   { id: 'people', title: 'People words', category: 'words', label: 'Familiar words', color: 'rose', description: 'Two little words for familiar people.', target: 'People & connection', tip: 'Use the word your family uses naturally. Point to a familiar person together, without asking for a repeat.', realPlay: 'Greet a familiar grown-up together. Any look, gesture, or sound can be a hello.', examples: [
     { art: 'heart', label: 'Mama', word: 'Mama', speech: 'Mama', prompt: 'A familiar word to share.' },
-    { art: 'heart', label: 'Dada', word: 'Dada', speech: 'Dada', prompt: 'Another familiar word to share.' }
+    { art: 'heart-blue', label: 'Dada', word: 'Dada', speech: 'Dada', prompt: 'Another familiar word to share.' }
   ] },
   { id: 'actions', title: 'Little action words', category: 'words', label: 'Words in motion', color: 'sky', description: 'Up, go, and a little hello.', target: 'Words to use together', tip: 'Match a single word to an action. Say it once, pause, and enjoy the action together.', realPlay: 'Lift a toy for “up,” roll it for “go,” or wave and say “hi.” Let the play lead.', examples: [
     { art: 'up', label: 'Up', word: 'Up!', speech: 'Up', prompt: 'Up, up, into the sky.' },

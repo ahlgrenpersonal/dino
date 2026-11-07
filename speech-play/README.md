@@ -121,6 +121,7 @@ Build `world6` shows the loaded version at the top of the playroom, each activit
 Build `world7` reserves a full action row inside the viewport. Activity content scrolls above it, and opening an activity returns its content to the top.
 Build `world8` shows the version once on the main screen only. Bubble pop’s primary button pops one remaining bubble, then offers a refill; direct bubble taps share the same behavior.
 Build `world9` keeps Pop and More as separate fixed actions, preserves bubble targets between presses, and removes the refill overlay. Activity videos use the large Play/Pause button below the picture instead of native controls over the video.
+Build `world10` keeps the Mama heart pink and gives the Dada heart a light blue fill.
 Bump the build in `core.js`,
 `app.js` (including imports), HTML asset queries, manifest start URL, service-worker
 shell/cache, and `version.json` together. The other apps have independent versions.
