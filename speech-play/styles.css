@@ -23,3 +23,21 @@ dialog{color:var(--ink);padding:0;border:1px solid var(--line);background:var(--
 .top-build-label{margin:0;padding:10px max(var(--gutter),var(--safe-right)) 0 max(var(--gutter),var(--safe-left));padding-top:calc(10px + var(--safe-top));text-align:right;font-size:18px;line-height:1.4;font-weight:700;color:var(--ink)}
 .site-header{padding-top:0;min-height:96px}.header-build-label{display:block;font-size:18px;line-height:1.4;font-weight:700;color:var(--ink);white-space:nowrap}.activity-heading{text-align:center;min-width:0}.activity-heading .eyebrow{display:block}
 @media(max-width:760px){.site-header{min-height:84px}.activity-top{display:grid;grid-template-columns:1fr auto}.activity-heading{grid-column:1/-1;grid-row:2}.activity-heading .eyebrow{display:none}.activity-top>.icon-button{grid-column:2;grid-row:1}.activity-top>.quiet-button{justify-self:start}}
+
+/* The action row owns viewport space; only activity content scrolls above it. */
+.activity-dialog[open]{display:flex;flex-direction:column;overflow:hidden;height:calc(100dvh - max(16px,var(--safe-top)) - max(16px,var(--safe-bottom)))}
+.activity-dialog .activity-top{position:relative;flex:0 0 auto}
+.activity-scroll{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}
+.activity-dialog>.activity-actions{flex:0 0 auto;margin:0;border-top:1px solid var(--line);background:var(--paper);padding:12px max(24px,var(--safe-right)) 12px max(24px,var(--safe-left))}
+@media(max-width:760px){
+ .activity-dialog[open]{height:100dvh;max-height:100dvh;padding-bottom:0}
+ .activity-dialog>.activity-actions{padding:12px max(16px,var(--safe-right)) calc(12px + var(--safe-bottom)) max(16px,var(--safe-left));gap:12px}
+ .activity-dialog>.activity-actions button{min-width:0;flex:1 1 0}
+ .activity-body{padding-top:12px}
+ .example-tabs{margin:12px 0}
+ .activity-stage{height:clamp(160px,calc(100dvh - 560px - var(--safe-top) - var(--safe-bottom)),340px)}
+ .activity-word{margin:12px 0 4px}
+}
+
+/* Bubble hit targets retain their full height on short screens. */
+.activity-stage[data-art="bubbles"]{min-height:340px}
