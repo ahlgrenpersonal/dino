@@ -3,6 +3,11 @@
 A standalone, buildless PWA with six short activities for shared sound and word play.
 This folder is independent of the other apps in the repository.
 
+The phone layout uses one large activity card per row, 18–20 px body text,
+56 px or larger main touch targets, and full-screen activity views. Activity
+words are 52–64 px. Short screens can scroll to the parent tips and controls;
+text is never shrunk to fit everything into one screen.
+
 ## Run locally
 
 Requires Node.js 20 or later. No packages need installing.
@@ -100,7 +105,7 @@ After the first complete online load, the illustrated activities and bundled wor
 Optional local video samples are online/local-preview only. Launch from localhost
 or HTTPS; installation and service workers are unavailable from a `file:` URL.
 
-Build `world1` is this PWA’s initial, independent build. Bump the build in `core.js`,
+Build `world3` enlarges the playroom and activity views. Bump the build in `core.js`,
 `app.js` (including imports), HTML asset queries, manifest start URL, service-worker
 shell/cache, and `version.json` together. The other apps have independent versions.
 

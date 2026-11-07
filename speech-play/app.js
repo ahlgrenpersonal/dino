@@ -1,10 +1,10 @@
-import { BUILD, KEYS, ACTIVITIES, FLAGS, activityById, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from './core.js?v=world2';
-import { art, icon, garden } from './art.js?v=world2';
-import { createSpeaker } from './audio.js?v=world2';
-import { observeUpdates } from './updates.js?v=world2';
+import { BUILD, KEYS, ACTIVITIES, FLAGS, activityById, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from './core.js?v=world3';
+import { art, icon, garden } from './art.js?v=world3';
+import { createSpeaker } from './audio.js?v=world3';
+import { observeUpdates } from './updates.js?v=world3';
 
 const $ = selector => document.querySelector(selector);
-const buildVersion = 'world2';
+const buildVersion = 'world3';
 const timeline = createTimeline();
 const toastTimeline = createTimeline();
 let storage;

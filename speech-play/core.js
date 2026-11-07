@@ -1,4 +1,4 @@
-export const BUILD = 'world2';
+export const BUILD = 'world3';
 export const KEYS = Object.freeze({ preferences: 'speech-play.preferences.v1', observations: 'speech-play.observations.v1' });
 export const FLAGS = Object.freeze(['enjoyed', 'shared', 'gesture', 'sound', 'word']);
 export const ACTIVITIES = Object.freeze([
