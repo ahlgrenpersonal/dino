@@ -1,4 +1,4 @@
-export const BUILD = 'world10';
+export const BUILD = 'world11';
 export const KEYS = Object.freeze({ preferences: 'speech-play.preferences.v1', observations: 'speech-play.observations.v1' });
 export const FLAGS = Object.freeze(['enjoyed', 'shared', 'gesture', 'sound', 'word']);
 export const VIDEO_FILES = Object.freeze({ 'cow-moo': 'cow-moo.mp4', 'puppet-ma': 'puppet-ma.mp4' });
@@ -28,8 +28,9 @@ export const ACTIVITIES = Object.freeze([
     { art: 'heart', label: 'Mama', word: 'Mama', speech: 'Mama', prompt: 'A familiar word to share.' },
     { art: 'heart-blue', label: 'Dada', word: 'Dada', speech: 'Dada', prompt: 'Another familiar word to share.' }
   ] },
-  { id: 'actions', title: 'Little action words', category: 'words', label: 'Words in motion', color: 'sky', description: 'Up, go, and a little hello.', target: 'Words to use together', tip: 'Match a single word to an action. Say it once, pause, and enjoy the action together.', realPlay: 'Lift a toy for “up,” roll it for “go,” or wave and say “hi.” Let the play lead.', examples: [
+  { id: 'actions', title: 'Little action words', category: 'words', label: 'Words in motion', color: 'sky', description: 'Up, down, go, and a little hello.', target: 'Words to use together', tip: 'Match a single word to an action. Say it once, pause, and enjoy the action together.', realPlay: 'Lift a toy for “up,” lower it for “down,” roll it for “go,” or wave and say “hi.” Let the play lead.', examples: [
     { art: 'up', label: 'Up', word: 'Up!', speech: 'Up', prompt: 'Up, up, into the sky.' },
+    { art: 'down', label: 'Down', word: 'Down!', speech: 'Down', prompt: 'Down, down, gently down.' },
     { art: 'car', label: 'Go', word: 'Go!', speech: 'Go', prompt: 'One little word to get moving.' },
     { art: 'puppet', label: 'Hi', word: 'Hi!', speech: 'Hi', prompt: 'A friendly hello and a wave.' }
   ] },

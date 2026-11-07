@@ -92,7 +92,8 @@ test('favorites reflect only the explicit parent observation, and can be removed
 test('word cards cover everyday, people, and action words, with bundled examples', () => {
   const cards = filterActivities('words');
   assert.deepEqual(cards.map(card => card.id), ['words', 'people', 'actions']);
-  assert.equal(new Set(cards.flatMap(card => card.examples.map(item => item.speech))).size, 7);
+  assert.deepEqual(cards.find(card => card.id === 'actions').examples.slice(0,2).map(item => item.label), ['Up','Down']);
+  assert.equal(new Set(cards.flatMap(card => card.examples.map(item => item.speech))).size, 8);
   for (const card of cards) assert.ok(card.examples.every(item => soundFile(item.speech)));
   assert.deepEqual(cleanObservations({words:{enjoyed:true},people:{sound:true},actions:{word:true}}), {words:{enjoyed:true},people:{sound:true},actions:{word:true}});
 });

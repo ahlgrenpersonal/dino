@@ -2,7 +2,7 @@
 export const SOUND_FILES = Object.freeze({
   moo: 'moo', baa: 'baa', woof: 'woof', pop: 'pop', more: 'more',
   'ready, set': 'ready-set', go: 'go', 'beep beep': 'beep', boo: 'boo', hi: 'hi',
-  ball: 'ball', up: 'up', mama: 'mama', dada: 'dada', 'ma ma': 'ma', 'ba ba': 'ba', oh: 'oh'
+  ball: 'ball', up: 'up', down: 'down', mama: 'mama', dada: 'dada', 'ma ma': 'ma', 'ba ba': 'ba', oh: 'oh'
 });
 export function soundFile(text) {
   return SOUND_FILES[String(text).toLowerCase().replace(/[.!?]/g, '').replace(/\s+/g, ' ').trim()];

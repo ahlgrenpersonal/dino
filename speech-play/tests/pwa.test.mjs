@@ -60,7 +60,7 @@ test('offline audio responds to bounded and suffix range requests, including Saf
 test('shell precaches complete files under either a root folder or nested Pages folder', async () => {
   for (const scope of ['/speech-play/', '/dino/speech-play/']) {
     const sw = worker({ scope }); await sw.lifecycle('install');
-    assert.equal(sw.cached.length, 32);
+    assert.equal(sw.cached.length, 33);
     assert.ok(sw.cacheModes.every(mode => mode === 'reload'), 'New builds must fetch fresh media rather than reuse old HTTP-cache copies');
     for (const url of sw.cached) {
       assert.ok(url.startsWith('https://example.test' + scope));
