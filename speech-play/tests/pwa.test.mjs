@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFile, access, readdir } from 'node:fs/promises';
-import { BUILD, VIDEO_FILES } from '../core.js';
+import { BUILD, VIDEO_FILES, VIDEO_POSTERS } from '../core.js';
 import { SOUND_FILES } from '../audio.js';
 
 const root = new URL('../', import.meta.url);
@@ -60,7 +60,7 @@ test('offline audio responds to bounded and suffix range requests, including Saf
 test('shell precaches complete files under either a root folder or nested Pages folder', async () => {
   for (const scope of ['/speech-play/', '/dino/speech-play/']) {
     const sw = worker({ scope }); await sw.lifecycle('install');
-    assert.equal(sw.cached.length, 36);
+    assert.equal(sw.cached.length, 41);
     assert.ok(sw.cacheModes.every(mode => mode === 'reload'), 'New builds must fetch fresh media rather than reuse old HTTP-cache copies');
     for (const url of sw.cached) {
       assert.ok(url.startsWith('https://example.test' + scope));
@@ -185,4 +185,18 @@ test('the main screen begins with activities and retains one visible build label
  assert.doesNotMatch(html,/id="heroArt"|Let’s play together/);
  assert.match(html,/<h1 id="playroomTitle">What shall we try\?<\/h1>/);
  assert.doesNotMatch(app,/\$\('#heroArt'\)/);
+});
+
+test('every video opening image is cached for offline previews', async () => {
+ const sw=worker({fetcher:async()=>{throw new Error('offline');}});await sw.lifecycle('install');
+ for (const poster of Object.values(VIDEO_POSTERS)) {
+  const bytes=await readFile(new URL('assets/video/'+poster,root));
+  assert.equal(bytes.readUInt16BE(0),0xffd8);
+  assert.equal(bytes.readUInt16BE(bytes.length-2),0xffd9);
+  assert.equal(bytes.includes(Buffer.from('Exif\0\0')),false);
+  const url='https://example.test/dino/speech-play/assets/video/'+poster;
+  assert.ok(sw.cached.includes(url));
+  const response=await sw.request(url);
+  assert.equal(response.status,200);
+ }
 });

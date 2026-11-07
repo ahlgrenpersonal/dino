@@ -81,3 +81,10 @@ button>svg:not(.drawing){width:26px;height:26px;flex:0 0 26px}
 
 .section-heading h1{font-size:32px;line-height:1.25;letter-spacing:-.6px;margin:0;font-weight:700}
 @media(max-width:760px){.section-heading h1{font-size:28px}}
+
+/* Video previews are actual opening frames, with the same fit as playback. */
+.card-picture:has(>.card-video-poster){padding:0}
+.card-video-poster{display:block;width:100%;height:100%;object-fit:cover}
+.favorite-badge{z-index:1}
+.video-start{background:var(--ink)}
+.video-poster{display:block;width:100%;height:100%;object-fit:contain}

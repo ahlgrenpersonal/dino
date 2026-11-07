@@ -1,12 +1,12 @@
 import http from 'node:http';
-import { VIDEO_FILES } from '../core.js';
+import { VIDEO_FILES, VIDEO_POSTERS } from '../core.js';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const ROOT = fileURLToPath(new URL('../', import.meta.url));
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml', '.png': 'image/png', '.mp4': 'video/mp4', '.wav': 'audio/wav' };
-const PUBLIC = new Set([...Object.values(VIDEO_FILES).map(file => `assets/video/${file}`), 'index.html', 'app.js', 'core.js', 'art.js', 'audio.js', 'updates.js', 'bubbles.js', 'styles.css', 'sw.js', 'version.json', 'manifest.webmanifest', 'assets/icon.svg', 'assets/icon-192.png', 'assets/icon-512.png']);
+const MIME = { '.jpg': 'image/jpeg', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml', '.png': 'image/png', '.mp4': 'video/mp4', '.wav': 'audio/wav' };
+const PUBLIC = new Set([...Object.values(VIDEO_FILES).concat(Object.values(VIDEO_POSTERS)).map(file => `assets/video/${file}`), 'index.html', 'app.js', 'core.js', 'art.js', 'audio.js', 'updates.js', 'bubbles.js', 'styles.css', 'sw.js', 'version.json', 'manifest.webmanifest', 'assets/icon.svg', 'assets/icon-192.png', 'assets/icon-512.png']);
 export function byteRange(header, length) {
   if (!header) return null;
   const match = /^bytes=(\d*)-(\d*)$/.exec(header);

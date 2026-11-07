@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ACTIVITIES, FLAGS, KEYS, VIDEO_FILES, initialTurn, primaryAction, bubbleMessage, transition, filterActivities, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from '../core.js';
+import { ACTIVITIES, FLAGS, KEYS, VIDEO_FILES, VIDEO_POSTERS, initialTurn, primaryAction, bubbleMessage, transition, filterActivities, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from '../core.js';
 import { selectLocalVoice, createSpeaker, soundFile } from '../audio.js';
 
 test('the sampler covers sounds, single words, and different play interactions', () => {
@@ -100,7 +100,7 @@ test('word cards cover everyday, people, and action words, with bundled examples
 
 test('video sampler uses exactly the two bundled clips and switches without a speech requirement', () => {
   const videos = ACTIVITIES.find(card => card.id === 'videos');
-  assert.deepEqual(videos.examples.map(item => VIDEO_FILES[item.video]), ['cow-moo.mp4', 'puppet-ma.mp4']);
+  assert.deepEqual(videos.examples.map(item => VIDEO_FILES[item.video]), ['duck-quack.mp4', 'puppet-ma.mp4']);
   const first = initialTurn('videos');
   assert.equal(transition(first, {type:'next'}).index, 1);
   assert.deepEqual(transition(transition(first, {type:'next'}), {type:'next'}), first);
@@ -178,8 +178,8 @@ test('speech cancels overlapping audio, respects mute, and reports unavailable l
   assert.equal(missing.say('baa'), false); assert.deepEqual(unavailable, ['moo', 'baa']);
 });
 
-test('every example and delayed car cue has a bundled audio target', () => {
-  for (const activity of ACTIVITIES) for (const item of activity.examples) assert.ok(soundFile(item.speech), item.speech);
+test('illustrated examples and delayed car cues have bundled audio; videos have their own sound', () => {
+  for (const activity of ACTIVITIES) for (const item of activity.examples) assert.ok(item.video ? VIDEO_FILES[item.video] : soundFile(item.speech), item.speech);
   assert.equal(soundFile('Ready, set'), 'ready-set');
   assert.equal(soundFile('Ma. Ma.'), 'ma');
   assert.equal(soundFile('unknown phrase'), undefined);
@@ -301,4 +301,12 @@ test('the new video card has three distinct targets and reuses video actions wit
  const notes=cleanObservations({videos:{enjoyed:true},'video-play':{shared:true}});
  assert.deepEqual(notes,{videos:{enjoyed:true},'video-play':{shared:true}});
  assert.deepEqual(filterActivities('favorites',notes).map(a=>a.id),['videos']);
+});
+
+test('video previews cover every clip and the cow belongs only to Animal hello', () => {
+ assert.deepEqual(Object.keys(VIDEO_POSTERS),Object.keys(VIDEO_FILES));
+ for (const [id,poster] of Object.entries(VIDEO_POSTERS)) assert.equal(poster,id+'.jpg');
+ const cowExamples=ACTIVITIES.flatMap(a=>a.examples.filter(e=>e.art==='cow').map(()=>a.id));
+ assert.deepEqual(cowExamples,['animals']);
+ assert.equal(ACTIVITIES.find(a=>a.id==='videos').examples[0].video,'duck-quack');
 });

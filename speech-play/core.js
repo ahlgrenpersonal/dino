@@ -1,7 +1,8 @@
-export const BUILD = 'world16';
+export const BUILD = 'world17';
 export const KEYS = Object.freeze({ preferences: 'speech-play.preferences.v1', observations: 'speech-play.observations.v1' });
 export const FLAGS = Object.freeze(['enjoyed', 'shared', 'gesture', 'sound', 'word']);
-export const VIDEO_FILES = Object.freeze({ 'cow-moo': 'cow-moo.mp4', 'puppet-ma': 'puppet-ma.mp4', 'puppy-woof': 'puppy-woof.mp4', 'ball-go': 'ball-go.mp4', 'hello-wave': 'hello-wave.mp4' });
+export const VIDEO_FILES = Object.freeze({ 'duck-quack': 'duck-quack.mp4', 'puppet-ma': 'puppet-ma.mp4', 'puppy-woof': 'puppy-woof.mp4', 'ball-go': 'ball-go.mp4', 'hello-wave': 'hello-wave.mp4' });
+export const VIDEO_POSTERS = Object.freeze(Object.fromEntries(Object.keys(VIDEO_FILES).map(clip => [clip, `${clip}.jpg`])));
 export const ACTIVITIES = Object.freeze([
   { id: 'animals', title: 'Animal hello', category: 'sounds', label: 'Listen & copy', color: 'mint', description: 'A little moo. A little you.', target: 'Sounds & imitation', tip: 'Make the sound yourself, then leave a little quiet space. Any response is welcome.', realPlay: 'Find a toy animal or a picture in a book. Make its sound together.', examples: [
     { art: 'cow', label: 'Cow', word: 'Moo', speech: 'Moo', prompt: 'What does the cow say?' },
@@ -33,8 +34,8 @@ export const ACTIVITIES = Object.freeze([
     { art: 'car', label: 'Go', word: 'Go!', speech: 'Go', prompt: 'One little word to get moving.' },
     { art: 'puppet', label: 'Hi', word: 'Hi!', speech: 'Hi', prompt: 'A friendly hello and a wave.' }
   ] },
-  { id: 'videos', title: 'Watch a little hello', category: 'play', label: 'Watch & copy', color: 'mint', description: 'A cow and a puppet, with time for a turn.', target: 'Two short videos', tip: 'Watch one short clip together, then pause. Copy the sound yourself and leave room for any response.', realPlay: 'Put the screen aside and play with a toy animal or puppet. Try the same sound face to face.', examples: [
-    { art: 'cow', label: 'Cow', word: 'Moo', speech: 'Moo', video: 'cow-moo', prompt: 'Watch the cow. Then try a little moo together.' },
+  { id: 'videos', title: 'Watch a little hello', category: 'play', label: 'Watch & copy', color: 'mint', description: 'A duck and a puppet, with time for a turn.', target: 'Two short videos', tip: 'Watch one short clip together, then pause. Copy the sound yourself and leave room for any response.', realPlay: 'Put the screen aside and play with a toy animal or puppet. Try the same sound face to face.', examples: [
+    { art: 'duck', label: 'Duck', word: 'Quack', speech: 'Quack', video: 'duck-quack', prompt: 'Watch the duck. Then try a little quack together.' },
     { art: 'puppet', label: 'Puppet', word: 'Ma, ma', speech: 'Ma. Ma.', video: 'puppet-ma', prompt: 'Watch the puppet. Then leave space for a turn.' }
   ] },
   { id: 'video-play', title: 'More little videos', category: 'play', label: 'Watch & play', color: 'peach', description: 'Woof, go, and a friendly hi.', target: 'Three short videos', tip: 'Try one short clip, then pause. Notice what catches their interest. Repeat a favorite or stop whenever you like.', realPlay: 'Find a toy puppy, roll a ball, or wave to someone nearby. Try the same little sound away from the screen.', examples: [

@@ -28,7 +28,7 @@ Without npm, use `node tools/serve.mjs` and `node --test tests/*.test.mjs`.
 - Little everyday words: roll the same ball for Ball and More.
 - People words: a pink Mama heart and a light blue Dada heart.
 - Little action words: up, down, go, and hi, with matching movement.
-- Watch a little hello: short generated cow and felt-puppet videos.
+- Watch a little hello: short generated duck and felt-puppet videos.
 - More little videos: puppy woof, a rolling ball with go, and a synthetic adult waving hi.
 - Make a little sound: ma, ba, and oh.
 
@@ -55,8 +55,9 @@ Only explicitly local English device voices may be used as a fallback. Beep
 repeats the same retained utterance twice. Preview the generated speech yourself;
 codec and playback checks do not establish pronunciation quality.
 
-The five bundled H3 FL2VA clips show a clay cow, felt puppet, puppy,
-rolling toy ball, and an entirely synthetic adult offering a friendly wave. Each lasts about five seconds and starts only after a tap. Large controls
+The five bundled H3 FL2VA clips show a clay duck, felt puppet, puppy,
+rolling toy ball, and an entirely synthetic adult offering a friendly wave. Each lasts about five seconds and starts only after a tap. Each preview is extracted from the video’s opening frame, including the video
+menu thumbnails. Large controls
 below the picture handle play/pause without native controls obscuring the video.
 Clips respect Sound off and pause on close, switching, or backgrounding. Review
 speech and mouth movements yourself. Gentle motion and system reduced motion

@@ -1,6 +1,6 @@
 # Validation
 
-Run `node --test tests/*.test.mjs` from this folder. All 61 tests pass without
+Run `node --test tests/*.test.mjs` from this folder. All 63 tests pass without
 installed packages or inference calls. Automated coverage includes activity
 transitions, duplicate/extra bubble presses, retained bubble targets, repeated
 ball rolls, timer and audio cancellation, storage filtering/failure, Favorites,
@@ -91,3 +91,32 @@ after the shared video handling changed. No online browser console errors.
 Reviewer browser operation remained mediated by the primary agent. No
 independent listening, pronunciation certification, or physical iPhone test
 is claimed.
+
+
+## World17 matching video previews
+
+The original video card now starts with a new duck/quack clip instead of the
+cow, which remains in Animal hello. All five current video clips have actual
+opening-frame JPEG previews: menu covers, native video posters, and the start
+overlay use the same reviewed image. Frame zero was extracted from each exact
+public MP4 at 768x512. JPEGs contain only generic JFIF metadata. No replacement
+illustrations or reference photographs were used.
+
+The duck was generated through the local H3 FL2VA HTTP queue at explicit LOW/test
+priority from a generic text-only prompt. Independent review inspected 62 sampled
+frames, a full-resolution still, all five outgoing JPEGs, and their provenance.
+Metadata removal preserved encoded packets, decoded audio/video, and timing.
+No visible personal or identifying information was found; source prompts and
+receipts remain private. No pronunciation or listening certification is claimed.
+
+All five opening images loaded before playback, matched their native poster,
+and disappeared when playback began. Menu images now show Duck and Puppy.
+In a fresh nested preview scope at 320x568, both entire controls ended at y556,
+all posters loaded at their full natural width, and no horizontal overflow was
+observed. Preview and video letterbox colors matched. With the server stopped,
+world17 reloaded ten activities, all five opening images remained available,
+and all five videos played at readyState 4 with 5.167-second duration. Two
+independent reviews checked source, tests, and supplied screenshots; browser
+actions were performed by the primary agent. Physical iPhone behavior remains
+unverified. Automated tests cover all 41 shell files, all five poster-cache
+entries, JPEG signatures/EXIF exclusion, preview MIME types, and exact allowlists.
