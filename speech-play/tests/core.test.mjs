@@ -4,8 +4,8 @@ import { ACTIVITIES, FLAGS, KEYS, VIDEO_FILES, initialTurn, primaryAction, bubbl
 import { selectLocalVoice, createSpeaker, soundFile } from '../audio.js';
 
 test('the sampler covers sounds, single words, and different play interactions', () => {
-  assert.equal(ACTIVITIES.length, 9);
-  assert.equal(new Set(ACTIVITIES.map(a => a.id)).size, 9);
+  assert.equal(ACTIVITIES.length, 10);
+  assert.equal(new Set(ACTIVITIES.map(a => a.id)).size, 10);
   assert.deepEqual([...new Set(ACTIVITIES.map(a => a.category))].sort(), ['play', 'sounds', 'words']);
   for (const activity of ACTIVITIES) {
     assert.ok(activity.examples.length >= 1);
@@ -86,7 +86,7 @@ test('favorites reflect only the explicit parent observation, and can be removed
   assert.deepEqual(notes, {});
   assert.equal(filterActivities('sounds').length, 2);
   assert.equal(filterActivities('words').length, 3);
-  assert.equal(filterActivities('play').length, 4);
+  assert.equal(filterActivities('play').length, 5);
 });
 
 test('word cards cover everyday, people, and action words, with bundled examples', () => {
@@ -284,4 +284,21 @@ test('bubble words follow the pop and explicit refill phases', () => {
  assert.equal(primaryAction(state).disabled,true);
  state=transition(state,{type:'reset'});
  assert.equal(bubbleMessage(state).word,'Pop!');
+});
+
+test('the new video card has three distinct targets and reuses video actions without changing existing observations', () => {
+ const extra=ACTIVITIES.find(a=>a.id==='video-play');
+ assert.deepEqual(extra.examples.map(e=>e.video),['puppy-woof','ball-go','hello-wave']);
+ assert.deepEqual(extra.examples.map(e=>e.speech),['Woof','Go','Hi']);
+ assert.equal(Object.keys(VIDEO_FILES).length,5);
+ let state=initialTurn(extra.id);
+ for(let i=0;i<3;i++) {
+  assert.deepEqual(primaryAction(state),{label:'Play video',interaction:'play'});
+  assert.ok(VIDEO_FILES[extra.examples[state.index].video]);
+  state=transition(state,{type:'next'});
+ }
+ assert.deepEqual(state,initialTurn(extra.id));
+ const notes=cleanObservations({videos:{enjoyed:true},'video-play':{shared:true}});
+ assert.deepEqual(notes,{videos:{enjoyed:true},'video-play':{shared:true}});
+ assert.deepEqual(filterActivities('favorites',notes).map(a=>a.id),['videos']);
 });

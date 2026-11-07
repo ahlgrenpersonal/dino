@@ -1,12 +1,12 @@
-const BUILD = 'world15';
+const BUILD = 'world16';
 const BASE = new URL('./', self.location.href);
 const PREFIX = `speech-play:${BASE.pathname}:`;
 const CACHE = `${PREFIX}${BUILD}`;
 const SHELL = [
-  './', './index.html', './styles.css?v=world15', './app.js?v=world15',
-  './bubbles.js?v=world15', './core.js?v=world15', './art.js?v=world15', './audio.js?v=world15', './updates.js?v=world15',
+  './', './index.html', './styles.css?v=world16', './app.js?v=world16',
+  './bubbles.js?v=world16', './core.js?v=world16', './art.js?v=world16', './audio.js?v=world16', './updates.js?v=world16',
   './manifest.webmanifest', './assets/icon.svg', './assets/icon-192.png', './assets/icon-512.png',
-  './assets/video/cow-moo.mp4', './assets/video/puppet-ma.mp4',
+  ...['cow-moo','puppet-ma','puppy-woof','ball-go','hello-wave'].map(clip => `./assets/video/${clip}.mp4`),
   ...['moo', 'baa', 'woof', 'pop', 'more', 'ready-set', 'go', 'beep', 'boo', 'hi', 'ball', 'up', 'down', 'mama', 'dada', 'ma', 'ba', 'oh'].map(word => `./assets/audio/${word}.wav`)
 ].map(file => new URL(file, BASE).href);
 const ALLOWED = new Set(SHELL);

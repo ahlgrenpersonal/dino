@@ -1,11 +1,11 @@
-import { renderBubbles } from './bubbles.js?v=world15';
-import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, bubbleMessage, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline } from './core.js?v=world15';
-import { art, icon, garden } from './art.js?v=world15';
-import { createSpeaker } from './audio.js?v=world15';
-import { observeUpdates, createUpdateCheck, activateUpdate, readBuild } from './updates.js?v=world15';
+import { renderBubbles } from './bubbles.js?v=world16';
+import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, bubbleMessage, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline } from './core.js?v=world16';
+import { art, icon } from './art.js?v=world16';
+import { createSpeaker } from './audio.js?v=world16';
+import { observeUpdates, createUpdateCheck, activateUpdate, readBuild } from './updates.js?v=world16';
 
 const $ = selector => document.querySelector(selector);
-const buildVersion = 'world15';
+const buildVersion = 'world16';
 // Show the loaded code version, including when a newer document meets an older cached module.
 document.querySelectorAll('[data-build-label]').forEach(label => { label.textContent = `Version ${BUILD}`; });
 const timeline = createTimeline();
@@ -98,7 +98,7 @@ function renderStage({ poppedIndex = null } = {}) {
   } else if (state.id === 'words' && stage.querySelector('.rolling-ball')) {
     // Keep the same ball connected so changing its side produces a real roll.
     $('#stageButton').setAttribute('aria-label', state.index === 0 ? 'Roll the ball' : 'Roll the ball again');
-  } else if (state.id === 'videos') {
+  } else if (item.video) {
     stage.innerHTML = `<video id="activityVideo" class="activity-video" playsinline preload="none" aria-label="${escapeHTML(item.label)} video: ${escapeHTML(item.word)}"><source src="./assets/video/${VIDEO_FILES[item.video]}" type="video/mp4"></video><button class="stage-button video-start" id="startActivityVideo" aria-label="Watch ${escapeHTML(item.label)} video">${art(item.art)}<span class="tap-hint">Watch video</span></button>`;
     currentVideo = $('#activityVideo'); currentVideo.muted = !preferences.sound;
     const video = currentVideo;
@@ -167,7 +167,7 @@ function play() {
     popBubble([0, 1, 2].find(index => !state.popped.includes(index)));
     return;
   }
-  if (state.id === 'videos') { playActivityVideo(); return; }
+  if (item.video) { playActivityVideo(); return; }
   if (state.id === 'car' && state.index === 0) {
     if (state.phase !== 'idle') return;
     state = transition(state, { type: 'ready' }); renderStage(); say('Ready, set');
@@ -184,7 +184,7 @@ function play() {
 }
 
 function syncVideoButton() {
-  if (state.id !== 'videos' || !currentVideo) return;
+  if (!example().video || !currentVideo) return;
   const playing = !currentVideo.paused && !currentVideo.ended;
   $('#hearButton span:last-child').textContent = playing ? 'Pause video' : 'Play video';
   $('#hearButton [data-icon]').innerHTML = icon(playing ? 'pause' : 'play');
@@ -263,8 +263,8 @@ function renderGrownups() {
   const views = {
     guide: `<div class="guide-intro"><h3>The best part is being together.</h3><p>Pick something that catches their interest. Join in, offer a sound, then leave a little space. A look, a movement, a gesture, or a sound can be part of the play.</p></div><ol class="guide-steps"><li>Follow their lead.<small>Choose freely, repeat a favorite, or stop. There is nothing to finish.</small></li><li>Offer a little model.<small>Say “moo,” “pop,” or one familiar word naturally. You can also copy a sound they make.</small></li><li>Pause and respond.<small>Give them room for a turn. Keep playing whether or not they speak.</small></li><li>Take it into the room.<small>Each activity includes a small idea for playing together away from the screen.</small></li></ol><p>This is a shared-play demo, not a treatment or an assessment. Use it alongside advice from a speech-language professional. Keep screen play brief and follow your child’s comfort.</p><p class="guidance-source">Activity ideas draw on <a href="https://www.asha.org/public/developmental-milestones/communication-milestones-19-to-24-months/" target="_blank" rel="noopener noreferrer">ASHA’s parent communication guidance</a>. This custom app has not been clinically evaluated.</p>`,
     notebook: notebookHTML(),
-    clips: `<h3>A cow and a puppet. A little hello.</h3><p>Two short generated clips are ready in the playroom. Start, pause, and replay them with the large button below the picture.</p><button id="openVideos" class="primary-button clip-load">${icon('play')} Try the videos</button><p>Both clips work offline after the first complete online load. Nothing plays automatically.</p>`,
-    settings: `<h3>A little quieter. A little simpler.</h3><div class="settings-row"><label for="soundSetting">Speech & video sound<small>Includes short generated word recordings. A local device voice is a fallback. No microphone is used. Preview sounds yourself before sharing.</small></label><input id="soundSetting" type="checkbox" role="switch" ${preferences.sound ? 'checked' : ''}></div><div class="settings-row"><label for="gentleSetting">Gentle motion<small>Reduce illustration movement. Your system’s reduced-motion preference is also respected. Videos play only when you start them.</small></label><input id="gentleSetting" type="checkbox" role="switch" ${preferences.gentle ? 'checked' : ''}></div><div class="install-help"><strong>Keep the playroom close.</strong><p>On iPhone or iPad, open in Safari, choose Share, then Add to Home Screen. On supporting browsers, use Install app. The playroom, word recordings, and two short videos work offline after the first complete load.</p></div><p>All preferences and observations stay in this browser. Nothing is recorded or sent to an account. There are no ads or analytics.</p><div class="settings-buttons"><button id="clearNotes" class="secondary-button">Clear little moments</button><button id="installFromSettings" class="secondary-button">${icon('download')} Install app</button></div><p>Little Echo · demo. Each activity can be repeated in any order.</p>`
+    clips: `<h3>Five short clips. A few ways to play.</h3><p>Meet the cow and puppet, or try a puppy, a rolling ball, and a friendly wave. Start, pause, and replay them with the large button below the picture.</p><div class="settings-buttons"><button data-video-activity="videos" class="primary-button clip-load">${icon('play')} Cow & puppet</button><button data-video-activity="video-play" class="secondary-button clip-load">${icon('play')} More little videos</button></div><p>All five clips work offline after the first complete online load. Nothing plays automatically.</p>`,
+    settings: `<h3>A little quieter. A little simpler.</h3><div class="settings-row"><label for="soundSetting">Speech & video sound<small>Includes short generated word recordings. A local device voice is a fallback. No microphone is used. Preview sounds yourself before sharing.</small></label><input id="soundSetting" type="checkbox" role="switch" ${preferences.sound ? 'checked' : ''}></div><div class="settings-row"><label for="gentleSetting">Gentle motion<small>Reduce illustration movement. Your system’s reduced-motion preference is also respected. Videos play only when you start them.</small></label><input id="gentleSetting" type="checkbox" role="switch" ${preferences.gentle ? 'checked' : ''}></div><div class="install-help"><strong>Keep the playroom close.</strong><p>On iPhone or iPad, open in Safari, choose Share, then Add to Home Screen. On supporting browsers, use Install app. The playroom, word recordings, and five short videos work offline after the first complete load.</p></div><p>All preferences and observations stay in this browser. Nothing is recorded or sent to an account. There are no ads or analytics.</p><div class="settings-buttons"><button id="clearNotes" class="secondary-button">Clear little moments</button><button id="installFromSettings" class="secondary-button">${icon('download')} Install app</button></div><p>Little Echo · demo. Each activity can be repeated in any order.</p>`
   };
   $('#grownupContent').innerHTML = views[panel] || views.guide;
 }
@@ -290,7 +290,8 @@ $('#grownupDialog').addEventListener('click', event => {
     const previous = observations; observations = {}; persist(KEYS.observations, observations); renderCards();
     toast('Little moments cleared.', () => { observations = previous; persist(KEYS.observations, observations); renderCards(); if ($('#grownupDialog').open && panel === 'notebook') renderGrownups(); });
   }
-  if (event.target.closest('#openVideos')) { resumeActivity = false; closeGrownups(); openActivity('videos'); return; }
+  const videoShortcut = event.target.closest('[data-video-activity]');
+  if (videoShortcut) { resumeActivity = false; closeGrownups(); openActivity(videoShortcut.dataset.videoActivity); return; }
   if (event.target.closest('#installFromSettings')) install();
 });
 $('#grownupDialog').addEventListener('change', event => {
@@ -365,4 +366,4 @@ if ('serviceWorker' in navigator) {
     checkUpdate();
   }).catch(() => { $('#connectionStatus').textContent = 'Offline setup unavailable'; });
 }
-fillIcons(); $('#heroArt').innerHTML = garden(); applyPreferences(); renderCards(); connectionStatus();
+fillIcons(); applyPreferences(); renderCards(); connectionStatus();

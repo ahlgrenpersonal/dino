@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { VIDEO_FILES } from '../core.js';
 import { createPreviewServer, byteRange } from '../tools/serve.mjs';
 
 test('HTTP byte ranges support full, open, and suffix reads and reject invalid ranges', () => {
@@ -32,7 +33,7 @@ test('preview serves only this PWA, nested paths, and whitelisted media', async 
   assert.equal(slice.status, 206); assert.equal(await slice.text(), '<svg');
   const bad = await fetch(base + '/speech-play/assets/icon.svg', { headers: { Range: 'bytes=999999-' } });
   assert.equal(bad.status, 416);
-  for (const name of ['cow-moo','puppet-ma']) {
+  for (const name of Object.keys(VIDEO_FILES)) {
     const video = await fetch(base + `/speech-play/assets/video/${name}.mp4`, {headers:{Range:'bytes=0-31'}});
     assert.equal(video.status,206); assert.equal(video.headers.get('content-type'),'video/mp4');
     assert.equal(Buffer.from(await video.arrayBuffer()).toString('ascii',4,8),'ftyp');

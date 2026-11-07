@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFile, access, readdir } from 'node:fs/promises';
-import { BUILD } from '../core.js';
+import { BUILD, VIDEO_FILES } from '../core.js';
 import { SOUND_FILES } from '../audio.js';
 
 const root = new URL('../', import.meta.url);
@@ -60,7 +60,7 @@ test('offline audio responds to bounded and suffix range requests, including Saf
 test('shell precaches complete files under either a root folder or nested Pages folder', async () => {
   for (const scope of ['/speech-play/', '/dino/speech-play/']) {
     const sw = worker({ scope }); await sw.lifecycle('install');
-    assert.equal(sw.cached.length, 33);
+    assert.equal(sw.cached.length, 36);
     assert.ok(sw.cacheModes.every(mode => mode === 'reload'), 'New builds must fetch fresh media rather than reuse old HTTP-cache copies');
     for (const url of sw.cached) {
       assert.ok(url.startsWith('https://example.test' + scope));
@@ -73,10 +73,11 @@ test('shell precaches complete files under either a root folder or nested Pages 
 test('bundled videos support offline Safari byte probes and seeking from the same complete cache', async () => {
   const sw = worker({fetcher:async () => {throw new Error('offline');}});
   await sw.lifecycle('install');
-  for (const name of ['cow-moo', 'puppet-ma']) {
+  for (const name of Object.keys(VIDEO_FILES)) {
     const bytes = await readFile(new URL(`assets/video/${name}.mp4`, root));
     assert.equal(bytes.toString('ascii',4,8), 'ftyp');
     const url = `https://example.test/dino/speech-play/assets/video/${name}.mp4`;
+    assert.ok(sw.cached.includes(url), 'Every catalog video must be installed offline');
     sw.stores.set(url, new Response(bytes,{headers:{'content-type':'video/mp4'}}));
     for (const [range,start,end] of [['bytes=0-1',0,1],['bytes=-32',bytes.length-32,bytes.length-1]]) {
       const response = await sw.request(url,'cors','GET',{range});
@@ -175,4 +176,13 @@ test('runtime files contain no third-party asset loads, telemetry, mic access, o
   assert.ok(gitignore.includes('local-media/')); assert.ok(gitignore.includes('artifacts/'));
   const files = await readdir(root);
   assert.equal(files.includes('.env'), false);
+});
+
+test('the main screen begins with activities and retains one visible build label', async () => {
+ const html=await readFile(new URL('index.html',root),'utf8');
+ const app=await readFile(new URL('app.js',root),'utf8');
+ assert.equal((html.match(/data-build-label/g)||[]).length,1);
+ assert.doesNotMatch(html,/id="heroArt"|Let’s play together/);
+ assert.match(html,/<h1 id="playroomTitle">What shall we try\?<\/h1>/);
+ assert.doesNotMatch(app,/\$\('#heroArt'\)/);
 });

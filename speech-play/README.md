@@ -1,6 +1,6 @@
 # Little Echo
 
-A standalone, buildless PWA with nine short activities for shared sound and word play.
+A standalone, buildless PWA with ten short activities for shared sound and word play.
 This folder is independent of the other apps in the repository.
 
 ## Run locally
@@ -29,6 +29,7 @@ Without npm, use `node tools/serve.mjs` and `node --test tests/*.test.mjs`.
 - People words: a pink Mama heart and a light blue Dada heart.
 - Little action words: up, down, go, and hi, with matching movement.
 - Watch a little hello: short generated cow and felt-puppet videos.
+- More little videos: puppy woof, a rolling ball with go, and a synthetic adult waving hi.
 - Make a little sound: ma, ba, and oh.
 
 The main screen shows the build once. Large activity controls stay in a pinned
@@ -54,8 +55,8 @@ Only explicitly local English device voices may be used as a fallback. Beep
 repeats the same retained utterance twice. Preview the generated speech yourself;
 codec and playback checks do not establish pronunciation quality.
 
-The two bundled H3 FL2VA clips show generated characters, a clay cow and a felt
-puppet. Each lasts about five seconds and starts only after a tap. Large controls
+The five bundled H3 FL2VA clips show a clay cow, felt puppet, puppy,
+rolling toy ball, and an entirely synthetic adult offering a friendly wave. Each lasts about five seconds and starts only after a tap. Large controls
 below the picture handle play/pause without native controls obscuring the video.
 Clips respect Sound off and pause on close, switching, or backgrounding. Review
 speech and mouth movements yourself. Gentle motion and system reduced motion
@@ -72,7 +73,7 @@ history. Privacy-reviewed generic media may be published within authorized work.
 
 All runtime paths, manifest scope, and service-worker registration are relative.
 The service worker owns only this folder and its own scope-specific caches.
-After the first complete online load, activities, words, and both videos work
+After the first complete online load, activities, words, and all five videos work
 offline. Navigation uses a bounded network request with an installed-shell
 fallback. Updates preserve localStorage. Reloading older running code requires an explicit
 update action; an already-current page can finish activating its offline shell

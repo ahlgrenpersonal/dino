@@ -1,6 +1,6 @@
 # Validation
 
-Run `node --test tests/*.test.mjs` from this folder. All 59 tests pass without
+Run `node --test tests/*.test.mjs` from this folder. All 61 tests pass without
 installed packages or inference calls. Automated coverage includes activity
 transitions, duplicate/extra bubble presses, retained bubble targets, repeated
 ball rolls, timer and audio cancellation, storage filtering/failure, Favorites,
@@ -62,3 +62,32 @@ certify pronunciation or lip sync. No independent listening, acoustic
 transcription, physical iPhone installation, or real multi-touch testing is
 claimed. The app records no microphone input and sends no observations to an
 account.
+
+
+## World16 video expansion
+
+The main screen now starts with activities. The separate More little videos
+card adds Puppy/Woof, Ball/Go, and Wave/Hi alongside the existing two-video card.
+All five catalog videos are explicitly precached and served by the preview
+allowlist. Existing activity IDs and saved observations retain their meaning.
+
+Three new text-only H3 FL2VA jobs ran through the local HTTP queue with explicit
+LOW priority and test provenance. Each clip is 124 frames at 24 fps, about
+5.167 seconds. Two reviewers inspected 62 sampled frames per clip plus three
+full-resolution stills. No visible text or identifying content was found. A
+reviewer independently probed the exact public MP4s: H264/AAC only, no chapters,
+and only generic MP4 brand/handler tags. Lossless remuxing preserved encoded
+packets, decoded video/audio, and timestamps while removing optional metadata.
+Private prompts, receipts, original files, and review sheets remain unpublished.
+
+Browser checks covered poster start, focus transfer, play/pause/resume, replay
+hints, switching without autoplay, both grown-up shortcuts, Favorites, mute,
+and Gentle motion. All new examples kept both entire controls within 390x844
+and 320x568 viewports. With the preview server stopped, the world16 shell
+reloaded all ten activities; all three new videos played from cache. The Wave
+clip reached its full end at readyState 4. The original two clips also played
+after the shared video handling changed. No online browser console errors.
+
+Reviewer browser operation remained mediated by the primary agent. No
+independent listening, pronunciation certification, or physical iPhone test
+is claimed.
