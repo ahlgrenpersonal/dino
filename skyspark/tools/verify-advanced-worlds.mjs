@@ -3,7 +3,7 @@ import {SkyGame,freshSave,readSave,LEVELS,WORLD,BOSS_X,bossShieldUp} from '../en
 
 assert.equal(LEVELS.length,8);
 assert.deepEqual(LEVELS.slice(5).map(l=>[l.biome,l.bossType,l.bossHp]),[
-  ['desert','scarab',90],['ocean','leviathan',100],['citadel','rival',200]
+  ['desert','scarab',50],['ocean','leviathan',50],['citadel','rival',120]
 ]);
 const bounds={left:BOSS_X-1500,right:WORLD.width,top:0,bottom:1000};
 function scene(level){
@@ -66,7 +66,7 @@ for(const level of [5,6,7]){
 console.log(`Passed eight-world save extension, progression locks, rare bulky three-health ground troops, weapon damage, off-screen protection and full-health advanced boss fights (${fights.join('/')} seconds scripted).`);
 
 // New charged attacks warn, lock their aim, and vanish when their owner is defeated.
-for(const level of [5,6,7]){
+for(const level of [7]){
   const {g,boss}=scene(level);g.fireEnemy(boss);g.projectiles=[];
   const f=g.effects.find(f=>f.type==='enemy-beam');assert(f);assert(f.charge>=1.1);
   const origin={x:f.x,y:f.y,tx:f.tx,ty:f.ty};tick(g,f.charge-.04);
@@ -85,7 +85,7 @@ for(const level of [5,6,7]){
 for(let mode=0;mode<3;mode++)for(const weapon of ['sparks','laser','blast']){
   const {g,boss}=scene(7);boss.attacks=mode;g.fireEnemy(boss);
   const f=g.effects.find(f=>['enemy-beam','enemy-blast'].includes(f.type));assert(f);
-  assert.equal(boss.cd,3.8,'Counterpart attacks leave time to recover');
+  assert.equal(boss.cd,2.8,'Counterpart cycles powers more aggressively while keeping its charge warnings');
   if(mode===0){assert.equal(f.shove,1100);assert.equal(f.tint,'#ff8a32');}
   if(mode===1){assert.equal(f.shove,180);assert.equal(f.skin,'spark');assert.equal(f.tint,'#ff49b3');}
   if(mode===2){assert.equal(f.type,'enemy-blast');assert.equal(f.shove,400);assert.equal(f.radius,330);assert(f.charge>=1.1);}
@@ -124,7 +124,7 @@ for(const shove of [140,200,300,400,810,1100,5000]){
 }
 console.log('Passed charged warning timing and fixed aim, dodge and owner cancellation, every power clearing every rival hazard, viewport-sized recoil, facing preservation, recovery flight, bounds escape and no recoil punches.');
 
-for(const [level,count,shove] of [[5,4,200],[6,5,300]]){
+for(const [level,count,shove] of [[5,4,200]]){
   const {g,boss}=scene(level);g.fireEnemy(boss);assert.equal(g.projectiles.length,count);
   assert(g.projectiles.every(q=>q.shove===shove&&Math.hypot(q.vx,q.vy)<200&&q.radius>=23),'Boss fans use large, slow, forceful projectiles');
 }

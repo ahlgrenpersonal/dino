@@ -1,4 +1,4 @@
-export const BUILD = 'world113';
+export const BUILD = 'world114';
 export const WORLD = { width: 9600, height: 1000, ground: 850 };
 export const SITE_COUNT = 18;
 export const SITE_SPACING=520;
@@ -14,19 +14,19 @@ export const LEVELS = [
   { id:'mountains', name:'Stormpeak Range', short:'Mountains', icon:'▲', color:'#d6b8ff', biome:'mountains', boss:'Stormwing', bossType:'wyvern', bossHp:48, waves:3, squad:10,
     districts:['Pine Valley','Crystal Cliffs','Cloud Bridge','Snowcap Pass','Aurora Ridge','Stormwing Summit'],
     tasks:['Light the valley watchfire','Wake the crystal beacon','Power the cloud bridge','Light the snowcap lantern','Restore the aurora beacon','Open the summit signal'] },
-  {id:'caldera',name:'Ember Caldera',short:'Volcano',icon:'◆',color:'#ffb176',biome:'volcano',boss:'Magma Bastion',bossType:'crab',bossHp:64,waves:3,squad:10,
+  {id:'caldera',name:'Ember Caldera',short:'Volcano',icon:'◆',color:'#ffb176',biome:'volcano',boss:'Magma Bastion',bossType:'crab',bossHp:50,waves:3,squad:10,
     districts:['Ember Shore','Obsidian Steps','Lava Falls','Ash Gardens','Molten Bridge','Crater Forge'],
     tasks:['Wake the shore beacon','Light the obsidian signal','Restart the cooling spring','Restore the ash garden','Power the molten bridge','Open the crater signal']},
-  {id:'spaceport',name:'Moonlit Spaceport',short:'Spaceport',icon:'✧',color:'#b4c4ff',biome:'space',boss:'Orbit Dreadnought',bossType:'dreadnought',bossHp:84,waves:3,squad:12,
+  {id:'spaceport',name:'Moonlit Spaceport',short:'Spaceport',icon:'✧',color:'#b4c4ff',biome:'space',boss:'Orbit Dreadnought',bossType:'dreadnought',bossHp:50,waves:3,squad:12,
     districts:['Moonrise Landing','Starship Docks','Crystal Radar','Orbital Gardens','Neon Runway','Launch Citadel'],
     tasks:['Light the landing lamps','Power the ship docks','Wake the crystal radar','Restore the orbital garden','Open the neon runway','Start the launch signal']},
-  {id:'dunes',name:'Sandglass Dunes',short:'Dunes',icon:'◈',color:'#ffd08c',biome:'desert',boss:'Scarab Siege Walker',bossType:'scarab',bossHp:90,waves:3,squad:12,
+  {id:'dunes',name:'Sandglass Dunes',short:'Dunes',icon:'◈',color:'#ffd08c',biome:'desert',boss:'Scarab Siege Walker',bossType:'scarab',bossHp:50,waves:3,squad:12,
     districts:['Amber Oasis','Glass Spires','Sunken Gates','Copper Canyon','Dune Observatory','Scarab Palace'],
     tasks:['Light the oasis lamps','Wake the glass spires','Open the sunken gates','Light the canyon signal','Wake the observatory','Free the palace beacon']},
-  {id:'reef',name:'Neon Reef',short:'Reef',icon:'≈',color:'#86f5dc',biome:'ocean',boss:'Abyss Leviathan',bossType:'leviathan',bossHp:100,waves:3,squad:12,
+  {id:'reef',name:'Neon Reef',short:'Reef',icon:'≈',color:'#86f5dc',biome:'ocean',boss:'Abyss Leviathan',bossType:'leviathan',bossHp:50,waves:3,squad:12,
     districts:['Coral Landing','Pearl Bridges','Jellyfish Bay','Tidal Towers','Beacon Lagoon','Leviathan Trench'],
     tasks:['Light the coral lamps','Power the pearl bridge','Wake the bay beacon','Start the tidal towers','Restore the lagoon lights','Open the trench signal']},
-  {id:'citadel',name:'Prism Citadel',short:'Citadel',icon:'⬡',color:'#ffacf0',biome:'citadel',boss:'Chrome Echo',bossType:'rival',bossHp:200,bossEncounters:[{x:1900,hp:40},{x:5000,hp:40},{x:BOSS_X,hp:120}],waves:3,squad:12,
+  {id:'citadel',name:'Prism Citadel',short:'Citadel',icon:'⬡',color:'#ffacf0',biome:'citadel',boss:'Chrome Echo',bossType:'rival',bossHp:120,bossEncounters:[{x:1900,hp:30},{x:5000,hp:40},{x:BOSS_X,hp:50}],waves:3,squad:12,
     districts:['Prism Gate','Mirror Gardens','Ruby Skyway','Radiant Spires','Echo Foundry','Chrome Throne'],
     tasks:['Open the prism gate','Light the mirror garden','Power the ruby skyway','Wake the radiant spires','Restore the foundry lights','Free the chrome throne']}
 ];
@@ -52,10 +52,10 @@ export function sitesFor(level){
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const integer=(n,a,b,fallback=0)=>Number.isInteger(n)?clamp(n,a,b):fallback;
 export const freshRun=()=>({checkpoint:0,frontier:290,cleared:[],restored:[],kills:0,bossHits:0,complete:false,position:{x:290,y:690},playSeconds:0});
-export const freshSave=()=>({schema:6,level:0,completed:[],total:0,best:0,sound:true,runs:LEVELS.map(()=>freshRun())});
+export const freshSave=()=>({schema:7,level:0,completed:[],total:0,best:0,sound:true,runs:LEVELS.map(()=>freshRun())});
 export function unlockedLevel(save){let n=0;while(n<LEVELS.length-1&&save.completed.includes(n))n++;return n;}
 export function readSave(raw){
-  const s=freshSave();if(!raw||![1,2,3,4,5,6].includes(raw.schema))return s;
+  const s=freshSave();if(!raw||![1,2,3,4,5,6,7].includes(raw.schema))return s;
   if(raw.schema===5){
     // Schema 5 used the three-times-longer worlds. Compress only once, retaining
     // defeated groups conservatively so a partly cleared group still has robots.
@@ -75,6 +75,17 @@ export function readSave(raw){
         frontier:untouched?290:Number.isFinite(r.frontier)?r.frontier/3:r.frontier};
     });
     return readSave({...raw,schema:6,runs});
+  }
+  if(raw.schema===6){
+    // Preserve percentage damage and the current rival round when lowering health.
+    const previous=[24,36,48,64,84,90,100,200];
+    const runs=LEVELS.map((l,i)=>{
+      const r=raw.runs?.[i];if(!r||typeof r!=='object')return r;
+      const damage=Number.isFinite(r.bossHits)?clamp(r.bossHits,0,previous[i]):0;
+      const hits=i===7?(damage<40?damage*30/40:damage<80?30+damage-40:70+(damage-80)*50/120):damage*l.bossHp/previous[i];
+      return {...r,bossHits:Math.round(hits*10)/10};
+    });
+    return readSave({...raw,schema:7,runs});
   }
   s.total=integer(raw.total,0,1e7);s.best=integer(raw.best,0,1e7);s.sound=raw.sound!==false;
   if(raw.schema===1){

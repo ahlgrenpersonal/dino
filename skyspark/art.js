@@ -1,4 +1,4 @@
-import { WORLD, WEAPONS, armorSegments, bossShieldUp, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world113';
+import { WORLD, WEAPONS, armorSegments, bossShieldUp, heroLean, eyePosition, roofSurface, SITE_COUNT } from './engine.js?v=world114';
 const TAU=Math.PI*2;
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function path(c,points,fill,stroke,width=1){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();if(fill){c.fillStyle=fill;c.fill();}if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke();}}
@@ -736,6 +736,13 @@ export class Renderer {
     for(const f of g.effects){
       if(f.cancelled)continue;
       const k=1-f.age/f.life;c.save();c.globalAlpha=k;
+      if(f.type==='boss-crossfire'&&!f.fired){
+        for(const o of f.origins){
+          glow(c,o.x,o.y,37,'#ffb75c33');c.beginPath();c.arc(o.x,o.y,23+Math.sin(g.time*12)*3,0,TAU);c.strokeStyle=f.tint;c.lineWidth=3;c.stroke();
+          path(c,[[o.x-12,o.y-8],[o.x+12,o.y-8],[o.x,o.y+14]],'#493b5c',f.tint,2);
+          c.setLineDash([6,12]);line(c,o.x,o.y,f.tx,f.ty,'#ffb75c44',1.5);c.setLineDash([]);
+        }
+      }
       if(f.type==='rival-teleport'){
         const pulse=Math.sin(Math.min(1,f.age/.6)*Math.PI),r=30+pulse*100;
         glow(c,f.x,f.y,Math.max(1,r*1.5),'#ff7bc755');

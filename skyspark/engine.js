@@ -1,4 +1,4 @@
-import { BUILD, WORLD, SITE_COUNT, BOSS_X, DISTRICT_COUNT, SITE_SPACING, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world113';
+import { BUILD, WORLD, SITE_COUNT, BOSS_X, DISTRICT_COUNT, SITE_SPACING, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world114';
 export { BUILD, WORLD, SITE_COUNT, BOSS_X, LEVELS, freshSave, readSave, unlockedLevel };
 export const HERO_FEET=48,HERO_EYES=-33;
 export const WEAPONS={punchDamage:1,sparksDamage:.8,blastDamage:1,blastCooldown:2.2,blastRadius:562.5,sparksCooldown:1,chainLimit:20,chainRange:360,laserCooldown:2,laserDamage:5,laserRange:1100,laserDuration:.6,maxSweep:1.3};
@@ -156,7 +156,7 @@ export class SkyGame {
     e.lastHits[kind]=this.time;
     if(bossShieldUp(e,this.time)){
       if(kind==='sphere'){e.shieldBrokenUntil=this.time+2;this.effects.push({type:'shield-break',x:e.x,y:e.y,age:0,life:.5});this.emit('shield-break');}
-      else amount=Math.max(.1,Math.round(amount*.45*10)/10);
+      else if(kind!=='laser')amount=Math.max(.1,Math.round(amount*.45*10)/10);
     }
     e.hp=Math.max(0,Math.round((e.hp-amount)*10)/10); e.hit = e.boss ? .35 : .1;
     this.player.flare = .35;
@@ -319,7 +319,20 @@ export class SkyGame {
     if(!this.isVisible(e))return;
     const turn=e.attacks||0;e.attacks=turn+1;
     const rival=e.type==='rival',sea=e.type==='leviathan',tint=rival?'#ff8a32':sea?'#ff67c4':'#ffb33f';
-    e.cd=e.heavy?4.5:rival?3.8:sea?3.4:3.6;
+    e.cd=e.heavy?4.5:rival?2.8:sea?3.4:3.6;
+    if(e.type==='scarab'){
+      this.scarabVolley(e,0);
+      this.effects.push({type:'boss-barrage',owner:e.id,age:0,life:.85,next:1});
+      this.emit('enemy-fire');return;
+    }
+    if(sea){
+      const p=this.player,v=this.viewport||{left:p.x-480,right:p.x+480,top:80,bottom:900};
+      const origins=Array.from({length:6},(_,i)=>{
+        const a=i*Math.PI/3;return{x:clamp(p.x+Math.cos(a)*260,Math.max(60,v.left+45),Math.min(WORLD.width-60,v.right-45)),y:clamp(p.y+Math.sin(a)*260,Math.max(120,v.top+45),Math.min(WORLD.ground-35,v.bottom-45))};
+      }).filter((o,i,list)=>distance(o,p)>100&&list.findIndex(q=>distance(q,o)<5)===i);
+      this.effects.push({type:'boss-crossfire',owner:e.id,origins,tx:p.x,ty:p.y,age:0,charge:1,life:1.35,fired:false,tint:'#ffb75c'});
+      this.emit('enemy-charge');return;
+    }
     const origin=this.enemyMuzzle(e,true);
     if(e.heavy||!rival){
       const count=e.heavy?1:sea?5:4;
@@ -340,6 +353,13 @@ export class SkyGame {
     }
     this.emit('enemy-fire');
   }
+  scarabVolley(e,wave){
+    const origin=this.enemyMuzzle(e),aim=Math.atan2(this.player.y-origin.y,this.player.x-origin.x);
+    for(let i=0;i<4&&this.projectiles.length<96;i++){
+      const a=aim+(i-1.5)*.17+(wave-1)*.08;
+      this.projectiles.push({type:'orb',id:`shot-${++this.attackSequence}`,owner:e.id,...origin,vx:Math.cos(a)*170,vy:Math.sin(a)*170,radius:27,tint:'#ffb33f',shove:200,age:0,life:8,trail:[]});
+    }
+  }
   throwRocks(e,f){
     const origin=this.enemyMuzzle(e),travel=clamp(distance(origin,{x:f.tx,y:f.ty})/210,1.65,2.8);
     for(let i=0;i<3&&this.projectiles.length<96;i++){
@@ -359,6 +379,21 @@ export class SkyGame {
   }
   updateEnemyAttacks(dt,oldX,oldY){
     const p=this.player;
+    for(const f of this.effects)if(f.type==='boss-barrage'||f.type==='boss-crossfire'){
+      const owner=this.enemies.find(e=>e.id===f.owner&&e.hp>0);
+      if(!owner||this.run.complete||!this.isVisible(owner)){f.age=f.life;continue;}
+      if(f.type==='boss-barrage'){
+        while(f.next<3&&f.age>=f.next*.28){this.scarabVolley(owner,f.next++);this.emit('enemy-fire');}
+      }else if(!f.fired&&f.age>=f.charge){
+        f.fired=true;
+        for(const origin of f.origins){
+          if(this.projectiles.length>=96)break;
+          const a=Math.atan2(f.ty-origin.y,f.tx-origin.x);
+          this.projectiles.push({type:'missile',id:`shot-${++this.attackSequence}`,owner:owner.id,...origin,vx:Math.cos(a)*221,vy:Math.sin(a)*221,radius:19,tint:f.tint,shove:300,age:0,life:7,trail:[]});
+        }
+        this.emit('enemy-fire');
+      }
+    }
     for(const f of this.effects)if(f.type==='rock-windup'&&!f.fired){
       const owner=this.enemies.find(e=>e.id===f.owner&&e.hp>0);
       if(!owner||this.run.complete||!this.isVisible(owner)){f.age=f.life;f.fired=true;if(owner)owner.rockWindupUntil=0;continue;}
@@ -494,7 +529,7 @@ export class SkyGame {
       }
       if(this.run.bossHits===this.level.bossHp){
         this.run.complete=true;
-        this.projectiles=[];this.effects=this.effects.filter(f=>!['enemy-beam','enemy-blast','rock-windup'].includes(f.type));
+        this.projectiles=[];this.effects=this.effects.filter(f=>!['enemy-beam','enemy-blast','rock-windup','boss-barrage','boss-crossfire'].includes(f.type));
         if(!this.save.completed.includes(this.save.level))this.save.completed.push(this.save.level);
         this.emit('level-complete',{level:this.save.level});
       }

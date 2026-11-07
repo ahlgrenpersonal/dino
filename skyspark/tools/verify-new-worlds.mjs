@@ -4,7 +4,7 @@ import {SkyGame,freshSave,readSave,LEVELS,WORLD,BOSS_X,bossShieldUp} from '../en
 assert(LEVELS.length>=5);
 assert.deepEqual(LEVELS.slice(0,3).map(l=>l.bossHp),[24,36,48]);
 assert.deepEqual(LEVELS.slice(3,5).map(l=>[l.id,l.biome,l.bossType,l.bossHp]),[
-  ['caldera','volcano','crab',64],['spaceport','space','dreadnought',84]
+  ['caldera','volcano','crab',50],['spaceport','space','dreadnought',50]
 ]);
 const bounds={left:BOSS_X-1500,right:WORLD.width,top:0,bottom:1000};
 function scene(level){
@@ -75,7 +75,7 @@ for(const [level,upEnd,shieldEnd] of [[3,3,6],[4,4,6]]){
   assert(bossShieldUp(boss,0));assert(bossShieldUp(boss,upEnd-.01));
   assert(!bossShieldUp(boss,upEnd+.01));assert(!bossShieldUp(boss,shieldEnd-.01));
   assert(bossShieldUp(boss,shieldEnd+.01));
-  assert(g.damage(boss,'laser'));assert.equal(Math.round((boss.maxHp-boss.hp)*10)/10,2.3,'A shielded five-damage laser is reduced by 55%');
+  assert(g.damage(boss,'laser'));assert.equal(Math.round((boss.maxHp-boss.hp)*10)/10,5,'A laser pierces a raised shield for its full five damage');
   const open=scene(level);open.g.time=upEnd+.1;assert(!bossShieldUp(open.boss,open.g.time));
   open.g.damage(open.boss,'laser');assert.equal(open.boss.maxHp-open.boss.hp,5,'The open window takes the full laser hit');
 

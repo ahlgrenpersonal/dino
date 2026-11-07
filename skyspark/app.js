@@ -1,9 +1,9 @@
-import { BUILD, WEAPONS, armorSegments, bossShieldUp, SkyGame, LEVELS, readSave } from './engine.js?v=world113';
-import { Renderer, worldPicture } from './art.js?v=world113';
-import { VictoryReturn, worldMenuHTML } from './world-menu.js?v=world113';
-import { Sound } from './audio.js?v=world113';
-import { loadProgress } from './saves.js?v=world113';
-const buildVersion = 'world113';
+import { BUILD, WEAPONS, armorSegments, bossShieldUp, SkyGame, LEVELS, readSave } from './engine.js?v=world114';
+import { Renderer, worldPicture } from './art.js?v=world114';
+import { VictoryReturn, worldMenuHTML } from './world-menu.js?v=world114';
+import { Sound } from './audio.js?v=world114';
+import { loadProgress } from './saves.js?v=world114';
+const buildVersion = 'world114';
 const SAVE_KEY='skyspark-save-v1',BACKUP_KEY='skyspark-before-restart-v1';
 const $=id=>document.getElementById(id),canvas=$('world'),panel=$('panel'),sound=new Sound();
 let storageOK=true,savePending=0,lastSave=0,last=performance.now(),panelMode='',toastUntil=0,celebrationUntil=0,notified=false,installPrompt=null,updatePending=false;
@@ -82,7 +82,7 @@ function restart(){
   }catch{toast('Could not protect your save. Your current adventure is still here.',5);$('panelBody').insertAdjacentHTML('beforeend','<p class="restart-note">Your save could not be backed up. Nothing was restarted.</p>');}
 }
 function restore(){
-  try{const raw=JSON.parse(localStorage.getItem(BACKUP_KEY));if(![1,2,3,4,5,6].includes(raw?.schema))throw Error();const previous=readSave(raw);localStorage.setItem(SAVE_KEY,JSON.stringify(previous));game=new SkyGame(previous,onEvent);resetPresentation();closePanel();toast('Your previous adventure is back.',4);}catch{toast('That backup is unavailable. Your adventure has not changed.',5);}
+  try{const raw=JSON.parse(localStorage.getItem(BACKUP_KEY));if(![1,2,3,4,5,6,7].includes(raw?.schema))throw Error();const previous=readSave(raw);localStorage.setItem(SAVE_KEY,JSON.stringify(previous));game=new SkyGame(previous,onEvent);resetPresentation();closePanel();toast('Your previous adventure is back.',4);}catch{toast('That backup is unavailable. Your adventure has not changed.',5);}
 }
 $('panelBody').addEventListener('click',async e=>{
   const button=e.target.closest('button');if(!button||button.disabled)return;
