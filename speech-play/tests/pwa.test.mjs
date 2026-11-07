@@ -8,20 +8,20 @@ import { SOUND_FILES } from '../audio.js';
 const root = new URL('../', import.meta.url);
 const source = await readFile(new URL('sw.js', root), 'utf8');
 function worker({ scope = '/dino/speech-play/', fetcher = async () => new Response('online'), names = [] } = {}) {
-  const handlers = {}, removed = [], cached = [], stores = new Map();
+  const handlers = {}, removed = [], cached = [], cacheModes = [], stores = new Map();
   let claimed = 0, skipped = 0;
   const cache = {
-    async addAll(urls) { for (const url of urls) { cached.push(url); stores.set(url, new Response('cached:' + url)); } },
+    async addAll(requests) { for (const request of requests) { const url = typeof request === 'string' ? request : request.url; cacheModes.push(request.cache); cached.push(url); stores.set(url, new Response('cached:' + url)); } },
     async match(key) { return stores.get(typeof key === 'string' ? key : key.url)?.clone(); }
   };
-  const context = { URL, Response, AbortController, setTimeout, clearTimeout,
+  const context = { URL, Request, Response, AbortController, setTimeout, clearTimeout,
     fetch: fetcher,
     caches: { open: async () => cache, keys: async () => names, delete: async name => { removed.push(name); return true; } },
     self: { location: { href: 'https://example.test' + scope + 'sw.js' }, addEventListener: (name, handler) => { handlers[name] = handler; }, clients: { claim: async () => { claimed++; } }, skipWaiting: () => { skipped++; } }
   };
   vm.runInNewContext(source, context);
   return {
-    removed, cached, stores, get claimed() { return claimed; }, get skipped() { return skipped; },
+    removed, cached, cacheModes, stores, get claimed() { return claimed; }, get skipped() { return skipped; },
     async lifecycle(name) { let pending; handlers[name]({ waitUntil(value) { pending = value; } }); await pending; },
     message(data) { handlers.message({ data }); },
     async request(url, mode = 'cors', method = 'GET', headers = {}) { let response; handlers.fetch({ request: { url, mode, method, headers: new Headers(headers) }, respondWith(value) { response = value; } }); return response === undefined ? null : await response; }
@@ -61,6 +61,7 @@ test('shell precaches complete files under either a root folder or nested Pages 
   for (const scope of ['/speech-play/', '/dino/speech-play/']) {
     const sw = worker({ scope }); await sw.lifecycle('install');
     assert.equal(sw.cached.length, 31);
+    assert.ok(sw.cacheModes.every(mode => mode === 'reload'), 'New builds must fetch fresh media rather than reuse old HTTP-cache copies');
     for (const url of sw.cached) {
       assert.ok(url.startsWith('https://example.test' + scope));
       const relative = new URL(url).pathname.slice(scope.length) || 'index.html';
@@ -126,6 +127,21 @@ test('offline navigation, including launch queries, falls back to the precached 
   }
   const response = await sw.request(`https://example.test/dino/speech-play/app.js?v=${BUILD}`);
   assert.equal(response.status, 200);
+});
+
+test('beep repeats the exact same complete recording twice with a silent gap', async () => {
+  const wav = await readFile(new URL('assets/audio/beep.wav', root));
+  let offset=12,pcm;
+  while(offset+8<=wav.length){
+    const size=wav.readUInt32LE(offset+4);
+    if(wav.toString('ascii',offset,offset+4)==='data') pcm=wav.subarray(offset+8,offset+8+size);
+    offset+=8+size+size%2;
+  }
+  const utteranceBytes=13920*2,gapBytes=4800*2;
+  assert.equal(pcm.length,utteranceBytes*2+gapBytes);
+  assert.deepEqual(pcm.subarray(0,utteranceBytes),pcm.subarray(utteranceBytes+gapBytes));
+  assert.ok(pcm.subarray(utteranceBytes,utteranceBytes+gapBytes).every(value=>value===0));
+  assert.ok(pcm.subarray(0,utteranceBytes).some(value=>value!==0));
 });
 
 test('navigation stays network first without overwriting the installed build snapshot', async () => {

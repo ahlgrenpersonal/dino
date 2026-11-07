@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ACTIVITIES, FLAGS, KEYS, VIDEO_FILES, initialTurn, transition, filterActivities, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from '../core.js';
+import { ACTIVITIES, FLAGS, KEYS, VIDEO_FILES, initialTurn, primaryAction, transition, filterActivities, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from '../core.js';
 import { selectLocalVoice, createSpeaker, soundFile } from '../audio.js';
 
 test('the sampler covers sounds, single words, and different play interactions', () => {
@@ -62,6 +62,20 @@ test('peekaboo can hide and reveal freely; changing examples resets transient st
 test('invalid activity and example selectors fall back safely', () => {
   assert.equal(initialTurn('unknown', -1).id, 'animals');
   for (const index of [-1, 100, NaN, 0.5, '1']) assert.equal(initialTurn('words', index).index, 0);
+});
+
+test('the primary peekaboo button opens and closes the game instead of replaying only speech', () => {
+  const hidden = initialTurn('peekaboo');
+  assert.deepEqual(primaryAction(hidden), {label:'Peekaboo!',interaction:'play'});
+  const revealed = transition(hidden,{type:'reveal'});
+  assert.deepEqual(primaryAction(revealed), {label:'Hide bear',interaction:'play'});
+  assert.deepEqual(primaryAction(transition(revealed,{type:'reveal'})), primaryAction(hidden));
+  assert.deepEqual(primaryAction(initialTurn('videos')), {label:'Play video',interaction:'play'});
+  assert.deepEqual(primaryAction(initialTurn('car')), {label:'Let’s go!',interaction:'play'});
+  assert.deepEqual(primaryAction(initialTurn('car',1)), {label:'Hear it',interaction:'sound'});
+  for (const id of ['animals','bubbles','words','people','actions','copy']) {
+    assert.deepEqual(primaryAction(initialTurn(id)), {label:'Hear it',interaction:'sound'});
+  }
 });
 
 test('favorites reflect only the explicit parent observation, and can be removed', () => {

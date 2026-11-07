@@ -1,10 +1,10 @@
-const BUILD = 'world4';
+const BUILD = 'world5';
 const BASE = new URL('./', self.location.href);
 const PREFIX = `speech-play:${BASE.pathname}:`;
 const CACHE = `${PREFIX}${BUILD}`;
 const SHELL = [
-  './', './index.html', './styles.css?v=world4', './app.js?v=world4',
-  './core.js?v=world4', './art.js?v=world4', './audio.js?v=world4', './updates.js?v=world4',
+  './', './index.html', './styles.css?v=world5', './app.js?v=world5',
+  './core.js?v=world5', './art.js?v=world5', './audio.js?v=world5', './updates.js?v=world5',
   './manifest.webmanifest', './assets/icon.svg', './assets/icon-192.png', './assets/icon-512.png',
   './assets/video/cow-moo.mp4', './assets/video/puppet-ma.mp4',
   ...['moo', 'baa', 'woof', 'pop', 'more', 'ready-set', 'go', 'beep', 'boo', 'hi', 'ball', 'up', 'mama', 'dada', 'ma', 'ba', 'oh'].map(word => `./assets/audio/${word}.wav`)
@@ -13,7 +13,8 @@ const ALLOWED = new Set(SHELL);
 const DOCUMENT = new URL('./index.html', BASE).href;
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)));
+  // Media keeps stable filenames; a new build must bypass older HTTP-cache copies.
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL.map(url => new Request(url, { cache: 'reload' })))));
 });
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {

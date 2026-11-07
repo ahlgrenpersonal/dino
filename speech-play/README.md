@@ -116,7 +116,7 @@ After the first complete online load, the playroom, bundled words and two select
 Other local video experiments are local-preview only. Launch from localhost
 or HTTPS; installation and service workers are unavailable from a `file:` URL.
 
-Build `world4` adds word cards, two short clips, and a clearer sheep illustration.
+Build `world5` makes peekaboo reveal from either tap target, preserves curtain animation, gives the car one consistent start action, and adds matching action-word movement. Pop uses a newly generated normal-voice direction; beep repeats an identical retained utterance twice.
 Bump the build in `core.js`,
 `app.js` (including imports), HTML asset queries, manifest start URL, service-worker
 shell/cache, and `version.json` together. The other apps have independent versions.
