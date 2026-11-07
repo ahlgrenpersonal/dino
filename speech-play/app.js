@@ -1,10 +1,12 @@
-import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from './core.js?v=world5';
-import { art, icon, garden } from './art.js?v=world5';
-import { createSpeaker } from './audio.js?v=world5';
-import { observeUpdates } from './updates.js?v=world5';
+import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from './core.js?v=world6';
+import { art, icon, garden } from './art.js?v=world6';
+import { createSpeaker } from './audio.js?v=world6';
+import { observeUpdates } from './updates.js?v=world6';
 
 const $ = selector => document.querySelector(selector);
-const buildVersion = 'world5';
+const buildVersion = 'world6';
+// Show the loaded code version, including when a newer document meets an older cached module.
+document.querySelectorAll('[data-build-label]').forEach(label => { label.textContent = `Version ${BUILD}`; });
 const timeline = createTimeline();
 const motionTimeline = createTimeline();
 const toastTimeline = createTimeline();

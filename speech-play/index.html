@@ -11,11 +11,12 @@
   <link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./assets/icon-192.png">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="stylesheet" href="./styles.css?v=world5">
-  <script type="module" src="./app.js?v=world5"></script>
+  <link rel="stylesheet" href="./styles.css?v=world6">
+  <script type="module" src="./app.js?v=world6"></script>
 </head>
 <body>
   <a class="skip-link" href="#playroom">Skip to activities</a>
+  <p class="top-build-label" data-build-label>Version world6</p>
   <header class="site-header">
     <a class="brand" href="./" aria-label="Little Echo home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><b></b></span><span>little echo<span class="brand-dot">.</span></span></a>
     <nav aria-label="Main navigation"><button id="grownupsButton" class="quiet-button" aria-label="For grown-ups"><span data-icon="book"></span><span>For grown-ups</span></button></nav>
@@ -33,16 +34,16 @@
       <div class="together-banner"><span class="banner-icon" data-icon="leaf"></span><div><strong>The best part is you.</strong><p>Join in, leave a little pause, and see what happens. Every little response counts.</p></div><button id="howButton" class="text-button">A note for grown-ups <span data-icon="arrow"></span></button></div>
     </section>
   </main>
-  <footer class="site-footer"><span class="footer-motto">Little moments, at your own pace.</span><span id="connectionStatus">Made for playing together</span><button id="installButton" class="text-button">Install app <span data-icon="download"></span></button><span class="build-label">DEMO · world5</span></footer>
+  <footer class="site-footer"><span class="footer-motto">Little moments, at your own pace.</span><span id="connectionStatus">Made for playing together</span><button id="installButton" class="text-button">Install app <span data-icon="download"></span></button><span class="build-label">DEMO · world6</span></footer>
   <audio id="wordAudio" preload="auto"></audio>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   <dialog id="activityDialog" class="activity-dialog" aria-labelledby="activityTitle">
-    <div class="activity-top"><button id="backButton" class="quiet-button"><span data-icon="back"></span> Playroom</button><span id="activityLabel" class="eyebrow"></span><button id="activityClose" class="icon-button" aria-label="Close activity"><span data-icon="close"></span></button></div>
+    <div class="activity-top"><button id="backButton" class="quiet-button"><span data-icon="back"></span> Playroom</button><div class="activity-heading"><span id="activityLabel" class="eyebrow"></span><span class="header-build-label" data-build-label>Version world6</span></div><button id="activityClose" class="icon-button" aria-label="Close activity"><span data-icon="close"></span></button></div>
     <div class="activity-body"><h2 id="activityTitle"></h2><div id="exampleTabs" class="example-tabs" role="group" aria-label="Choose an example"></div><div id="activityStage" class="activity-stage"></div><div class="word-area"><p id="activityWord" class="activity-word" aria-live="polite"></p><p id="activityPrompt" class="activity-prompt"></p></div><div class="activity-actions"><button id="hearButton" class="primary-button"><span data-icon="sound"></span><span>Hear it</span></button><button id="nextButton" class="secondary-button">Try another <span data-icon="arrow"></span></button></div><p id="audioHint" class="audio-hint">Listen, copy, or simply enjoy it together.</p><aside class="parent-tip"><span data-icon="heart"></span><p id="parentTip"></p></aside><details class="beyond-screen"><summary>Take the play off-screen</summary><p id="realPlay"></p></details></div>
     <div class="activity-bottom"><span>No rush. No right or wrong.</span><button id="noticeButton" class="text-button">Notice a little moment <span data-icon="book"></span></button></div>
   </dialog>
   <dialog id="grownupDialog" class="grownup-dialog" aria-labelledby="grownupTitle">
-    <div class="panel-header"><div><p class="eyebrow">A SPACE FOR YOU</p><h2 id="grownupTitle">For grown-ups</h2></div><button id="grownupClose" class="icon-button" aria-label="Close grown-up area"><span data-icon="close"></span></button></div>
+    <div class="panel-header"><div><p class="eyebrow">A SPACE FOR YOU</p><h2 id="grownupTitle">For grown-ups</h2><span class="header-build-label" data-build-label>Version world6</span></div><button id="grownupClose" class="icon-button" aria-label="Close grown-up area"><span data-icon="close"></span></button></div>
     <div class="grownup-tabs" role="group" aria-label="Grown-up sections"><button data-panel="guide" aria-pressed="true" class="active">Play together</button><button data-panel="notebook" aria-pressed="false">Little moments</button><button data-panel="clips" aria-pressed="false">Video samples</button><button data-panel="settings" aria-pressed="false">App settings</button></div>
     <div id="grownupContent" class="grownup-content"></div>
   </dialog>

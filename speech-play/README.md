@@ -117,6 +117,7 @@ Other local video experiments are local-preview only. Launch from localhost
 or HTTPS; installation and service workers are unavailable from a `file:` URL.
 
 Build `world5` makes peekaboo reveal from either tap target, preserves curtain animation, gives the car one consistent start action, and adds matching action-word movement. Pop uses a newly generated normal-voice direction; beep repeats an identical retained utterance twice.
+Build `world6` shows the loaded version at the top of the playroom, each activity, and the grown-up area.
 Bump the build in `core.js`,
 `app.js` (including imports), HTML asset queries, manifest start URL, service-worker
 shell/cache, and `version.json` together. The other apps have independent versions.

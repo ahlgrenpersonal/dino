@@ -40,3 +40,5 @@ Speech synthesis is not word-perfect. Playback/PCM checks do not certify speech
 quality. The beep repeats the exact first utterance from the two-beep preview;
 its second generated utterance is excluded. Pop uses a new normal-speaking-voice
 direction. No independent listening or acoustic transcription is claimed.
+
+Build world6: all 41 Node tests pass. The version is visible at the top of the playroom, activity header, and grown-up panel in a 320x568 in-app browser viewport, with no horizontal overflow. An independent source review caught a narrow activity-header collision; the final mobile header uses separate rows and passed re-review. These checks do not establish physical iPhone behavior. No media changed in this build.
