@@ -38,7 +38,7 @@ test('all PWA entry points agree on the independent build', async () => {
   assert.equal(manifest.scope, './'); assert.equal(manifest.id, './');
   for (const file of ['styles.css', 'app.js']) assert.ok(html.includes(`${file}?v=${BUILD}`));
   assert.ok(app.includes(`const buildVersion = '${BUILD}'`));
-  for (const file of ['core.js', 'audio.js', 'art.js', 'updates.js']) assert.ok(app.includes(`${file}?v=${BUILD}`));
+  for (const file of ['core.js', 'audio.js', 'art.js', 'updates.js', 'bubbles.js']) assert.ok(app.includes(`${file}?v=${BUILD}`));
   assert.ok(source.includes(`const BUILD = '${BUILD}'`));
   assert.ok(app.includes("scope: './', updateViaCache: 'none'"));
 });
@@ -60,7 +60,7 @@ test('offline audio responds to bounded and suffix range requests, including Saf
 test('shell precaches complete files under either a root folder or nested Pages folder', async () => {
   for (const scope of ['/speech-play/', '/dino/speech-play/']) {
     const sw = worker({ scope }); await sw.lifecycle('install');
-    assert.equal(sw.cached.length, 31);
+    assert.equal(sw.cached.length, 32);
     assert.ok(sw.cacheModes.every(mode => mode === 'reload'), 'New builds must fetch fresh media rather than reuse old HTTP-cache copies');
     for (const url of sw.cached) {
       assert.ok(url.startsWith('https://example.test' + scope));
@@ -166,7 +166,7 @@ test('worker ignores sibling apps, private media/receipts, version polls, and no
 });
 
 test('runtime files contain no third-party asset loads, telemetry, mic access, or dangerous HTML evaluation', async () => {
-  for (const name of ['index.html', 'app.js', 'core.js', 'audio.js', 'art.js', 'updates.js', 'styles.css', 'sw.js']) {
+  for (const name of ['index.html', 'app.js', 'core.js', 'audio.js', 'art.js', 'updates.js', 'bubbles.js', 'styles.css', 'sw.js']) {
     const data = await readFile(new URL(name, root), 'utf8');
     assert.doesNotMatch(data, /getUserMedia|SpeechRecognition|sendBeacon|eval\(|new Function\(|https?:\/\/(?!www\.asha\.org|www\.w3\.org\/2000\/svg)/);
     assert.doesNotMatch(data, /localStorage\.clear/);

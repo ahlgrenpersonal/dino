@@ -230,13 +230,20 @@ test('local clip catalog cannot inject markup, traversal paths, remote media, or
   assert.equal(cleanClipCatalog(Array(20).fill(valid)).length, 12);
 });
 
-test('bubble primary pops each remaining target then offers a refill, including the More example', () => {
- let state = initialTurn('bubbles');
- for (const index of [0,1,2]) {
-  assert.deepEqual(primaryAction(state), {label:'Pop a bubble',interaction:'play'});
-  state = transition(state,{type:'pop',index});
+test('bubble primary never changes into refill, even with extra presses or the More example', () => {
+ for (const example of [0,1]) {
+  let state = initialTurn('bubbles',example);
+  for (const index of [0,1,2]) {
+   assert.deepEqual(primaryAction(state),{label:'Pop a bubble',interaction:'play',disabled:false});
+   state = transition(state,{type:'pop',index});
+  }
+  for (let extra=0;extra<10;extra++) {
+   state=transition(state,{type:'pop',index:undefined});
+   assert.equal(state.popped.length,3);
+   assert.deepEqual(primaryAction(state),{label:'Pop a bubble',interaction:'play',disabled:true});
+  }
+  state=transition(state,{type:'reset'});
+  assert.deepEqual(state.popped,[]);
+  assert.equal(primaryAction(state).disabled,false);
  }
- assert.deepEqual(primaryAction(state), {label:'More bubbles',interaction:'play'});
- assert.deepEqual(primaryAction(transition(state,{type:'reset'})), {label:'Pop a bubble',interaction:'play'});
- assert.deepEqual(primaryAction(initialTurn('bubbles',1)), {label:'More bubbles',interaction:'play'});
 });

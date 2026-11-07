@@ -1,4 +1,4 @@
-export const BUILD = 'world8';
+export const BUILD = 'world9';
 export const KEYS = Object.freeze({ preferences: 'speech-play.preferences.v1', observations: 'speech-play.observations.v1' });
 export const FLAGS = Object.freeze(['enjoyed', 'shared', 'gesture', 'sound', 'word']);
 export const VIDEO_FILES = Object.freeze({ 'cow-moo': 'cow-moo.mp4', 'puppet-ma': 'puppet-ma.mp4' });
@@ -46,7 +46,7 @@ export const ACTIVITIES = Object.freeze([
 
 export function activityById(id) { return ACTIVITIES.find(activity => activity.id === id) || ACTIVITIES[0]; }
 export function primaryAction(state) {
-  if (state.id === 'bubbles') return { label: state.index === 1 || state.popped.length === 3 ? 'More bubbles' : 'Pop a bubble', interaction: 'play' };
+  if (state.id === 'bubbles') return { label: 'Pop a bubble', interaction: 'play', disabled: state.popped.length === 3 };
   if (state.id === 'peekaboo') return { label: state.revealed ? 'Hide bear' : 'Peekaboo!', interaction: 'play' };
   if (state.id === 'videos') return { label: 'Play video', interaction: 'play' };
   if (state.id === 'car' && state.index === 0) return { label: 'Let’s go!', interaction: 'play' };

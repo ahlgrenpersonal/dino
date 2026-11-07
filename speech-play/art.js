@@ -35,6 +35,7 @@ export const icons = {
   back: '<path d="M19 12H5m5-5-5 5 5 5"/>',
   heart: '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/>',
   play: '<path d="m9 5 11 7-11 7z"/>',
+  pause: '<path d="M8 5v14M16 5v14"/>',
   close: '<path d="m6 6 12 12M6 18 18 6"/>',
   book: '<path d="M3 5q5-2 9 1 4-3 9-1v15q-5-2-9 0-4-2-9 0zm9 1v14"/>',
   leaf: '<path d="M20 3Q3 2 4 14q1 8 9 5 7-3 7-16ZM4 21 16 8"/>',

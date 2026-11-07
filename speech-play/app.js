@@ -1,10 +1,11 @@
-import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from './core.js?v=world8';
-import { art, icon, garden } from './art.js?v=world8';
-import { createSpeaker } from './audio.js?v=world8';
-import { observeUpdates } from './updates.js?v=world8';
+import { renderBubbles } from './bubbles.js?v=world9';
+import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from './core.js?v=world9';
+import { art, icon, garden } from './art.js?v=world9';
+import { createSpeaker } from './audio.js?v=world9';
+import { observeUpdates } from './updates.js?v=world9';
 
 const $ = selector => document.querySelector(selector);
-const buildVersion = 'world8';
+const buildVersion = 'world9';
 // Show the loaded code version, including when a newer document meets an older cached module.
 document.querySelectorAll('[data-build-label]').forEach(label => { label.textContent = `Version ${BUILD}`; });
 const timeline = createTimeline();
@@ -95,9 +96,10 @@ function renderStage({ poppedIndex = null } = {}) {
     $('#stageButton').setAttribute('aria-label', state.revealed ? 'Hide bear again' : 'Find the bear');
     stage.querySelector('.peek-label').textContent = state.revealed ? 'Hide again' : 'Tap to find bear';
   } else if (state.id === 'videos') {
-    stage.innerHTML = `<video id="activityVideo" class="activity-video" controls playsinline preload="none" tabindex="0" aria-label="${escapeHTML(item.label)} video: ${escapeHTML(item.word)}"><source src="./assets/video/${VIDEO_FILES[item.video]}" type="video/mp4"></video><button class="stage-button video-start" id="startActivityVideo" aria-label="Watch ${escapeHTML(item.label)} video">${art(item.art)}<span class="tap-hint">Watch video</span></button>`;
+    stage.innerHTML = `<video id="activityVideo" class="activity-video" playsinline preload="none" aria-label="${escapeHTML(item.label)} video: ${escapeHTML(item.word)}"><source src="./assets/video/${VIDEO_FILES[item.video]}" type="video/mp4"></video><button class="stage-button video-start" id="startActivityVideo" aria-label="Watch ${escapeHTML(item.label)} video">${art(item.art)}<span class="tap-hint">Watch video</span></button>`;
     currentVideo = $('#activityVideo'); currentVideo.muted = !preferences.sound;
     const video = currentVideo;
+    for (const event of ['play', 'pause', 'ended']) video.addEventListener(event, syncVideoButton);
     const reportError = () => {
       if (currentVideo !== video || !video.isConnected || !$('#activityDialog').open) return;
       $('#audioHint').textContent = 'This video is unavailable. Try another, or make the sound together.';
@@ -109,7 +111,7 @@ function renderStage({ poppedIndex = null } = {}) {
       if (currentVideo === video && video.isConnected) $('#audioHint').textContent = 'Now a little pause. Try the sound together, or play it again.';
     });
   } else if (state.id === 'bubbles') {
-    stage.innerHTML = `<div class="bubble-field">${[0, 1, 2].map(index => `<button class="bubble ${state.popped.includes(index) ? 'popped' : ''} ${index === poppedIndex ? 'burst' : ''}" data-pop="${index}" aria-label="Pop bubble ${index + 1}" ${state.popped.includes(index) ? 'disabled' : ''}>${state.popped.includes(index) ? 'Pop!' : ''}</button>`).join('')}${state.popped.length === 3 ? `<div class="bubble-refill"><span>More bubbles?</span><button id="refillButton" class="secondary-button">More! ${icon('refresh')}</button></div>` : ''}</div>`;
+    renderBubbles(stage, state.popped, poppedIndex);
   } else {
     const label = state.id === 'peekaboo' ? (state.revealed ? 'Hide bear again' : 'Find the bear') : state.id === 'car' && state.index === 0 ? 'Ready, set, go' : `Play ${item.word}`;
     stage.innerHTML = `<button class="stage-button" id="stageButton" aria-label="${escapeHTML(label)}">${art(item.art, state.id === 'actions' && item.speech === 'Hi' ? 'wave-hello' : '')}${state.id === 'peekaboo' ? `<span class="peek-cover"></span><span class="peek-label">${state.revealed ? 'Hide again' : 'Tap to find bear'}</span>` : `<span class="tap-hint">${state.id === 'car' && state.index === 0 ? 'Tap to go' : 'Tap to play'}</span>`}${state.id === 'car' && state.index === 0 ? `<span class="phase-banner" aria-live="polite">${state.phase === 'ready' ? 'Ready, set…' : state.phase === 'go' ? 'Go!' : ''}</span>` : ''}</button>`;
@@ -118,8 +120,12 @@ function renderStage({ poppedIndex = null } = {}) {
   $('#activityPrompt').textContent = state.id === 'peekaboo' ? (state.revealed ? 'There’s bear! Hide, then peek again.' : 'Tap the curtains or Peekaboo! to find the bear.') : item.prompt;
   const action = primaryAction(state);
   $('#hearButton span:last-child').textContent = action.label;
+  $('#hearButton').setAttribute('aria-disabled', String(Boolean(action.disabled)));
+  $('#nextButtonLabel').textContent = state.id === 'bubbles' ? 'More bubbles' : 'Try another';
+  $('#nextButton').disabled = state.id === 'bubbles' && state.popped.length !== 3;
+  $('#nextButton [data-icon]').innerHTML = icon(state.id === 'bubbles' ? 'refresh' : 'arrow');
   $('#hearButton [data-icon]').innerHTML = icon(state.id === 'peekaboo' && state.revealed ? 'refresh' : action.interaction === 'play' ? 'play' : 'sound');
-  if (restoreFocus) (stage.querySelector('#stageButton, .bubble:not(:disabled), #refillButton, #startActivityVideo'))?.focus({ preventScroll: true });
+  if (restoreFocus && state.id !== 'bubbles') (stage.querySelector('#stageButton, .bubble:not(:disabled), #refillButton, #startActivityVideo'))?.focus({ preventScroll: true });
 }
 function say(text) {
   if (currentVideo) currentVideo.pause();
@@ -138,16 +144,20 @@ function animate() {
 function popBubble(index) {
   const next = transition(state, { type: 'pop', index });
   if (next === state) return;
+  const moveFocus = $('#activityStage').contains(document.activeElement);
   state = next; say('Pop'); renderStage({ poppedIndex: index });
+  if (moveFocus) ($('#activityStage .bubble:not(:disabled)') || $('#hearButton')).focus({ preventScroll: true });
 }
 function refillBubbles() {
+  if (state.id !== 'bubbles' || state.popped.length !== 3) return;
+  const moveFocus = document.activeElement === $('#nextButton');
   state = transition(state, { type: 'reset' }); renderStage(); say('More');
+  if (moveFocus) $('#hearButton').focus({ preventScroll: true });
 }
 function play() {
   const item = example();
   if (state.id === 'bubbles') {
-    if (state.index === 1 || state.popped.length === 3) refillBubbles();
-    else popBubble([0, 1, 2].find(index => !state.popped.includes(index)));
+    popBubble([0, 1, 2].find(index => !state.popped.includes(index)));
     return;
   }
   if (state.id === 'videos') { playActivityVideo(); return; }
@@ -166,13 +176,21 @@ function play() {
   state = transition(state, { type: 'play' }); say(item.speech); animate();
 }
 
+function syncVideoButton() {
+  if (state.id !== 'videos' || !currentVideo) return;
+  const playing = !currentVideo.paused && !currentVideo.ended;
+  $('#hearButton span:last-child').textContent = playing ? 'Pause video' : 'Play video';
+  $('#hearButton [data-icon]').innerHTML = icon(playing ? 'pause' : 'play');
+}
 function playActivityVideo() {
   const video = currentVideo;
   if (!video || !$('#activityStage').contains(video)) return;
   speaker.stop();
-  video.focus({ preventScroll: true });
+  if (!video.paused && !video.ended) { video.pause(); syncVideoButton(); return; }
+  if (document.activeElement === $('#startActivityVideo')) $('#hearButton').focus({ preventScroll: true });
   $('#startActivityVideo').hidden = true;
-  video.play().catch(() => {
+  video.play().catch(error => {
+    if (error.name === 'AbortError') return;
     if (currentVideo !== video || !video.isConnected || !$('#activityDialog').open) return;
     $('#startActivityVideo').hidden = false;
     $('#audioHint').textContent = 'This video could not start. Tap Watch video to try again.';
@@ -195,15 +213,23 @@ $('#activityStage').addEventListener('click', event => {
   if (event.target.closest('#startActivityVideo')) { playActivityVideo(); }
   else if (bubble) {
     popBubble(Number(bubble.dataset.pop));
-  } else if (event.target.closest('#refillButton')) { refillBubbles(); }
+  }
+  else if (event.target.closest('#activityVideo')) playActivityVideo();
   else if (event.target.closest('#stageButton')) play();
 });
 $('#exampleTabs').addEventListener('click', event => {
   const button = event.target.closest('[data-example]'); if (!button) return;
   stopTurn(); state = transition(state, { type: 'example', index: Number(button.dataset.example) }); renderActivity();
 });
-$('#hearButton').addEventListener('click', () => { if (primaryAction(state).interaction === 'play') play(); else { say(example().speech); animate(); } });
-$('#nextButton').addEventListener('click', () => { stopTurn(); state = transition(state, { type: 'next' }); renderActivity(); });
+$('#hearButton').addEventListener('click', () => {
+  const action = primaryAction(state);
+  if (action.disabled) return;
+  if (action.interaction === 'play') play(); else { say(example().speech); animate(); }
+});
+$('#nextButton').addEventListener('click', () => {
+  if (state.id === 'bubbles') { refillBubbles(); return; }
+  stopTurn(); state = transition(state, { type: 'next' }); renderActivity();
+});
 $('#activityClose').addEventListener('click', closeActivity);
 $('#backButton').addEventListener('click', closeActivity);
 $('#activityDialog').addEventListener('cancel', stopTurn);

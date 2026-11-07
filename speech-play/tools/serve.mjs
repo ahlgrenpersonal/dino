@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 export const ROOT = fileURLToPath(new URL('../', import.meta.url));
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml', '.png': 'image/png', '.mp4': 'video/mp4', '.wav': 'audio/wav' };
-const PUBLIC = new Set(['index.html', 'app.js', 'core.js', 'art.js', 'audio.js', 'updates.js', 'styles.css', 'sw.js', 'version.json', 'manifest.webmanifest', 'assets/icon.svg', 'assets/icon-192.png', 'assets/icon-512.png']);
+const PUBLIC = new Set(['index.html', 'app.js', 'core.js', 'art.js', 'audio.js', 'updates.js', 'bubbles.js', 'styles.css', 'sw.js', 'version.json', 'manifest.webmanifest', 'assets/icon.svg', 'assets/icon-192.png', 'assets/icon-512.png']);
 export function byteRange(header, length) {
   if (!header) return null;
   const match = /^bytes=(\d*)-(\d*)$/.exec(header);
