@@ -39,8 +39,9 @@ dialog{color:var(--ink);padding:0;border:1px solid var(--line);background:var(--
  .activity-word{margin:12px 0 4px}
 }
 
-/* Bubble hit targets retain their full height on short screens. */
-.activity-stage[data-art="bubbles"]{min-height:340px}
+/* Keep every bubble and its status above the pinned action row on short phones. */
+.activity-stage[data-art="bubbles"]{min-height:220px}
+@media(min-width:761px){.activity-stage[data-art="bubbles"]{min-height:340px}}
 
 /* A popped bubble loses its outline and gives a brief visible burst. */
 .bubble.popped{border-color:transparent;color:var(--ink);font-weight:700}
@@ -61,3 +62,9 @@ button[aria-disabled="true"]{opacity:.5;cursor:default}
 /* Ball and More share one ball; each requested turn rolls it to the other side. */
 .activity-stage[data-art="ball"] .rolling-ball{transform-box:view-box;transform-origin:160px 113px;transform:translateX(-48px) rotate(-45deg);transition:transform .85s ease-in-out}
 .activity-stage.ball-right[data-art="ball"] .rolling-ball{transform:translateX(48px) rotate(45deg)}
+
+/* Direct SVG icons use the same compact dimensions as wrapped icons. */
+button>svg:not(.drawing){width:26px;height:26px;flex:0 0 26px}
+.example-tabs[hidden]{display:none}
+
+.update-notice{padding:8px var(--gutter);text-align:center}.update-notice button{border:1px solid var(--ink);border-radius:24px;background:var(--mint);font-weight:700}

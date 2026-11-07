@@ -1,11 +1,11 @@
-import { renderBubbles } from './bubbles.js?v=world12';
-import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from './core.js?v=world12';
-import { art, icon, garden } from './art.js?v=world12';
-import { createSpeaker } from './audio.js?v=world12';
-import { observeUpdates } from './updates.js?v=world12';
+import { renderBubbles } from './bubbles.js?v=world13';
+import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, bubbleMessage, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline } from './core.js?v=world13';
+import { art, icon, garden } from './art.js?v=world13';
+import { createSpeaker } from './audio.js?v=world13';
+import { observeUpdates, createUpdateCheck, activateUpdate } from './updates.js?v=world13';
 
 const $ = selector => document.querySelector(selector);
-const buildVersion = 'world12';
+const buildVersion = 'world13';
 // Show the loaded code version, including when a newer document meets an older cached module.
 document.querySelectorAll('[data-build-label]').forEach(label => { label.textContent = `Version ${BUILD}`; });
 const timeline = createTimeline();
@@ -19,8 +19,6 @@ let storageAvailable = Boolean(storage);
 let state = initialTurn();
 let filter = 'all';
 let panel = 'guide';
-let clips = [];
-let clipIndex = 0;
 let currentVideo = null;
 let resumeActivity = false;
 let beforeInstall = null;
@@ -79,6 +77,7 @@ function renderActivity() {
   $('#activityTitle').textContent = activity.title;
   $('#activityLabel').textContent = activity.label;
   $('#exampleTabs').innerHTML = activity.examples.map((item, index) => `<button data-example="${index}" class="${index === state.index ? 'active' : ''}" aria-pressed="${index === state.index}">${item.label}</button>`).join('');
+  $('#exampleTabs').hidden = activity.examples.length < 2;
   $('#parentTip').textContent = activity.tip;
   $('#realPlay').textContent = activity.realPlay;
   $('#audioHint').textContent = preferences.sound ? 'Listen, copy, or simply enjoy it together.' : 'Sound is off. You can model the sound together.';
@@ -119,8 +118,8 @@ function renderStage({ poppedIndex = null } = {}) {
     const label = state.id === 'words' ? (state.index === 0 ? 'Roll the ball' : 'Roll the ball again') : state.id === 'peekaboo' ? (state.revealed ? 'Hide bear again' : 'Find the bear') : state.id === 'car' && state.index === 0 ? 'Ready, set, go' : `Play ${item.word}`;
     stage.innerHTML = `<button class="stage-button" id="stageButton" aria-label="${escapeHTML(label)}">${art(item.art, state.id === 'actions' && item.speech === 'Hi' ? 'wave-hello' : '')}${state.id === 'peekaboo' ? `<span class="peek-cover"></span><span class="peek-label">${state.revealed ? 'Hide again' : 'Tap to find bear'}</span>` : `<span class="tap-hint">${state.id === 'words' ? 'Tap to roll' : state.id === 'car' && state.index === 0 ? 'Tap to go' : 'Tap to play'}</span>`}${state.id === 'car' && state.index === 0 ? `<span class="phase-banner" aria-live="polite">${state.phase === 'ready' ? 'Ready, set…' : state.phase === 'go' ? 'Go!' : ''}</span>` : ''}</button>`;
   }
-  $('#activityWord').textContent = item.word;
-  $('#activityPrompt').textContent = state.id === 'peekaboo' ? (state.revealed ? 'There’s bear! Hide, then peek again.' : 'Tap the curtains or Peekaboo! to find the bear.') : item.prompt;
+  $('#activityWord').textContent = state.id === 'bubbles' ? bubbleMessage(state).word : item.word;
+  $('#activityPrompt').textContent = state.id === 'peekaboo' ? (state.revealed ? 'There’s bear! Hide, then peek again.' : 'Tap the curtains or Peekaboo! to find the bear.') : state.id === 'bubbles' ? bubbleMessage(state).prompt : item.prompt;
   const action = primaryAction(state);
   $('#hearButton span:last-child').textContent = action.label;
   $('#hearButton').setAttribute('aria-disabled', String(Boolean(action.disabled)));
@@ -196,6 +195,7 @@ function playActivityVideo() {
   if (!video.paused && !video.ended) { video.pause(); syncVideoButton(); return; }
   if (document.activeElement === $('#startActivityVideo')) $('#hearButton').focus({ preventScroll: true });
   $('#startActivityVideo').hidden = true;
+  $('#audioHint').textContent = preferences.sound ? 'Watch together, then leave space for a turn.' : 'Sound is off. Watch together, or model the sound yourself.';
   video.play().catch(error => {
     if (error.name === 'AbortError') return;
     if (currentVideo !== video || !video.isConnected || !$('#activityDialog').open) return;
@@ -262,8 +262,8 @@ function renderGrownups() {
   const views = {
     guide: `<div class="guide-intro"><h3>The best part is being together.</h3><p>Pick something that catches their interest. Join in, offer a sound, then leave a little space. A look, a movement, a gesture, or a sound can be part of the play.</p></div><ol class="guide-steps"><li>Follow their lead.<small>Choose freely, repeat a favorite, or stop. There is nothing to finish.</small></li><li>Offer a little model.<small>Say “moo,” “pop,” or one familiar word naturally. You can also copy a sound they make.</small></li><li>Pause and respond.<small>Give them room for a turn. Keep playing whether or not they speak.</small></li><li>Take it into the room.<small>Each activity includes a small idea for playing together away from the screen.</small></li></ol><p>This is a shared-play demo, not a treatment or an assessment. Use it alongside advice from a speech-language professional. Keep screen play brief and follow your child’s comfort.</p><p class="guidance-source">Activity ideas draw on <a href="https://www.asha.org/public/developmental-milestones/communication-milestones-19-to-24-months/" target="_blank" rel="noopener noreferrer">ASHA’s parent communication guidance</a>. This custom app has not been clinically evaluated.</p>`,
     notebook: notebookHTML(),
-    clips: `<h3>A few different ways to say hello.</h3><p>Compare an animal, a person, and a puppet. These optional generated clips are local experiments. Preview them yourself before sharing; check the sound and mouth movements.</p><button id="loadClips" class="primary-button clip-load">${icon('play')} Load local samples</button><div id="clipArea"><p>No video plays automatically. The illustrated activities work without these clips.</p></div>`,
-    settings: `<h3>A little quieter. A little simpler.</h3><div class="settings-row"><label for="soundSetting">Speech & video sound<small>Includes short generated word recordings. A local device voice is a fallback. No microphone is used. Preview sounds yourself before sharing.</small></label><input id="soundSetting" type="checkbox" role="switch" ${preferences.sound ? 'checked' : ''}></div><div class="settings-row"><label for="gentleSetting">Gentle motion<small>Reduce illustration movement. Your system’s reduced-motion preference is also respected. Videos play only when you start them.</small></label><input id="gentleSetting" type="checkbox" role="switch" ${preferences.gentle ? 'checked' : ''}></div><div class="install-help"><strong>Keep the playroom close.</strong><p>On iPhone or iPad, open in Safari, choose Share, then Add to Home Screen. On supporting browsers, use Install app. The playroom, word recordings, and two short videos work offline after the first complete load. Other local video experiments are not stored offline.</p></div><p>All preferences and observations stay in this browser. Nothing is recorded or sent to an account. There are no ads or analytics.</p><div class="settings-buttons"><button id="clearNotes" class="secondary-button">Clear little moments</button><button id="installFromSettings" class="secondary-button">${icon('download')} Install app</button></div><p>Little Echo · demo. Each activity can be repeated in any order.</p>`
+    clips: `<h3>A cow and a puppet. A little hello.</h3><p>Two short generated clips are ready in the playroom. Start, pause, and replay them with the large button below the picture.</p><button id="openVideos" class="primary-button clip-load">${icon('play')} Try the videos</button><p>Both clips work offline after the first complete online load. Nothing plays automatically.</p>`,
+    settings: `<h3>A little quieter. A little simpler.</h3><div class="settings-row"><label for="soundSetting">Speech & video sound<small>Includes short generated word recordings. A local device voice is a fallback. No microphone is used. Preview sounds yourself before sharing.</small></label><input id="soundSetting" type="checkbox" role="switch" ${preferences.sound ? 'checked' : ''}></div><div class="settings-row"><label for="gentleSetting">Gentle motion<small>Reduce illustration movement. Your system’s reduced-motion preference is also respected. Videos play only when you start them.</small></label><input id="gentleSetting" type="checkbox" role="switch" ${preferences.gentle ? 'checked' : ''}></div><div class="install-help"><strong>Keep the playroom close.</strong><p>On iPhone or iPad, open in Safari, choose Share, then Add to Home Screen. On supporting browsers, use Install app. The playroom, word recordings, and two short videos work offline after the first complete load.</p></div><p>All preferences and observations stay in this browser. Nothing is recorded or sent to an account. There are no ads or analytics.</p><div class="settings-buttons"><button id="clearNotes" class="secondary-button">Clear little moments</button><button id="installFromSettings" class="secondary-button">${icon('download')} Install app</button></div><p>Little Echo · demo. Each activity can be repeated in any order.</p>`
   };
   $('#grownupContent').innerHTML = views[panel] || views.guide;
 }
@@ -289,11 +289,8 @@ $('#grownupDialog').addEventListener('click', event => {
     const previous = observations; observations = {}; persist(KEYS.observations, observations); renderCards();
     toast('Little moments cleared.', () => { observations = previous; persist(KEYS.observations, observations); renderCards(); if ($('#grownupDialog').open && panel === 'notebook') renderGrownups(); });
   }
-  if (event.target.closest('#loadClips')) loadClips();
-  const clip = event.target.closest('[data-clip]'); if (clip) renderClip(Number(clip.dataset.clip));
+  if (event.target.closest('#openVideos')) { resumeActivity = false; closeGrownups(); openActivity('videos'); return; }
   if (event.target.closest('#installFromSettings')) install();
-  if (event.target.closest('#playClip') && currentVideo) currentVideo.play().catch(() => { const message = $('#clipError'); if (message) message.hidden = false; });
-  if (event.target.closest('#pauseClip') && currentVideo) currentVideo.pause();
 });
 $('#grownupDialog').addEventListener('change', event => {
   if (event.target.id === 'soundSetting') preferences.sound = event.target.checked;
@@ -302,41 +299,17 @@ $('#grownupDialog').addEventListener('change', event => {
 });
 $('#soundButton').addEventListener('click', () => { preferences.sound = !preferences.sound; persist(KEYS.preferences, preferences); applyPreferences(); });
 
-async function loadClips() {
-  const area = $('#clipArea'); if (!area) return;
-  if (currentVideo) { currentVideo.pause(); currentVideo = null; }
-  area.textContent = 'Looking for local samples…';
-  try {
-    const response = await fetch('./local-media/catalog.json', { cache: 'no-store' });
-    if (!response.ok) throw new Error('missing');
-    clips = cleanClipCatalog(await response.json());
-    if (!clips.length) throw new Error('empty');
-    if (!$('#grownupDialog').open || panel !== 'clips') return;
-    renderClip(0);
-  } catch {
-    if ($('#grownupDialog').open && panel === 'clips') area.innerHTML = '<p>Local experiments are not available here. The playroom has two short clips under Watch a little hello. Other generated trials stay private.</p>';
-  }
-}
-function renderClip(index) {
-  if (!Number.isInteger(index) || !clips[index]) return;
-  if (currentVideo) currentVideo.pause();
-  clipIndex = index;
-  const clip = clips[clipIndex];
-  $('#clipArea').innerHTML = `<div class="clip-list" role="group" aria-label="Choose a video sample">${clips.map((row, i) => `<button data-clip="${i}" aria-pressed="${i === index}" class="${i === index ? 'active' : ''}">${escapeHTML(row.title)}</button>`).join('')}</div><video class="clip-video" id="sampleVideo" controls playsinline preload="metadata" aria-label="${escapeHTML(clip.title)}: ${escapeHTML(clip.word)}"><source src="./local-media/${clip.src}" type="video/mp4"></video><div class="activity-actions"><button id="playClip" class="primary-button">${icon('play')} Play sample</button><button id="pauseClip" class="secondary-button">Pause sample</button></div><p class="clip-caption">Target sound: <strong>${escapeHTML(clip.word)}</strong>. Start when you’re ready. Pause, copy it together, and leave room for a turn.</p><p id="clipError" role="status" hidden>This local video could not play. Try another sample or an illustrated activity.</p>`;
-  currentVideo = $('#sampleVideo'); currentVideo.muted = !preferences.sound;
-  const errorMessage = $('#clipError');
-  const reportError = () => { if (errorMessage.isConnected) errorMessage.hidden = false; };
-  currentVideo.addEventListener('error', reportError);
-  currentVideo.querySelector('source').addEventListener('error', reportError);
-}
-
 async function install() {
   if (beforeInstall) { const prompt = beforeInstall; beforeInstall = null; await prompt.prompt(); }
   else { openGrownups('settings'); toast('In Safari: Share → Add to Home Screen. Other browsers: use the install option in the address bar.'); }
 }
 window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); beforeInstall = event; });
 $('#installButton').addEventListener('click', install);
-document.addEventListener('visibilitychange', () => { if (document.hidden) { stopTurn(); if ($('#activityDialog').open) renderStage(); } });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { stopTurn(); if ($('#activityDialog').open) renderStage(); }
+  else checkUpdate();
+});
+window.addEventListener('focus', () => checkUpdate());
 window.addEventListener('pagehide', stopTurn);
 window.addEventListener('keydown', event => {
   // Dialog Escape is native; this also stops audio before the close event arrives.
@@ -346,9 +319,10 @@ window.addEventListener('keydown', event => {
 function connectionStatus() {
   $('#connectionStatus').textContent = !navigator.onLine ? 'Offline · let’s play' : navigator.serviceWorker?.controller ? 'Playroom ready offline' : 'Made for playing together';
 }
-window.addEventListener('online', () => { connectionStatus(); checkUpdate(); });
+const checkUpdate = createUpdateCheck(fetchVersion);
+window.addEventListener('online', () => { connectionStatus(); checkUpdate({ force: true }); });
 window.addEventListener('offline', connectionStatus);
-async function checkUpdate() {
+async function fetchVersion() {
   try {
     const response = await fetch(`./version.json?check=${Date.now()}`, { cache: 'no-store' });
     if (!response.ok) return;
@@ -361,17 +335,19 @@ function offerUpdate() {
   pendingUpdate = true;
   const button = document.createElement('button'); button.className = 'text-button'; button.id = 'updateButton'; button.textContent = 'Update ready';
   button.addEventListener('click', async () => {
-    stopTurn();
+    stopTurn(); button.disabled = true; button.textContent = 'Updating…';
     try {
-      await registration?.update();
-      if (registration?.waiting) registration.waiting.postMessage({ type: 'ACTIVATE' });
-      else if (registration?.installing) {
-        const worker = registration.installing;
-        worker.addEventListener('statechange', () => { if (worker.state === 'installed') registration.waiting?.postMessage({ type: 'ACTIVATE' }); });
-      } else location.reload();
-    } catch { toast('The update is unavailable. Try again when online.'); }
+      if (!await activateUpdate(registration)) {
+        if (!registration?.installing && !registration?.waiting) location.reload();
+        else throw new Error('Update not ready');
+      }
+    } catch {
+      button.disabled = false; button.textContent = 'Try update again';
+      toast('The update is unavailable. Try again when online.');
+    }
   });
-  $('.site-footer').append(button);
+  $('#updateNotice').hidden = false;
+  $('#updateNotice').append(button);
 }
 if ('serviceWorker' in navigator) {
   let reloading = false;

@@ -1,4 +1,4 @@
-export const BUILD = 'world12';
+export const BUILD = 'world13';
 export const KEYS = Object.freeze({ preferences: 'speech-play.preferences.v1', observations: 'speech-play.observations.v1' });
 export const FLAGS = Object.freeze(['enjoyed', 'shared', 'gesture', 'sound', 'word']);
 export const VIDEO_FILES = Object.freeze({ 'cow-moo': 'cow-moo.mp4', 'puppet-ma': 'puppet-ma.mp4' });
@@ -9,8 +9,7 @@ export const ACTIVITIES = Object.freeze([
     { art: 'dog', label: 'Dog', word: 'Woof', speech: 'Woof', prompt: 'Say hello to the puppy.' }
   ] },
   { id: 'bubbles', title: 'Bubble pop', category: 'play', label: 'Touch & discover', color: 'sky', description: 'Tiny bubbles, happy pops.', target: 'Cause & effect', tip: 'Try “pop,” then pause. Take turns popping. There is no need to ask for a word.', realPlay: 'Try real bubbles together. Pause before blowing another and notice any way of asking for more.', examples: [
-    { art: 'bubbles', label: 'Pop', word: 'Pop!', speech: 'Pop', prompt: 'Tap a bubble. Pop, pop, pop!' },
-    { art: 'bubbles', label: 'More', word: 'More', speech: 'More', prompt: 'More bubbles? Here they come.' }
+    { art: 'bubbles', label: 'Pop', word: 'Pop!', speech: 'Pop', prompt: 'Tap a bubble. Pop, pop, pop!' }
   ] },
   { id: 'car', title: 'Ready, set… go!', category: 'play', label: 'Wait & wonder', color: 'peach', description: 'A little pause. Then off we go.', target: 'Anticipation & turns', tip: 'Join in with “ready, set…” and leave a playful pause. Then say “go” and enjoy the car together.', realPlay: 'Roll a toy car back and forth. Try the same “ready, set… go!” game.', examples: [
     { art: 'car', label: 'Go', word: 'Go!', speech: 'Go', prompt: 'Let’s send the little car on its way.' },
@@ -53,6 +52,11 @@ export function primaryAction(state) {
   if (state.id === 'videos') return { label: 'Play video', interaction: 'play' };
   if (state.id === 'car' && state.index === 0) return { label: 'Let’s go!', interaction: 'play' };
   return { label: 'Hear it', interaction: 'sound' };
+}
+export function bubbleMessage(state) {
+  return state.popped.length === 3
+    ? { word: 'More?', prompt: 'All popped! Tap More bubbles for another turn.' }
+    : { word: 'Pop!', prompt: 'Tap a bubble. Pop, pop, pop!' };
 }
 export function filterActivities(filter, notes = {}) {
   if (filter === 'favorites') return ACTIVITIES.filter(activity => notes[activity.id]?.enjoyed);

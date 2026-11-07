@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ACTIVITIES, FLAGS, KEYS, VIDEO_FILES, initialTurn, primaryAction, transition, filterActivities, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from '../core.js';
+import { ACTIVITIES, FLAGS, KEYS, VIDEO_FILES, initialTurn, primaryAction, bubbleMessage, transition, filterActivities, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from '../core.js';
 import { selectLocalVoice, createSpeaker, soundFile } from '../audio.js';
 
 test('the sampler covers sounds, single words, and different play interactions', () => {
@@ -8,7 +8,7 @@ test('the sampler covers sounds, single words, and different play interactions',
   assert.equal(new Set(ACTIVITIES.map(a => a.id)).size, 9);
   assert.deepEqual([...new Set(ACTIVITIES.map(a => a.category))].sort(), ['play', 'sounds', 'words']);
   for (const activity of ACTIVITIES) {
-    assert.ok(activity.examples.length >= 2);
+    assert.ok(activity.examples.length >= 1);
     assert.ok(activity.tip && activity.realPlay);
     assert.ok(activity.examples.every(item => item.art && item.word && item.speech));
   }
@@ -231,7 +231,7 @@ test('local clip catalog cannot inject markup, traversal paths, remote media, or
   assert.equal(cleanClipCatalog(Array(20).fill(valid)).length, 12);
 });
 
-test('bubble primary never changes into refill, even with extra presses or the More example', () => {
+test('bubble primary never changes into refill, even with extra presses', () => {
  for (const example of [0,1]) {
   let state = initialTurn('bubbles',example);
   for (const index of [0,1,2]) {
@@ -270,4 +270,18 @@ test('More repeats the same ball roll and keeps its side when switching word lab
  assert.equal(initialTurn('words').ballRight,false);
  const other=initialTurn('bubbles');
  assert.strictEqual(transition(other,{type:'roll'}),other);
+});
+
+test('bubble words follow the pop and explicit refill phases', () => {
+ let state=initialTurn('bubbles');
+ assert.equal(ACTIVITIES.find(a=>a.id==='bubbles').examples.length,1);
+ assert.equal(bubbleMessage(state).word,'Pop!');
+ for(const index of [0,1]) state=transition(state,{type:'pop',index});
+ assert.equal(bubbleMessage(state).word,'Pop!');
+ state=transition(state,{type:'pop',index:2});
+ assert.equal(bubbleMessage(state).word,'More?');
+ assert.match(bubbleMessage(state).prompt,/More bubbles/);
+ assert.equal(primaryAction(state).disabled,true);
+ state=transition(state,{type:'reset'});
+ assert.equal(bubbleMessage(state).word,'Pop!');
 });

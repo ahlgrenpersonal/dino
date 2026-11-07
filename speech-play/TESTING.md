@@ -54,3 +54,25 @@ Build world10:44 tests pass and an independent source review is clear. In-app ph
 Build world11:44 tests pass, including the adjacent Up/Down ordering and bundled audio coverage. At390x844 and320x568, all four action examples loaded the expected audio and kept action buttons within the viewport. The active balloon groups use opposite float-up/float-down animations. Independent review caught short-stage clipping; moving the inner SVG group by16units keeps all balloon paths within the220unit viewBox. New Down! recording:0.56seconds, monoPCM16/24kHz, generic Qwen3-TTS VoiceDesign through LOW/test local queue. Source receipt/hash and WAV metadata checked privately; no cloned/reference voice. No independent listening or acoustic transcription is claimed. The code-drawn downward arrow/balloon pixels were inspected.
 
 Build world12:45 tests pass. Ball and More share one ball scene; either the picture or primary button rolls it to the opposite side. Browser checks covered repeated More turns, correct ball/more audio selection, stable position across label changes, Try another, and resetting on activity re-entry. Final transformed ball bounds and full action-button bounds passed at390x844 and320x568 with48-unit travel and45-degree rotation. Sound-off/Gentle motion preserves the endpoint change. An independent source review is clear. No audio/video/raster assets changed; the existing generic ball SVG was grouped for rolling, and its displayed pixels were inspected.
+
+
+## Review checkpoint world13
+
+Two reviewers independently read the source and inspected the supplied activity
+and grown-up screenshots. Their own browser sessions could not navigate; all
+interactive checks were operated by the primary agent in the in-app browser.
+This limitation applies to the review, not to the screenshot pixel inspection.
+
+The baseline sweep covered all 22 examples, all four grown-up panels, filters,
+Favorites, reversible observation clearing, repeated bubbles, peekaboo, and video
+pause/resume/replay. Every activity was checked at 320x568 and examples at
+390x844. Corrections address bubble word/action mismatch, small bubble clipping,
+oversized direct SVG icons, replay hints, unavailable local-video controls, and
+update discovery on resume. The revised bubble layout and video shortcut were
+retested. The revised sampler has 21 examples after removing the redundant
+bubble tab. All 55 automated tests pass, including update races and timeouts.
+
+Privacy audit checked all 47 outgoing app files, media metadata and generic
+provenance, plus reachable history and neutral commit identities. No new media
+was generated. Playback and codec checks do not establish pronunciation quality;
+no acoustic transcription or physical iPhone testing is claimed.
