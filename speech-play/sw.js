@@ -1,11 +1,12 @@
-const BUILD = 'world3';
+const BUILD = 'world4';
 const BASE = new URL('./', self.location.href);
 const PREFIX = `speech-play:${BASE.pathname}:`;
 const CACHE = `${PREFIX}${BUILD}`;
 const SHELL = [
-  './', './index.html', './styles.css?v=world3', './app.js?v=world3',
-  './core.js?v=world3', './art.js?v=world3', './audio.js?v=world3', './updates.js?v=world3',
+  './', './index.html', './styles.css?v=world4', './app.js?v=world4',
+  './core.js?v=world4', './art.js?v=world4', './audio.js?v=world4', './updates.js?v=world4',
   './manifest.webmanifest', './assets/icon.svg', './assets/icon-192.png', './assets/icon-512.png',
+  './assets/video/cow-moo.mp4', './assets/video/puppet-ma.mp4',
   ...['moo', 'baa', 'woof', 'pop', 'more', 'ready-set', 'go', 'beep', 'boo', 'hi', 'ball', 'up', 'mama', 'dada', 'ma', 'ba', 'oh'].map(word => `./assets/audio/${word}.wav`)
 ].map(file => new URL(file, BASE).href);
 const ALLOWED = new Set(SHELL);
@@ -48,14 +49,14 @@ self.addEventListener('fetch', event => {
     const response = await cache.match(request);
     if (!response) return fetch(request);
     const range = request.headers.get('range');
-    // Safari may request audio byte ranges even for small, fully cached WAV files.
-    if (range && url.pathname.endsWith('.wav')) {
+    // Safari probes and seeks into complete cached audio/video with byte ranges.
+    if (range && /\.(?:wav|mp4)$/.test(url.pathname)) {
       const bytes = await response.arrayBuffer();
       const match = /^bytes=(\d*)-(\d*)$/.exec(range);
       const start = match?.[1] ? Number(match[1]) : Math.max(0, bytes.byteLength - Number(match?.[2]));
       const end = match?.[1] ? (match[2] ? Math.min(Number(match[2]), bytes.byteLength - 1) : bytes.byteLength - 1) : bytes.byteLength - 1;
       if (!match || (!match[1] && !match[2]) || !Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || start > end || start >= bytes.byteLength) return new Response(null, { status: 416, headers: { 'Content-Range': `bytes */${bytes.byteLength}` } });
-      return new Response(bytes.slice(start, end + 1), { status: 206, headers: { 'Content-Type': 'audio/wav', 'Accept-Ranges': 'bytes', 'Content-Range': `bytes ${start}-${end}/${bytes.byteLength}`, 'Content-Length': String(end - start + 1) } });
+      return new Response(bytes.slice(start, end + 1), { status: 206, headers: { 'Content-Type': url.pathname.endsWith('.mp4') ? 'video/mp4' : 'audio/wav', 'Accept-Ranges': 'bytes', 'Content-Range': `bytes ${start}-${end}/${bytes.byteLength}`, 'Content-Length': String(end - start + 1) } });
     }
     return response;
   })());

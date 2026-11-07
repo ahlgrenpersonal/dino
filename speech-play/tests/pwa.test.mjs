@@ -60,11 +60,29 @@ test('offline audio responds to bounded and suffix range requests, including Saf
 test('shell precaches complete files under either a root folder or nested Pages folder', async () => {
   for (const scope of ['/speech-play/', '/dino/speech-play/']) {
     const sw = worker({ scope }); await sw.lifecycle('install');
-    assert.equal(sw.cached.length, 29);
+    assert.equal(sw.cached.length, 31);
     for (const url of sw.cached) {
       assert.ok(url.startsWith('https://example.test' + scope));
       const relative = new URL(url).pathname.slice(scope.length) || 'index.html';
       await access(new URL(relative, root));
+    }
+  }
+});
+
+test('bundled videos support offline Safari byte probes and seeking from the same complete cache', async () => {
+  const sw = worker({fetcher:async () => {throw new Error('offline');}});
+  await sw.lifecycle('install');
+  for (const name of ['cow-moo', 'puppet-ma']) {
+    const bytes = await readFile(new URL(`assets/video/${name}.mp4`, root));
+    assert.equal(bytes.toString('ascii',4,8), 'ftyp');
+    const url = `https://example.test/dino/speech-play/assets/video/${name}.mp4`;
+    sw.stores.set(url, new Response(bytes,{headers:{'content-type':'video/mp4'}}));
+    for (const [range,start,end] of [['bytes=0-1',0,1],['bytes=-32',bytes.length-32,bytes.length-1]]) {
+      const response = await sw.request(url,'cors','GET',{range});
+      assert.equal(response.status,206);
+      assert.equal(response.headers.get('content-type'),'video/mp4');
+      assert.equal(response.headers.get('content-range'),`bytes ${start}-${end}/${bytes.length}`);
+      assert.deepEqual(Buffer.from(await response.arrayBuffer()),bytes.subarray(start,end+1));
     }
   }
 });

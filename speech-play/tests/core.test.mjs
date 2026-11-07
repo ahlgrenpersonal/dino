@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ACTIVITIES, FLAGS, KEYS, initialTurn, transition, filterActivities, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from '../core.js';
+import { ACTIVITIES, FLAGS, KEYS, VIDEO_FILES, initialTurn, transition, filterActivities, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from '../core.js';
 import { selectLocalVoice, createSpeaker, soundFile } from '../audio.js';
 
 test('the sampler covers sounds, single words, and different play interactions', () => {
-  assert.equal(ACTIVITIES.length, 6);
-  assert.equal(new Set(ACTIVITIES.map(a => a.id)).size, 6);
+  assert.equal(ACTIVITIES.length, 9);
+  assert.equal(new Set(ACTIVITIES.map(a => a.id)).size, 9);
   assert.deepEqual([...new Set(ACTIVITIES.map(a => a.category))].sort(), ['play', 'sounds', 'words']);
   for (const activity of ACTIVITIES) {
     assert.ok(activity.examples.length >= 2);
@@ -71,8 +71,25 @@ test('favorites reflect only the explicit parent observation, and can be removed
   notes = toggleObservation(notes, 'bubbles', 'enjoyed');
   assert.deepEqual(notes, {});
   assert.equal(filterActivities('sounds').length, 2);
-  assert.equal(filterActivities('words').length, 1);
-  assert.equal(filterActivities('play').length, 3);
+  assert.equal(filterActivities('words').length, 3);
+  assert.equal(filterActivities('play').length, 4);
+});
+
+test('word cards cover everyday, people, and action words, with bundled examples', () => {
+  const cards = filterActivities('words');
+  assert.deepEqual(cards.map(card => card.id), ['words', 'people', 'actions']);
+  assert.equal(new Set(cards.flatMap(card => card.examples.map(item => item.speech))).size, 7);
+  for (const card of cards) assert.ok(card.examples.every(item => soundFile(item.speech)));
+  assert.deepEqual(cleanObservations({words:{enjoyed:true},people:{sound:true},actions:{word:true}}), {words:{enjoyed:true},people:{sound:true},actions:{word:true}});
+});
+
+test('video sampler uses exactly the two bundled clips and switches without a speech requirement', () => {
+  const videos = ACTIVITIES.find(card => card.id === 'videos');
+  assert.deepEqual(videos.examples.map(item => VIDEO_FILES[item.video]), ['cow-moo.mp4', 'puppet-ma.mp4']);
+  const first = initialTurn('videos');
+  assert.equal(transition(first, {type:'next'}).index, 1);
+  assert.deepEqual(transition(transition(first, {type:'next'}), {type:'next'}), first);
+  assert.ok(Object.values(VIDEO_FILES).every(file => /^[a-z-]+\.mp4$/.test(file)));
 });
 
 test('storage schemas reject arbitrary text, unknown activities, flags, and truthy non-booleans', () => {

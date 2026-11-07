@@ -32,4 +32,10 @@ test('preview serves only this PWA, nested paths, and whitelisted media', async 
   assert.equal(slice.status, 206); assert.equal(await slice.text(), '<svg');
   const bad = await fetch(base + '/speech-play/assets/icon.svg', { headers: { Range: 'bytes=999999-' } });
   assert.equal(bad.status, 416);
+  for (const name of ['cow-moo','puppet-ma']) {
+    const video = await fetch(base + `/speech-play/assets/video/${name}.mp4`, {headers:{Range:'bytes=0-31'}});
+    assert.equal(video.status,206); assert.equal(video.headers.get('content-type'),'video/mp4');
+    assert.equal(Buffer.from(await video.arrayBuffer()).toString('ascii',4,8),'ftyp');
+  }
+  assert.equal((await fetch(base + '/speech-play/assets/video/other.mp4')).status,404);
 });

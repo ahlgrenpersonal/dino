@@ -1,6 +1,7 @@
-export const BUILD = 'world3';
+export const BUILD = 'world4';
 export const KEYS = Object.freeze({ preferences: 'speech-play.preferences.v1', observations: 'speech-play.observations.v1' });
 export const FLAGS = Object.freeze(['enjoyed', 'shared', 'gesture', 'sound', 'word']);
+export const VIDEO_FILES = Object.freeze({ 'cow-moo': 'cow-moo.mp4', 'puppet-ma': 'puppet-ma.mp4' });
 export const ACTIVITIES = Object.freeze([
   { id: 'animals', title: 'Animal hello', category: 'sounds', label: 'Listen & copy', color: 'mint', description: 'A little moo. A little you.', target: 'Sounds & imitation', tip: 'Make the sound yourself, then leave a little quiet space. Any response is welcome.', realPlay: 'Find a toy animal or a picture in a book. Make its sound together.', examples: [
     { art: 'cow', label: 'Cow', word: 'Moo', speech: 'Moo', prompt: 'What does the cow say?' },
@@ -21,9 +22,20 @@ export const ACTIVITIES = Object.freeze([
   ] },
   { id: 'words', title: 'Little everyday words', category: 'words', label: 'Look & listen', color: 'butter', description: 'Familiar things. Small beginnings.', target: 'Single words', tip: 'Say one word naturally. Repeat it during everyday play, without asking for a perfect copy.', realPlay: 'Pick one word and use it during a real routine: “up” while lifting a toy, or “ball” while rolling one.', examples: [
     { art: 'ball', label: 'Ball', word: 'Ball', speech: 'Ball', prompt: 'A bouncy, beautiful ball.' },
-    { art: 'up', label: 'Up', word: 'Up!', speech: 'Up', prompt: 'Up, up, into the sky.' },
+    { art: 'bubbles', label: 'More', word: 'More', speech: 'More', prompt: 'A little word for another turn.' }
+  ] },
+  { id: 'people', title: 'People words', category: 'words', label: 'Familiar words', color: 'rose', description: 'Two little words for familiar people.', target: 'People & connection', tip: 'Use the word your family uses naturally. Point to a familiar person together, without asking for a repeat.', realPlay: 'Greet a familiar grown-up together. Any look, gesture, or sound can be a hello.', examples: [
     { art: 'heart', label: 'Mama', word: 'Mama', speech: 'Mama', prompt: 'A familiar word to share.' },
     { art: 'heart', label: 'Dada', word: 'Dada', speech: 'Dada', prompt: 'Another familiar word to share.' }
+  ] },
+  { id: 'actions', title: 'Little action words', category: 'words', label: 'Words in motion', color: 'sky', description: 'Up, go, and a little hello.', target: 'Words to use together', tip: 'Match a single word to an action. Say it once, pause, and enjoy the action together.', realPlay: 'Lift a toy for “up,” roll it for “go,” or wave and say “hi.” Let the play lead.', examples: [
+    { art: 'up', label: 'Up', word: 'Up!', speech: 'Up', prompt: 'Up, up, into the sky.' },
+    { art: 'car', label: 'Go', word: 'Go!', speech: 'Go', prompt: 'One little word to get moving.' },
+    { art: 'puppet', label: 'Hi', word: 'Hi!', speech: 'Hi', prompt: 'A friendly hello and a wave.' }
+  ] },
+  { id: 'videos', title: 'Watch a little hello', category: 'play', label: 'Watch & copy', color: 'mint', description: 'A cow and a puppet, with time for a turn.', target: 'Two short videos', tip: 'Watch one short clip together, then pause. Copy the sound yourself and leave room for any response.', realPlay: 'Put the screen aside and play with a toy animal or puppet. Try the same sound face to face.', examples: [
+    { art: 'cow', label: 'Cow', word: 'Moo', speech: 'Moo', video: 'cow-moo', prompt: 'Watch the cow. Then try a little moo together.' },
+    { art: 'puppet', label: 'Puppet', word: 'Ma, ma', speech: 'Ma. Ma.', video: 'puppet-ma', prompt: 'Watch the puppet. Then leave space for a turn.' }
   ] },
   { id: 'copy', title: 'Make a little sound', category: 'sounds', label: 'Your turn, my turn', color: 'rose', description: 'A silly sound to share together.', target: 'Vocal play', tip: 'You can copy a sound they already make. Then offer yours and wait. Keep it playful and stop when interest fades.', realPlay: 'Put the screen aside and copy each other’s sounds, expressions, or gentle hand movements.', examples: [
     { art: 'puppet', label: 'Ma', word: 'Ma, ma', speech: 'Ma. Ma.', prompt: 'A soft little “ma.” Your turn, my turn.' },

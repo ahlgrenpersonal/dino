@@ -1,6 +1,6 @@
 # Little Echo
 
-A standalone, buildless PWA with six short activities for shared sound and word play.
+A standalone, buildless PWA with nine short activities for shared sound and word play.
 This folder is independent of the other apps in the repository.
 
 The phone layout uses one large activity card per row, 18–20 px body text,
@@ -36,12 +36,15 @@ PNG icons are included; rebuilding them with `python tools/make-icons.py` requir
 - Bubble pop: three tappable bubbles and unlimited refills.
 - Ready, set… go!: a short anticipation game and a beep example.
 - Where’s bear?: hide, reveal, and repeat.
-- Little everyday words: ball, up, mama, and dada.
+- Little everyday words: ball and more.
+- People words: mama and dada.
+- Little action words: up, go, and hi.
+- Watch a little hello: two short generated clips, a cow and a felt puppet.
 - Make a little sound: a puppet for ma, ba, and oh.
 
 Use the app together. Every activity allows replay and switching without speech.
 The grown-up area includes off-screen play ideas, optional observations, settings,
-and a local video comparison. “Wanted more” adds an activity to Favorites.
+and an optional local video comparison. “Wanted more” adds an activity to Favorites.
 Observations are subjective parent notes, not speech recognition, scores, or
 developmental measurements. This demo has not been clinically evaluated and is
 not treatment. Activity ideas draw on [ASHA’s parent guidance](https://www.asha.org/public/developmental-milestones/communication-milestones-19-to-24-months/).
@@ -67,6 +70,14 @@ is copied to `assets/audio/`. No model calls occur during app use or automated t
 
 ## Optional local H3 video trials
 
+The playroom includes two short H3 FL2VA clips: a generic clay cow saying moo and
+a generic felt puppet saying ma. Each is about five seconds long. They start
+only after a tap, respect Sound off, pause on close/switch/background, and are
+cached for offline use after a complete online load. They are generated characters,
+not recordings of real people. Source prompts, receipts and workflow identifiers
+are excluded; the selected copies have been losslessly remuxed to remove optional
+metadata. Review their speech and mouth movements yourself before sharing them.
+
 `python tools/generate-samples.py` submits three independent text-only H3 FL2VA
 jobs through the public queue at `127.0.0.1:8080`. Every call explicitly sets LOW
 priority, workload `test`, and the separate `speech_play_media_trial` client.
@@ -82,8 +93,8 @@ generating again. Review both audio and visuals before showing a clip to a child
 In For grown-ups → Video samples, load the samples explicitly and start playback.
 Nothing autoplays. The illustrated activities work without these files.
 
-**Generated video trials are excluded from the commit and from offline caching.**
-The optional video panel handles missing media gracefully. No media is uploaded by
+**Original local video trials and receipts are excluded from the commit.**
+The optional local comparison panel handles missing media gracefully. No media is uploaded by
 this app or tooling. Specific informed approval is required before uploading any
 image or generated visual media to a public destination. Later publication must
 include a review of the exact selected assets, metadata, and repository history.
@@ -101,11 +112,12 @@ Navigation uses the network with a bounded offline fallback. The installed shell
 is kept as a consistent build snapshot. Version checks offer an explicit update
 button so updates need not interrupt play. No localStorage is cleared by updates.
 
-After the first complete online load, the illustrated activities and bundled words work offline.
-Optional local video samples are online/local-preview only. Launch from localhost
+After the first complete online load, the playroom, bundled words and two selected clips work offline.
+Other local video experiments are local-preview only. Launch from localhost
 or HTTPS; installation and service workers are unavailable from a `file:` URL.
 
-Build `world3` enlarges the playroom and activity views. Bump the build in `core.js`,
+Build `world4` adds word cards, two short clips, and a clearer sheep illustration.
+Bump the build in `core.js`,
 `app.js` (including imports), HTML asset queries, manifest start URL, service-worker
 shell/cache, and `version.json` together. The other apps have independent versions.
 

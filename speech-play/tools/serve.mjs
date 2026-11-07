@@ -26,7 +26,7 @@ export function createPreviewServer({ root = ROOT } = {}) {
       if (!prefix) { res.writeHead(404, headers); res.end('Not found'); return; }
       const relative = pathname.slice(prefix.length) || 'index.html';
       // This preview serves this app only, never repository files or generation receipts.
-      if (!PUBLIC.has(relative) && !/^local-media\/(catalog\.json|[a-z0-9-]+\.mp4)$/.test(relative) && !/^assets\/audio\/[a-z0-9-]+\.wav$/.test(relative)) { res.writeHead(404, headers); res.end('Not found'); return; }
+      if (!PUBLIC.has(relative) && !/^local-media\/(catalog\.json|[a-z0-9-]+\.mp4)$/.test(relative) && !/^assets\/audio\/[a-z0-9-]+\.wav$/.test(relative) && !/^assets\/video\/(cow-moo|puppet-ma)\.mp4$/.test(relative)) { res.writeHead(404, headers); res.end('Not found'); return; }
       const target = path.resolve(root, relative);
       if (!target.startsWith(path.resolve(root) + path.sep)) { res.writeHead(403, headers); res.end('Forbidden'); return; }
       const data = await readFile(target);
