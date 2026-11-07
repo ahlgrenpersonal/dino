@@ -1,6 +1,6 @@
 # Validation
 
-Run `node --test tests/*.test.mjs` from this folder. The current demo has 44
+Run `node --test tests/*.test.mjs` from this folder. The current demo has 45
 passing tests and needs no installed Node packages. Automated tests use fake
 scheduling, speech, workers, and caches; they never call an inference model.
 
@@ -52,3 +52,5 @@ Build world9: 44 tests pass, including retained bubble target identities, preser
 Build world10:44 tests pass and an independent source review is clear. In-app phone-viewport checks inspected Mama’s pink heart and Dada’s light blue heart, switched examples, and pressed Hear it on both. Both action buttons fit the viewport; no browser console errors. Both hearts share the existing shape/face. Code-drawn pixels were inspected; no raster/audio/video assets changed.
 
 Build world11:44 tests pass, including the adjacent Up/Down ordering and bundled audio coverage. At390x844 and320x568, all four action examples loaded the expected audio and kept action buttons within the viewport. The active balloon groups use opposite float-up/float-down animations. Independent review caught short-stage clipping; moving the inner SVG group by16units keeps all balloon paths within the220unit viewBox. New Down! recording:0.56seconds, monoPCM16/24kHz, generic Qwen3-TTS VoiceDesign through LOW/test local queue. Source receipt/hash and WAV metadata checked privately; no cloned/reference voice. No independent listening or acoustic transcription is claimed. The code-drawn downward arrow/balloon pixels were inspected.
+
+Build world12:45 tests pass. Ball and More share one ball scene; either the picture or primary button rolls it to the opposite side. Browser checks covered repeated More turns, correct ball/more audio selection, stable position across label changes, Try another, and resetting on activity re-entry. Final transformed ball bounds and full action-button bounds passed at390x844 and320x568 with48-unit travel and45-degree rotation. Sound-off/Gentle motion preserves the endpoint change. An independent source review is clear. No audio/video/raster assets changed; the existing generic ball SVG was grouped for rolling, and its displayed pixels were inspected.

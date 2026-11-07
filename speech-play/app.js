@@ -1,11 +1,11 @@
-import { renderBubbles } from './bubbles.js?v=world11';
-import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from './core.js?v=world11';
-import { art, icon, garden } from './art.js?v=world11';
-import { createSpeaker } from './audio.js?v=world11';
-import { observeUpdates } from './updates.js?v=world11';
+import { renderBubbles } from './bubbles.js?v=world12';
+import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from './core.js?v=world12';
+import { art, icon, garden } from './art.js?v=world12';
+import { createSpeaker } from './audio.js?v=world12';
+import { observeUpdates } from './updates.js?v=world12';
 
 const $ = selector => document.querySelector(selector);
-const buildVersion = 'world11';
+const buildVersion = 'world12';
 // Show the loaded code version, including when a newer document meets an older cached module.
 document.querySelectorAll('[data-build-label]').forEach(label => { label.textContent = `Version ${BUILD}`; });
 const timeline = createTimeline();
@@ -89,12 +89,15 @@ function renderStage({ poppedIndex = null } = {}) {
   const activity = activityById(state.id), item = example(), stage = $('#activityStage');
   const restoreFocus = stage.contains(document.activeElement);
   if (currentVideo && stage.contains(currentVideo)) { currentVideo.pause(); currentVideo = null; }
-  stage.className = `activity-stage ${activity.color} ${state.revealed ? 'revealed' : ''} ${state.phase}`;
+  stage.className = `activity-stage ${activity.color} ${state.revealed ? 'revealed' : ''} ${state.phase} ${state.id === 'words' && state.ballRight ? 'ball-right' : ''}`;
   stage.dataset.art = item.art;
   // Preserve the existing curtains so their transform can transition between turns.
   if (state.id === 'peekaboo' && stage.querySelector('.peek-cover')) {
     $('#stageButton').setAttribute('aria-label', state.revealed ? 'Hide bear again' : 'Find the bear');
     stage.querySelector('.peek-label').textContent = state.revealed ? 'Hide again' : 'Tap to find bear';
+  } else if (state.id === 'words' && stage.querySelector('.rolling-ball')) {
+    // Keep the same ball connected so changing its side produces a real roll.
+    $('#stageButton').setAttribute('aria-label', state.index === 0 ? 'Roll the ball' : 'Roll the ball again');
   } else if (state.id === 'videos') {
     stage.innerHTML = `<video id="activityVideo" class="activity-video" playsinline preload="none" aria-label="${escapeHTML(item.label)} video: ${escapeHTML(item.word)}"><source src="./assets/video/${VIDEO_FILES[item.video]}" type="video/mp4"></video><button class="stage-button video-start" id="startActivityVideo" aria-label="Watch ${escapeHTML(item.label)} video">${art(item.art)}<span class="tap-hint">Watch video</span></button>`;
     currentVideo = $('#activityVideo'); currentVideo.muted = !preferences.sound;
@@ -113,8 +116,8 @@ function renderStage({ poppedIndex = null } = {}) {
   } else if (state.id === 'bubbles') {
     renderBubbles(stage, state.popped, poppedIndex);
   } else {
-    const label = state.id === 'peekaboo' ? (state.revealed ? 'Hide bear again' : 'Find the bear') : state.id === 'car' && state.index === 0 ? 'Ready, set, go' : `Play ${item.word}`;
-    stage.innerHTML = `<button class="stage-button" id="stageButton" aria-label="${escapeHTML(label)}">${art(item.art, state.id === 'actions' && item.speech === 'Hi' ? 'wave-hello' : '')}${state.id === 'peekaboo' ? `<span class="peek-cover"></span><span class="peek-label">${state.revealed ? 'Hide again' : 'Tap to find bear'}</span>` : `<span class="tap-hint">${state.id === 'car' && state.index === 0 ? 'Tap to go' : 'Tap to play'}</span>`}${state.id === 'car' && state.index === 0 ? `<span class="phase-banner" aria-live="polite">${state.phase === 'ready' ? 'Ready, set…' : state.phase === 'go' ? 'Go!' : ''}</span>` : ''}</button>`;
+    const label = state.id === 'words' ? (state.index === 0 ? 'Roll the ball' : 'Roll the ball again') : state.id === 'peekaboo' ? (state.revealed ? 'Hide bear again' : 'Find the bear') : state.id === 'car' && state.index === 0 ? 'Ready, set, go' : `Play ${item.word}`;
+    stage.innerHTML = `<button class="stage-button" id="stageButton" aria-label="${escapeHTML(label)}">${art(item.art, state.id === 'actions' && item.speech === 'Hi' ? 'wave-hello' : '')}${state.id === 'peekaboo' ? `<span class="peek-cover"></span><span class="peek-label">${state.revealed ? 'Hide again' : 'Tap to find bear'}</span>` : `<span class="tap-hint">${state.id === 'words' ? 'Tap to roll' : state.id === 'car' && state.index === 0 ? 'Tap to go' : 'Tap to play'}</span>`}${state.id === 'car' && state.index === 0 ? `<span class="phase-banner" aria-live="polite">${state.phase === 'ready' ? 'Ready, set…' : state.phase === 'go' ? 'Go!' : ''}</span>` : ''}</button>`;
   }
   $('#activityWord').textContent = item.word;
   $('#activityPrompt').textContent = state.id === 'peekaboo' ? (state.revealed ? 'There’s bear! Hide, then peek again.' : 'Tap the curtains or Peekaboo! to find the bear.') : item.prompt;
@@ -156,6 +159,10 @@ function refillBubbles() {
 }
 function play() {
   const item = example();
+  if (state.id === 'words') {
+    state = transition(state, { type: 'roll' }); renderStage(); say(item.speech);
+    return;
+  }
   if (state.id === 'bubbles') {
     popBubble([0, 1, 2].find(index => !state.popped.includes(index)));
     return;

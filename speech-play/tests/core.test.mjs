@@ -73,7 +73,7 @@ test('the primary peekaboo button opens and closes the game instead of replaying
   assert.deepEqual(primaryAction(initialTurn('videos')), {label:'Play video',interaction:'play'});
   assert.deepEqual(primaryAction(initialTurn('car')), {label:'Let’s go!',interaction:'play'});
   assert.deepEqual(primaryAction(initialTurn('car',1)), {label:'Hear it',interaction:'sound'});
-  for (const id of ['animals','words','people','actions','copy']) {
+  for (const id of ['animals','people','actions','copy']) {
     assert.deepEqual(primaryAction(initialTurn(id)), {label:'Hear it',interaction:'sound'});
   }
 });
@@ -247,4 +247,27 @@ test('bubble primary never changes into refill, even with extra presses or the M
   assert.deepEqual(state.popped,[]);
   assert.equal(primaryAction(state).disabled,false);
  }
+});
+
+test('More repeats the same ball roll and keeps its side when switching word labels', () => {
+ const words=ACTIVITIES.find(activity=>activity.id==='words');
+ assert.deepEqual(words.examples.map(item=>item.art),['ball','ball']);
+ let state=initialTurn('words');
+ assert.deepEqual(primaryAction(state),{label:'Roll ball',interaction:'play'});
+ state=transition(state,{type:'roll'});
+ assert.equal(state.ballRight,true);
+ state=transition(state,{type:'next'});
+ assert.equal(state.ballRight,true);
+ assert.deepEqual(primaryAction(state),{label:'More!',interaction:'play'});
+ for(let press=0;press<6;press++) {
+  const before=state;
+  state=transition(state,{type:'roll'});
+  assert.equal(state.ballRight,!before.ballRight);
+  assert.equal(state.turns,before.turns+1);
+ }
+ state=transition(state,{type:'example',index:0});
+ assert.equal(state.ballRight,true);
+ assert.equal(initialTurn('words').ballRight,false);
+ const other=initialTurn('bubbles');
+ assert.strictEqual(transition(other,{type:'roll'}),other);
 });

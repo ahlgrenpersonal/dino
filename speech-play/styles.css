@@ -57,3 +57,7 @@ button[aria-disabled="true"]{opacity:.5;cursor:default}
 
 .playing[data-art="down"] .drawing{animation:none}.playing[data-art="down"] .direction-balloon{animation:float-down 1.2s ease-in-out}
 @keyframes float-down{0%,100%{transform:translateY(0)}50%{transform:translateY(16px)}}
+
+/* Ball and More share one ball; each requested turn rolls it to the other side. */
+.activity-stage[data-art="ball"] .rolling-ball{transform-box:view-box;transform-origin:160px 113px;transform:translateX(-48px) rotate(-45deg);transition:transform .85s ease-in-out}
+.activity-stage.ball-right[data-art="ball"] .rolling-ball{transform:translateX(48px) rotate(45deg)}

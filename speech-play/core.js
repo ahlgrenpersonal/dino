@@ -1,4 +1,4 @@
-export const BUILD = 'world11';
+export const BUILD = 'world12';
 export const KEYS = Object.freeze({ preferences: 'speech-play.preferences.v1', observations: 'speech-play.observations.v1' });
 export const FLAGS = Object.freeze(['enjoyed', 'shared', 'gesture', 'sound', 'word']);
 export const VIDEO_FILES = Object.freeze({ 'cow-moo': 'cow-moo.mp4', 'puppet-ma': 'puppet-ma.mp4' });
@@ -20,9 +20,9 @@ export const ACTIVITIES = Object.freeze([
     { art: 'bear', label: 'Boo', word: 'Boo!', speech: 'Boo', prompt: 'Someone is hiding. Shall we peek?' },
     { art: 'bear', label: 'Hi', word: 'Hi!', speech: 'Hi', prompt: 'There you are. Hello, little bear.' }
   ] },
-  { id: 'words', title: 'Little everyday words', category: 'words', label: 'Look & listen', color: 'butter', description: 'Familiar things. Small beginnings.', target: 'Single words', tip: 'Say one word naturally. Repeat it during everyday play, without asking for a perfect copy.', realPlay: 'Pick one word and use it during a real routine: “up” while lifting a toy, or “ball” while rolling one.', examples: [
-    { art: 'ball', label: 'Ball', word: 'Ball', speech: 'Ball', prompt: 'A bouncy, beautiful ball.' },
-    { art: 'bubbles', label: 'More', word: 'More', speech: 'More', prompt: 'A little word for another turn.' }
+  { id: 'words', title: 'Little everyday words', category: 'words', label: 'Look & listen', color: 'butter', description: 'A ball. Another little roll.', target: 'Single words', tip: 'Say “ball” as it rolls. Pause, then offer “more” and roll it again. Any response can be a turn.', realPlay: 'Roll a real ball back and forth together. Pause, offer “more,” and enjoy another turn.', examples: [
+    { art: 'ball', label: 'Ball', word: 'Ball', speech: 'Ball', prompt: 'A ball! Tap to roll it.' },
+    { art: 'ball', label: 'More', word: 'More', speech: 'More', prompt: 'More? Let’s roll the ball again.' }
   ] },
   { id: 'people', title: 'People words', category: 'words', label: 'Familiar words', color: 'rose', description: 'Two little words for familiar people.', target: 'People & connection', tip: 'Use the word your family uses naturally. Point to a familiar person together, without asking for a repeat.', realPlay: 'Greet a familiar grown-up together. Any look, gesture, or sound can be a hello.', examples: [
     { art: 'heart', label: 'Mama', word: 'Mama', speech: 'Mama', prompt: 'A familiar word to share.' },
@@ -47,6 +47,7 @@ export const ACTIVITIES = Object.freeze([
 
 export function activityById(id) { return ACTIVITIES.find(activity => activity.id === id) || ACTIVITIES[0]; }
 export function primaryAction(state) {
+  if (state.id === 'words') return { label: state.index === 0 ? 'Roll ball' : 'More!', interaction: 'play' };
   if (state.id === 'bubbles') return { label: 'Pop a bubble', interaction: 'play', disabled: state.popped.length === 3 };
   if (state.id === 'peekaboo') return { label: state.revealed ? 'Hide bear' : 'Peekaboo!', interaction: 'play' };
   if (state.id === 'videos') return { label: 'Play video', interaction: 'play' };
@@ -59,13 +60,17 @@ export function filterActivities(filter, notes = {}) {
 }
 export function initialTurn(id = 'animals', index = 0) {
   const activity = activityById(id);
-  return { id: activity.id, index: Number.isInteger(index) && index >= 0 && index < activity.examples.length ? index : 0, popped: [], revealed: false, phase: 'idle', turns: 0 };
+  return { id: activity.id, index: Number.isInteger(index) && index >= 0 && index < activity.examples.length ? index : 0, popped: [], revealed: false, phase: 'idle', turns: 0, ballRight: false };
 }
 export function transition(state, action) {
   const activity = activityById(state.id);
   switch (action.type) {
-    case 'example': return initialTurn(state.id, action.index);
-    case 'next': return initialTurn(state.id, (state.index + 1) % activity.examples.length);
+    case 'example':
+    case 'next': {
+      const next = initialTurn(state.id, action.type === 'example' ? action.index : (state.index + 1) % activity.examples.length);
+      return state.id === 'words' ? { ...next, ballRight: state.ballRight } : next;
+    }
+    case 'roll': return state.id === 'words' ? { ...state, ballRight: !state.ballRight, turns: state.turns + 1 } : state;
     case 'pop': {
       if (![0, 1, 2].includes(action.index) || state.popped.includes(action.index)) return state;
       return { ...state, popped: [...state.popped, action.index], turns: state.turns + 1 };
