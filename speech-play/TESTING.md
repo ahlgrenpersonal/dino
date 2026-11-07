@@ -76,3 +76,25 @@ Privacy audit checked all 47 outgoing app files, media metadata and generic
 provenance, plus reachable history and neutral commit identities. No new media
 was generated. Playback and codec checks do not establish pronunciation quality;
 no acoustic transcription or physical iPhone testing is claimed.
+
+
+## Review checkpoint world14
+
+Two reviewers independently reviewed world13 source and all 28 supplied example,
+panel, installation, and wide/landscape captures. Interactive browser actions
+remained parent-operated because reviewer browser sessions could not navigate.
+All 21 examples were activated from their main button and, where applicable,
+the picture. Ten mixed ball presses alternated sides correctly. Muted video
+playback remained responsive with Gentle motion enabled.
+
+This checkpoint caps mobile bubble sizes to keep the count caption clear, keeps
+the grown-up dismissal header reachable while scrolling, and preserves return
+to an activity after installation help. Corrected 760x844 geometry places every
+bubble bottom above the caption; the screenshot was captured after verifying
+the selected browser tab and viewport. The installation-help regression was
+retested: close remains visible at scroll position 757 and returns to the words
+activity. All 55 tests pass.
+
+A controlled old-shell/new-build update test retained one anonymous favorite,
+mute, and Gentle motion after loading the new module. It exposed a stale update
+notice, which remains under investigation for the next review checkpoint.

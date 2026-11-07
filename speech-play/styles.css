@@ -68,3 +68,13 @@ button>svg:not(.drawing){width:26px;height:26px;flex:0 0 26px}
 .example-tabs[hidden]{display:none}
 
 .update-notice{padding:8px var(--gutter);text-align:center}.update-notice button{border:1px solid var(--ink);border-radius:24px;background:var(--mint);font-weight:700}
+
+/* Wide, short screens must not grow bubbles into the remaining-count caption. */
+@media(max-width:760px){
+ .bubble{width:clamp(84px,24vw,100px);height:clamp(84px,24vw,100px)}
+ .bubble:nth-child(2){width:clamp(94px,27vw,110px);height:clamp(94px,27vw,110px)}
+ .bubble:nth-child(3){width:clamp(78px,22vw,95px);height:clamp(78px,22vw,95px)}
+}
+/* Keep the dismiss control reachable while long grown-up content scrolls. */
+.grownup-dialog .panel-header{position:sticky;top:0;z-index:5;background:var(--paper)}
+@media(max-width:760px){.grownup-dialog{padding-top:0}.grownup-dialog .panel-header{padding-top:calc(20px + var(--safe-top))}}

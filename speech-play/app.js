@@ -1,11 +1,11 @@
-import { renderBubbles } from './bubbles.js?v=world13';
-import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, bubbleMessage, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline } from './core.js?v=world13';
-import { art, icon, garden } from './art.js?v=world13';
-import { createSpeaker } from './audio.js?v=world13';
-import { observeUpdates, createUpdateCheck, activateUpdate } from './updates.js?v=world13';
+import { renderBubbles } from './bubbles.js?v=world14';
+import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, bubbleMessage, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline } from './core.js?v=world14';
+import { art, icon, garden } from './art.js?v=world14';
+import { createSpeaker } from './audio.js?v=world14';
+import { observeUpdates, createUpdateCheck, activateUpdate } from './updates.js?v=world14';
 
 const $ = selector => document.querySelector(selector);
-const buildVersion = 'world13';
+const buildVersion = 'world14';
 // Show the loaded code version, including when a newer document meets an older cached module.
 document.querySelectorAll('[data-build-label]').forEach(label => { label.textContent = `Version ${BUILD}`; });
 const timeline = createTimeline();
@@ -301,7 +301,7 @@ $('#soundButton').addEventListener('click', () => { preferences.sound = !prefere
 
 async function install() {
   if (beforeInstall) { const prompt = beforeInstall; beforeInstall = null; await prompt.prompt(); }
-  else { openGrownups('settings'); toast('In Safari: Share → Add to Home Screen. Other browsers: use the install option in the address bar.'); }
+  else { openGrownups('settings', resumeActivity || $('#activityDialog').open); toast('In Safari: Share → Add to Home Screen. Other browsers: use the install option in the address bar.'); }
 }
 window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); beforeInstall = event; });
 $('#installButton').addEventListener('click', install);
