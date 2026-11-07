@@ -1,6 +1,6 @@
 # Validation
 
-Run `node --test tests/*.test.mjs` from this folder. The current demo has 41
+Run `node --test tests/*.test.mjs` from this folder. The current demo has 42
 passing tests and needs no installed Node packages. Automated tests use fake
 scheduling, speech, workers, and caches; they never call an inference model.
 
@@ -44,3 +44,5 @@ direction. No independent listening or acoustic transcription is claimed.
 Build world6: all 41 Node tests pass. The version is visible at the top of the playroom, activity header, and grown-up panel in a 320x568 in-app browser viewport, with no horizontal overflow. An independent source review caught a narrow activity-header collision; the final mobile header uses separate rows and passed re-review. These checks do not establish physical iPhone behavior. No media changed in this build.
 
 Build world7: all 41 Node tests pass. The final layout passed 48 in-app browser checks: every activity/example at 390x844, plus all nine activities at 320x568, 700x390, and 1280x720. A local fixture reserved 59px top and 34px bottom space. Both entire action buttons remained within these usable bounds; bubble targets remained within their stage. Video play/switch/play, scrolling with pinned controls, activity entry scroll reset, and peekaboo reveal passed with no browser console errors. An independent review caught clipped bubble targets on short screens; the final stage minimum height passed re-review. Synthetic viewport/inset checks do not establish physical iPhone Home Screen behavior. No media changed.
+
+Build world8: 42 Node tests pass, including bubble primary routing through all three pops and refill. Hands-on browser checks pressed the primary control for all 21 examples across all nine activities; observed pop counts, peek reveal, car ready state, illustration playback classes, and both running videos. Complete primary pop/refill cycles, direct bubble taps, and More-example refill passed. With sound off and Gentle motion on, all three bubbles still visibly clear and refill works. Version text appears once on the main screen and is absent from activity dialogs and settings. Full action-button bounds and bubble geometry passed at 320x568 and 700x390; all examples passed button bounds at390x844 with synthetic59px top/34px bottom insets. No browser console errors. Both independent source reviews passed; the refill overlay now waits briefly so the final burst can show, without a delay under Gentle motion or reduced-motion preference. No media changed. No independent listening or physical iPhone verification is claimed.

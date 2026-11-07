@@ -1,10 +1,10 @@
-const BUILD = 'world7';
+const BUILD = 'world8';
 const BASE = new URL('./', self.location.href);
 const PREFIX = `speech-play:${BASE.pathname}:`;
 const CACHE = `${PREFIX}${BUILD}`;
 const SHELL = [
-  './', './index.html', './styles.css?v=world7', './app.js?v=world7',
-  './core.js?v=world7', './art.js?v=world7', './audio.js?v=world7', './updates.js?v=world7',
+  './', './index.html', './styles.css?v=world8', './app.js?v=world8',
+  './core.js?v=world8', './art.js?v=world8', './audio.js?v=world8', './updates.js?v=world8',
   './manifest.webmanifest', './assets/icon.svg', './assets/icon-192.png', './assets/icon-512.png',
   './assets/video/cow-moo.mp4', './assets/video/puppet-ma.mp4',
   ...['moo', 'baa', 'woof', 'pop', 'more', 'ready-set', 'go', 'beep', 'boo', 'hi', 'ball', 'up', 'mama', 'dada', 'ma', 'ba', 'oh'].map(word => `./assets/audio/${word}.wav`)

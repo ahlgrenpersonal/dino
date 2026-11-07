@@ -1,10 +1,10 @@
-import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from './core.js?v=world7';
-import { art, icon, garden } from './art.js?v=world7';
-import { createSpeaker } from './audio.js?v=world7';
-import { observeUpdates } from './updates.js?v=world7';
+import { BUILD, KEYS, ACTIVITIES, FLAGS, VIDEO_FILES, activityById, primaryAction, filterActivities, initialTurn, transition, cleanPreferences, cleanObservations, toggleObservation, readLocal, writeLocal, createTimeline, cleanClipCatalog } from './core.js?v=world8';
+import { art, icon, garden } from './art.js?v=world8';
+import { createSpeaker } from './audio.js?v=world8';
+import { observeUpdates } from './updates.js?v=world8';
 
 const $ = selector => document.querySelector(selector);
-const buildVersion = 'world7';
+const buildVersion = 'world8';
 // Show the loaded code version, including when a newer document meets an older cached module.
 document.querySelectorAll('[data-build-label]').forEach(label => { label.textContent = `Version ${BUILD}`; });
 const timeline = createTimeline();
@@ -84,7 +84,7 @@ function renderActivity() {
   renderStage();
   if (focusedExample !== null) $('#exampleTabs').querySelector(`[data-example="${state.index}"]`)?.focus({ preventScroll: true });
 }
-function renderStage() {
+function renderStage({ poppedIndex = null } = {}) {
   const activity = activityById(state.id), item = example(), stage = $('#activityStage');
   const restoreFocus = stage.contains(document.activeElement);
   if (currentVideo && stage.contains(currentVideo)) { currentVideo.pause(); currentVideo = null; }
@@ -109,7 +109,7 @@ function renderStage() {
       if (currentVideo === video && video.isConnected) $('#audioHint').textContent = 'Now a little pause. Try the sound together, or play it again.';
     });
   } else if (state.id === 'bubbles') {
-    stage.innerHTML = `<div class="bubble-field">${[0, 1, 2].map(index => `<button class="bubble ${state.popped.includes(index) ? 'popped' : ''}" data-pop="${index}" aria-label="Pop bubble ${index + 1}" ${state.popped.includes(index) ? 'disabled' : ''}>${state.popped.includes(index) ? 'Pop!' : ''}</button>`).join('')}${state.popped.length === 3 ? `<div class="bubble-refill"><span>More bubbles?</span><button id="refillButton" class="secondary-button">More! ${icon('refresh')}</button></div>` : ''}</div>`;
+    stage.innerHTML = `<div class="bubble-field">${[0, 1, 2].map(index => `<button class="bubble ${state.popped.includes(index) ? 'popped' : ''} ${index === poppedIndex ? 'burst' : ''}" data-pop="${index}" aria-label="Pop bubble ${index + 1}" ${state.popped.includes(index) ? 'disabled' : ''}>${state.popped.includes(index) ? 'Pop!' : ''}</button>`).join('')}${state.popped.length === 3 ? `<div class="bubble-refill"><span>More bubbles?</span><button id="refillButton" class="secondary-button">More! ${icon('refresh')}</button></div>` : ''}</div>`;
   } else {
     const label = state.id === 'peekaboo' ? (state.revealed ? 'Hide bear again' : 'Find the bear') : state.id === 'car' && state.index === 0 ? 'Ready, set, go' : `Play ${item.word}`;
     stage.innerHTML = `<button class="stage-button" id="stageButton" aria-label="${escapeHTML(label)}">${art(item.art, state.id === 'actions' && item.speech === 'Hi' ? 'wave-hello' : '')}${state.id === 'peekaboo' ? `<span class="peek-cover"></span><span class="peek-label">${state.revealed ? 'Hide again' : 'Tap to find bear'}</span>` : `<span class="tap-hint">${state.id === 'car' && state.index === 0 ? 'Tap to go' : 'Tap to play'}</span>`}${state.id === 'car' && state.index === 0 ? `<span class="phase-banner" aria-live="polite">${state.phase === 'ready' ? 'Ready, set…' : state.phase === 'go' ? 'Go!' : ''}</span>` : ''}</button>`;
@@ -135,8 +135,21 @@ function animate() {
   void stage.offsetWidth; stage.classList.add('playing');
   motionTimeline.after(1300, () => stage.classList.remove('playing'));
 }
+function popBubble(index) {
+  const next = transition(state, { type: 'pop', index });
+  if (next === state) return;
+  state = next; say('Pop'); renderStage({ poppedIndex: index });
+}
+function refillBubbles() {
+  state = transition(state, { type: 'reset' }); renderStage(); say('More');
+}
 function play() {
   const item = example();
+  if (state.id === 'bubbles') {
+    if (state.index === 1 || state.popped.length === 3) refillBubbles();
+    else popBubble([0, 1, 2].find(index => !state.popped.includes(index)));
+    return;
+  }
   if (state.id === 'videos') { playActivityVideo(); return; }
   if (state.id === 'car' && state.index === 0) {
     if (state.phase !== 'idle') return;
@@ -181,9 +194,8 @@ $('#activityStage').addEventListener('click', event => {
   const bubble = event.target.closest('[data-pop]');
   if (event.target.closest('#startActivityVideo')) { playActivityVideo(); }
   else if (bubble) {
-    const next = transition(state, { type: 'pop', index: Number(bubble.dataset.pop) });
-    if (next !== state) { state = next; say('Pop'); renderStage(); }
-  } else if (event.target.closest('#refillButton')) { state = transition(state, { type: 'reset' }); renderStage(); say('More'); }
+    popBubble(Number(bubble.dataset.pop));
+  } else if (event.target.closest('#refillButton')) { refillBubbles(); }
   else if (event.target.closest('#stageButton')) play();
 });
 $('#exampleTabs').addEventListener('click', event => {
@@ -218,7 +230,7 @@ function renderGrownups() {
     guide: `<div class="guide-intro"><h3>The best part is being together.</h3><p>Pick something that catches their interest. Join in, offer a sound, then leave a little space. A look, a movement, a gesture, or a sound can be part of the play.</p></div><ol class="guide-steps"><li>Follow their lead.<small>Choose freely, repeat a favorite, or stop. There is nothing to finish.</small></li><li>Offer a little model.<small>Say “moo,” “pop,” or one familiar word naturally. You can also copy a sound they make.</small></li><li>Pause and respond.<small>Give them room for a turn. Keep playing whether or not they speak.</small></li><li>Take it into the room.<small>Each activity includes a small idea for playing together away from the screen.</small></li></ol><p>This is a shared-play demo, not a treatment or an assessment. Use it alongside advice from a speech-language professional. Keep screen play brief and follow your child’s comfort.</p><p class="guidance-source">Activity ideas draw on <a href="https://www.asha.org/public/developmental-milestones/communication-milestones-19-to-24-months/" target="_blank" rel="noopener noreferrer">ASHA’s parent communication guidance</a>. This custom app has not been clinically evaluated.</p>`,
     notebook: notebookHTML(),
     clips: `<h3>A few different ways to say hello.</h3><p>Compare an animal, a person, and a puppet. These optional generated clips are local experiments. Preview them yourself before sharing; check the sound and mouth movements.</p><button id="loadClips" class="primary-button clip-load">${icon('play')} Load local samples</button><div id="clipArea"><p>No video plays automatically. The illustrated activities work without these clips.</p></div>`,
-    settings: `<h3>A little quieter. A little simpler.</h3><div class="settings-row"><label for="soundSetting">Speech & video sound<small>Includes short generated word recordings. A local device voice is a fallback. No microphone is used. Preview sounds yourself before sharing.</small></label><input id="soundSetting" type="checkbox" role="switch" ${preferences.sound ? 'checked' : ''}></div><div class="settings-row"><label for="gentleSetting">Gentle motion<small>Reduce illustration movement. Your system’s reduced-motion preference is also respected. Videos play only when you start them.</small></label><input id="gentleSetting" type="checkbox" role="switch" ${preferences.gentle ? 'checked' : ''}></div><div class="install-help"><strong>Keep the playroom close.</strong><p>On iPhone or iPad, open in Safari, choose Share, then Add to Home Screen. On supporting browsers, use Install app. The playroom, word recordings, and two short videos work offline after the first complete load. Other local video experiments are not stored offline.</p></div><p>All preferences and observations stay in this browser. Nothing is recorded or sent to an account. There are no ads or analytics.</p><div class="settings-buttons"><button id="clearNotes" class="secondary-button">Clear little moments</button><button id="installFromSettings" class="secondary-button">${icon('download')} Install app</button></div><p>Little Echo · demo ${BUILD}. Each activity can be repeated in any order.</p>`
+    settings: `<h3>A little quieter. A little simpler.</h3><div class="settings-row"><label for="soundSetting">Speech & video sound<small>Includes short generated word recordings. A local device voice is a fallback. No microphone is used. Preview sounds yourself before sharing.</small></label><input id="soundSetting" type="checkbox" role="switch" ${preferences.sound ? 'checked' : ''}></div><div class="settings-row"><label for="gentleSetting">Gentle motion<small>Reduce illustration movement. Your system’s reduced-motion preference is also respected. Videos play only when you start them.</small></label><input id="gentleSetting" type="checkbox" role="switch" ${preferences.gentle ? 'checked' : ''}></div><div class="install-help"><strong>Keep the playroom close.</strong><p>On iPhone or iPad, open in Safari, choose Share, then Add to Home Screen. On supporting browsers, use Install app. The playroom, word recordings, and two short videos work offline after the first complete load. Other local video experiments are not stored offline.</p></div><p>All preferences and observations stay in this browser. Nothing is recorded or sent to an account. There are no ads or analytics.</p><div class="settings-buttons"><button id="clearNotes" class="secondary-button">Clear little moments</button><button id="installFromSettings" class="secondary-button">${icon('download')} Install app</button></div><p>Little Echo · demo. Each activity can be repeated in any order.</p>`
   };
   $('#grownupContent').innerHTML = views[panel] || views.guide;
 }

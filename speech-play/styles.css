@@ -19,10 +19,10 @@ dialog{color:var(--ink);padding:0;border:1px solid var(--line);background:var(--
 @media(max-width:760px){:root{--gutter:20px}.site-header{min-height:calc(84px + var(--safe-top))}dialog{max-width:100%;max-height:100dvh;margin:0;padding-bottom:var(--safe-bottom)}.activity-dialog{padding-top:0}.activity-top{top:0;padding-top:calc(8px + var(--safe-top));padding-left:max(12px,var(--safe-left));padding-right:max(12px,var(--safe-right))}.activity-body,.activity-bottom{padding-left:max(16px,var(--safe-left));padding-right:max(16px,var(--safe-right))}.grownup-dialog{padding-top:var(--safe-top)}.panel-header,.grownup-content,.grownup-tabs{padding-left:max(20px,var(--safe-left));padding-right:max(20px,var(--safe-right))}}
 @media(max-width:360px){:root{--gutter:16px}.activity-body{padding-left:max(12px,var(--safe-left));padding-right:max(12px,var(--safe-right))}.panel-header,.grownup-content,.grownup-tabs{padding-left:max(16px,var(--safe-left));padding-right:max(16px,var(--safe-right))}}
 
-/* Keep the running build easy to find in the playroom and open panels. */
+/* Show the running build once, on the main playroom screen. */
 .top-build-label{margin:0;padding:10px max(var(--gutter),var(--safe-right)) 0 max(var(--gutter),var(--safe-left));padding-top:calc(10px + var(--safe-top));text-align:right;font-size:18px;line-height:1.4;font-weight:700;color:var(--ink)}
-.site-header{padding-top:0;min-height:96px}.header-build-label{display:block;font-size:18px;line-height:1.4;font-weight:700;color:var(--ink);white-space:nowrap}.activity-heading{text-align:center;min-width:0}.activity-heading .eyebrow{display:block}
-@media(max-width:760px){.site-header{min-height:84px}.activity-top{display:grid;grid-template-columns:1fr auto}.activity-heading{grid-column:1/-1;grid-row:2}.activity-heading .eyebrow{display:none}.activity-top>.icon-button{grid-column:2;grid-row:1}.activity-top>.quiet-button{justify-self:start}}
+.site-header{padding-top:0;min-height:96px}
+@media(max-width:760px){.site-header{min-height:84px}}
 
 /* The action row owns viewport space; only activity content scrolls above it. */
 .activity-dialog[open]{display:flex;flex-direction:column;overflow:hidden;height:calc(100dvh - max(16px,var(--safe-top)) - max(16px,var(--safe-bottom)))}
@@ -41,3 +41,13 @@ dialog{color:var(--ink);padding:0;border:1px solid var(--line);background:var(--
 
 /* Bubble hit targets retain their full height on short screens. */
 .activity-stage[data-art="bubbles"]{min-height:340px}
+
+/* A popped bubble loses its outline and gives a brief visible burst. */
+.bubble.popped{border-color:transparent;color:var(--ink);font-weight:700}
+.bubble.burst{animation:bubble-pop .35s ease-out}
+.bubble.burst:before{content:'';position:absolute;inset:-5px;border:3px solid #83b7c8;border-radius:50%;animation:bubble-ring .35s ease-out forwards;pointer-events:none}
+@keyframes bubble-pop{0%{transform:scale(.8)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes bubble-ring{from{transform:scale(.8);opacity:1}to{transform:scale(1.2);opacity:0}}
+
+@keyframes refill-appear{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:no-preference){body:not(.gentle) .bubble-refill{animation:refill-appear .18s ease-out .35s both}}

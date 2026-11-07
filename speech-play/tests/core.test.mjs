@@ -73,7 +73,7 @@ test('the primary peekaboo button opens and closes the game instead of replaying
   assert.deepEqual(primaryAction(initialTurn('videos')), {label:'Play video',interaction:'play'});
   assert.deepEqual(primaryAction(initialTurn('car')), {label:'Let’s go!',interaction:'play'});
   assert.deepEqual(primaryAction(initialTurn('car',1)), {label:'Hear it',interaction:'sound'});
-  for (const id of ['animals','bubbles','words','people','actions','copy']) {
+  for (const id of ['animals','words','people','actions','copy']) {
     assert.deepEqual(primaryAction(initialTurn(id)), {label:'Hear it',interaction:'sound'});
   }
 });
@@ -228,4 +228,15 @@ test('local clip catalog cannot inject markup, traversal paths, remote media, or
   assert.deepEqual(cleanClipCatalog(null), []);
   assert.deepEqual(cleanClipCatalog([valid, { ...valid, src: '../secret.mp4' }, { ...valid, src: 'https://example.org/x.mp4' }, { ...valid, title: 'x'.repeat(61) }]), [valid]);
   assert.equal(cleanClipCatalog(Array(20).fill(valid)).length, 12);
+});
+
+test('bubble primary pops each remaining target then offers a refill, including the More example', () => {
+ let state = initialTurn('bubbles');
+ for (const index of [0,1,2]) {
+  assert.deepEqual(primaryAction(state), {label:'Pop a bubble',interaction:'play'});
+  state = transition(state,{type:'pop',index});
+ }
+ assert.deepEqual(primaryAction(state), {label:'More bubbles',interaction:'play'});
+ assert.deepEqual(primaryAction(transition(state,{type:'reset'})), {label:'Pop a bubble',interaction:'play'});
+ assert.deepEqual(primaryAction(initialTurn('bubbles',1)), {label:'More bubbles',interaction:'play'});
 });
