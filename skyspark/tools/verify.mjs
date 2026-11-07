@@ -5,7 +5,7 @@ import {Renderer} from '../art.js';
 import {loadProgress} from '../saves.js';
 const tick=(g,seconds=1,keys={})=>{for(let i=0;i<Math.ceil(seconds/.02);i++)g.update(.02,keys);};
 function at(level,checkpoint=0){const save=freshSave();save.completed=Array.from({length:level},(_,i)=>i);save.level=level;save.runs[level].checkpoint=checkpoint;save.runs[level].position={x:checkpoint===SITE_COUNT?BOSS_X-220:290,y:690};return new SkyGame(save);}
-const g=new SkyGame(freshSave());assert.equal(WORLD.width,28800);assert.equal(SITE_COUNT,54);assert.equal(BOSS_X,WORLD.width-380);assert(g.enemies.length>=32);assert(!g.selectLevel(1),'Plains unlocks only after the city boss');
+const g=new SkyGame(freshSave());assert.equal(WORLD.width,9600);assert.equal(SITE_COUNT,18);assert.equal(BOSS_X,WORLD.width-380);assert(g.enemies.length>=32);assert(!g.selectLevel(1),'Plains unlocks only after the city boss');
 g.enemies=[];g.syncEncounters=()=>{};g.moveTo(50,830);tick(g,1);assert.equal(g.player.y,WORLD.ground-HERO_FEET);assert(g.player.landed);
 g.moveTo(170,530);tick(g,2);assert.equal(g.player.y,roofSurface(g.roofs[0])-HERO_FEET);assert(g.player.landed);
 g.moveTo(600,220);tick(g,2);assert.equal(g.player.y,220);assert(!g.player.landed);
@@ -49,9 +49,9 @@ for(let i=0;i<LEVELS.length;i++){
   const saved=bossGame.snapshot(),copy=new SkyGame(saved);assert.equal(copy.enemies.find(e=>e.boss).hp,boss.hp,'Boss damage survives reload');
   const bx=boss.x,by=boss.y;tick(bossGame,2);if(i===2)assert(Math.hypot(boss.x-bx,boss.y-by)>40,'Stormwing visibly flies');
 }
-const oldDone=readSave({schema:1,stage:3,total:23,best:7,sound:false});assert.equal(oldDone.schema,5);assert.deepEqual(oldDone.completed,[0]);assert(oldDone.runs[0].complete);assert.equal(oldDone.runs[0].bossHits,24);assert.equal(unlockedLevel(oldDone),1);assert.equal(oldDone.total,23);assert.equal(oldDone.sound,false);
+const oldDone=readSave({schema:1,stage:3,total:23,best:7,sound:false});assert.equal(oldDone.schema,6);assert.deepEqual(oldDone.completed,[0]);assert(oldDone.runs[0].complete);assert.equal(oldDone.runs[0].bossHits,24);assert.equal(unlockedLevel(oldDone),1);assert.equal(oldDone.total,23);assert.equal(oldDone.sound,false);
 const quotaSave=loadProgress(()=>({getItem:key=>key==='save'?JSON.stringify({schema:1,stage:3,total:23,sound:false}):null,setItem(){throw Error('Quota exceeded');}}),'save');assert.deepEqual(quotaSave.completed,[0]);assert.equal(quotaSave.total,23);assert.equal(quotaSave.sound,false,'Failure to write a backup preserves the readable old save');
-const oldPartial=readSave({schema:1,stage:2,total:18,bossHits:2,cleared:['s2-0','s2-3'],position:{x:2600,y:650}});assert.equal(oldPartial.runs[0].checkpoint,36);assert.equal(oldPartial.runs[0].bossHits,12);assert(oldPartial.runs[0].cleared.includes('city-36-0-3'));
+const oldPartial=readSave({schema:1,stage:2,total:18,bossHits:2,cleared:['s2-0','s2-3'],position:{x:2600,y:650}});assert.equal(oldPartial.runs[0].checkpoint,12);assert.equal(oldPartial.runs[0].bossHits,12);assert(oldPartial.runs[0].cleared.includes('city-12-0-3'));
 for(const raw of [null,{},[],{schema:2,level:9,runs:[{checkpoint:Infinity,cleared:[null,'bad'],position:{x:NaN,y:Infinity}}]},{schema:1,stage:'bad',best:Infinity}]){const save=readSave(raw);assert(save.level>=0&&save.level<3);assert(save.total>=0);for(const run of save.runs)assert(Number.isFinite(run.position.x)&&Number.isFinite(run.position.y));}
 const ringGame=new SkyGame(campaign.snapshot());assert(ringGame.ringFlight());for(const ring of ringGame.rings){ringGame.moveTo(ring.x,ring.y);tick(ringGame,Math.hypot(ringGame.player.x-ring.x,ringGame.player.y-ring.y)/500+1);assert(ring.taken,'Each ring remains reachable without a roof snapping the target');}assert.equal(ringGame.ringsTaken,12);assert(!ringGame.ringRun);
 for(const [level,shapeIndex,direction,label] of [[1,0,1,'excavator wheel'],[2,8,-1,'right wing tip'],[2,5,1,'left wing tip']]){

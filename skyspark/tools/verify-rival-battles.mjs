@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {SkyGame,freshSave,readSave,LEVELS,BOSS_X} from '../engine.js';
 import {Renderer} from '../art.js';
 const tick=(g,s)=>{for(let i=0;i<Math.ceil(s/.02);i++)g.update(.02);};
-function scene(hits=0,x=5350){
+function scene(hits=0,x=LEVELS[7].bossEncounters[0].x-250){
   const s=freshSave();s.level=7;s.completed=[0,1,2,3,4,5,6];s.runs[7].bossHits=hits;s.runs[7].position={x,y:450};s.runs[7].frontier=x;
   const events=[],g=new SkyGame(s,e=>events.push(e));g.fireEnemy=()=>{};return{g,events};
 }
@@ -34,7 +34,7 @@ for(let phase=0;phase<3;phase++){
     assert.equal(events.filter(e=>e.type==='boss-retreat').length,2);assert.equal(events.filter(e=>e.type==='level-complete').length,1);
   }
 }
-for(const [hits,maxHp,remaining,x] of [[15,40,25,5350],[55,40,25,14750],[95,120,105,BOSS_X-250]]){
+for(const [hits,maxHp,remaining,x] of [[15,40,25,LEVELS[7].bossEncounters[0].x-250],[55,40,25,LEVELS[7].bossEncounters[1].x-250],[95,120,105,BOSS_X-250]]){
   const {g}=scene(hits,x),b=g.enemies.find(e=>e.boss);assert.equal(b.maxHp,maxHp);assert.equal(b.hp,remaining);
   const restored=new SkyGame(g.snapshot());assert.equal(restored.enemies.find(e=>e.boss).hp,remaining);
 }

@@ -17,9 +17,9 @@ const tick=(g,seconds,keys={},view=bounds)=>{for(let i=0;i<Math.ceil(seconds/.02
 // Existing five-world saves extend without changing their progress or skipping locks.
 {
   const raw=freshSave();raw.runs=raw.runs.slice(0,5);raw.completed=[0,1,2,3,4];raw.level=4;
-  raw.total=1234;raw.runs[4].position={x:12500,y:420};raw.runs[4].bossHits=17;raw.runs[2].kills=74;
+  raw.total=1234;raw.runs[4].position={x:6500,y:420};raw.runs[4].bossHits=17;raw.runs[2].kills=74;
   const save=readSave(raw);assert.equal(save.runs.length,8);assert.equal(save.total,1234);
-  assert.deepEqual(save.runs[4].position,{x:12500,y:420});assert.equal(save.runs[4].bossHits,17);assert.equal(save.runs[2].kills,74);
+  assert.deepEqual(save.runs[4].position,{x:6500,y:420});assert.equal(save.runs[4].bossHits,17);assert.equal(save.runs[2].kills,74);
   assert.equal(save.runs[5].position.x,290);assert(new SkyGame(save).selectLevel(5));
   assert(!new SkyGame(save).selectLevel(6));assert(!new SkyGame(save).selectLevel(7));
 }

@@ -45,10 +45,10 @@ function scene(level){
 // The current run shape accepts a legacy three-world schema-5 save, appends fresh worlds,
 // and unlocks only Caldera after the original three campaigns are complete.
 const oldShape=freshSave();oldShape.completed=[0,1,2];oldShape.level=2;
-oldShape.runs[0].kills=81;oldShape.runs[1].bossHits=12;oldShape.runs[2].position={x:12000,y:400};
+oldShape.runs[0].kills=81;oldShape.runs[1].bossHits=12;oldShape.runs[2].position={x:6500,y:400};
 const oldThree=readSave({...oldShape,runs:oldShape.runs.slice(0,3)});
 assert.equal(oldThree.runs.length,LEVELS.length);assert.equal(oldThree.runs[0].kills,81);assert.equal(oldThree.runs[1].bossHits,12);
-assert.equal(oldThree.runs[2].position.x,12000);assert.equal(oldThree.runs[3].position.x,290);assert.equal(oldThree.runs[4].position.x,290);
+assert.equal(oldThree.runs[2].position.x,6500);assert.equal(oldThree.runs[3].position.x,290);assert.equal(oldThree.runs[4].position.x,290);
 assert.equal(new SkyGame(oldThree).selectLevel(3),true);assert.equal(new SkyGame(oldThree).selectLevel(4),false,'An old completed 3-world save unlocks world four only');
 assert.equal(new SkyGame(freshSave()).selectLevel(3),false,'A fresh save cannot skip the first three worlds');
 

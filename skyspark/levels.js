@@ -1,6 +1,6 @@
-export const BUILD = 'world112';
-export const WORLD = { width: 28800, height: 1000, ground: 850 };
-export const SITE_COUNT = 54;
+export const BUILD = 'world113';
+export const WORLD = { width: 9600, height: 1000, ground: 850 };
+export const SITE_COUNT = 18;
 export const SITE_SPACING=520;
 export const BOSS_X = WORLD.width-380;
 export const DISTRICT_COUNT=SITE_COUNT/3;
@@ -26,11 +26,11 @@ export const LEVELS = [
   {id:'reef',name:'Neon Reef',short:'Reef',icon:'≈',color:'#86f5dc',biome:'ocean',boss:'Abyss Leviathan',bossType:'leviathan',bossHp:100,waves:3,squad:12,
     districts:['Coral Landing','Pearl Bridges','Jellyfish Bay','Tidal Towers','Beacon Lagoon','Leviathan Trench'],
     tasks:['Light the coral lamps','Power the pearl bridge','Wake the bay beacon','Start the tidal towers','Restore the lagoon lights','Open the trench signal']},
-  {id:'citadel',name:'Prism Citadel',short:'Citadel',icon:'⬡',color:'#ffacf0',biome:'citadel',boss:'Chrome Echo',bossType:'rival',bossHp:200,bossEncounters:[{x:5600,hp:40},{x:15000,hp:40},{x:BOSS_X,hp:120}],waves:3,squad:12,
+  {id:'citadel',name:'Prism Citadel',short:'Citadel',icon:'⬡',color:'#ffacf0',biome:'citadel',boss:'Chrome Echo',bossType:'rival',bossHp:200,bossEncounters:[{x:1900,hp:40},{x:5000,hp:40},{x:BOSS_X,hp:120}],waves:3,squad:12,
     districts:['Prism Gate','Mirror Gardens','Ruby Skyway','Radiant Spires','Echo Foundry','Chrome Throne'],
     tasks:['Open the prism gate','Light the mirror garden','Power the ruby skyway','Wake the radiant spires','Restore the foundry lights','Free the chrome throne']}
 ];
-export const CITY_ROOFS = Array.from({length:9},(_,n)=>[
+export const CITY_ROOFS = Array.from({length:3},(_,n)=>[
   {x:60+n*3200,y:530,w:230},{x:800+n*3200,y:590,w:200},
   {x:1160+n*3200,y:460,w:220},{x:1440+n*3200,y:550,w:225},
   {x:1760+n*3200,y:390,w:220},{x:2100+n*3200,y:575,w:180}
@@ -52,10 +52,30 @@ export function sitesFor(level){
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const integer=(n,a,b,fallback=0)=>Number.isInteger(n)?clamp(n,a,b):fallback;
 export const freshRun=()=>({checkpoint:0,frontier:290,cleared:[],restored:[],kills:0,bossHits:0,complete:false,position:{x:290,y:690},playSeconds:0});
-export const freshSave=()=>({schema:5,level:0,completed:[],total:0,best:0,sound:true,runs:LEVELS.map(()=>freshRun())});
+export const freshSave=()=>({schema:6,level:0,completed:[],total:0,best:0,sound:true,runs:LEVELS.map(()=>freshRun())});
 export function unlockedLevel(save){let n=0;while(n<LEVELS.length-1&&save.completed.includes(n))n++;return n;}
 export function readSave(raw){
-  const s=freshSave();if(!raw||![1,2,3,4,5].includes(raw.schema))return s;
+  const s=freshSave();if(!raw||![1,2,3,4,5,6].includes(raw.schema))return s;
+  if(raw.schema===5){
+    // Schema 5 used the three-times-longer worlds. Compress only once, retaining
+    // defeated groups conservatively so a partly cleared group still has robots.
+    const runs=LEVELS.map((l,i)=>{
+      const r=raw.runs?.[i];if(!r||typeof r!=='object')return r;
+      const source=new Set(Array.isArray(r.cleared)?r.cleared.filter(id=>typeof id==='string'):[]),cleared=[];
+      const validId=new RegExp(`^${l.id}-(\\d+)-(\\d+)-(\\d+)$`);
+      for(const id of source){
+        const m=id.match(validId);if(!m)continue;const section=Number(m[1]),wave=m[2],unit=m[3];
+        if(section===54)cleared.push(`${l.id}-${SITE_COUNT}-${wave}-${unit}`);
+        else if(section<54&&section%3===0&&[0,1,2].every(n=>source.has(`${l.id}-${section+n}-${wave}-${unit}`)))cleared.push(`${l.id}-${section/3}-${wave}-${unit}`);
+      }
+      const restored=Array.from({length:DISTRICT_COUNT},(_,n)=>n).filter(n=>[0,1,2].every(k=>Array.isArray(r.restored)&&r.restored.includes(n*3+k)));
+      const untouched=r.position?.x===290&&(r.frontier??290)===290&&!r.kills&&!r.bossHits&&!r.playSeconds&&!source.size&&!r.complete;
+      return {...r,checkpoint:Number.isFinite(r.checkpoint)?Math.floor(r.checkpoint/3):0,cleared,restored,
+        position:r.position?{...r.position,x:untouched?290:r.position.x/3}:r.position,
+        frontier:untouched?290:Number.isFinite(r.frontier)?r.frontier/3:r.frontier};
+    });
+    return readSave({...raw,schema:6,runs});
+  }
   s.total=integer(raw.total,0,1e7);s.best=integer(raw.best,0,1e7);s.sound=raw.sound!==false;
   if(raw.schema===1){
     const stage=integer(raw.stage,0,3);
@@ -64,7 +84,7 @@ export function readSave(raw){
       s.runs[0].checkpoint=[0,6,12][stage];
       s.runs[0].cleared=Array.isArray(raw.cleared)?raw.cleared.filter(id=>new RegExp(`^s${stage}-[0-7]$`).test(id)).map(id=>`city-${s.runs[0].checkpoint}-0-${id.split('-')[1]}`):[];
       if(stage===2)s.runs[0].bossHits=integer(raw.bossHits,0,4);
-      if(raw.position&&Number.isFinite(raw.position.x)&&Number.isFinite(raw.position.y))s.runs[0].position={x:clamp(raw.position.x*3,40,WORLD.width-40),y:clamp(raw.position.y,105,WORLD.ground-48)};
+      if(raw.position&&Number.isFinite(raw.position.x)&&Number.isFinite(raw.position.y))s.runs[0].position={x:clamp(raw.position.x,40,WORLD.width-40),y:clamp(raw.position.y,105,WORLD.ground-48)};
     }
     // Reuse the schema-2 migration below so older completed sections stay cleared.
     return readSave({...s,schema:2});
@@ -89,13 +109,12 @@ export function readSave(raw){
       if(section===sections)break;
       for(let wave=0;wave<waves;wave++)for(let unit=0;unit<LEVELS[i].squad;unit++)cleared.add(`${LEVELS[i].id}-${section}-${wave}-${unit}`);
     }
-    run.cleared=old?[...cleared].flatMap(id=>{const m=id.match(validId),section=Number(m[1]);return section===18?[`${LEVELS[i].id}-${SITE_COUNT}-${m[2]}-${m[3]}`]:[0,1,2].map(n=>`${LEVELS[i].id}-${section*3+n}-${m[2]}-${m[3]}`);}):[...cleared];
+    run.cleared=[...cleared];
     const restored=raw.schema>=3&&Array.isArray(r.restored)?[...new Set(r.restored.filter(n=>Number.isInteger(n)&&n>=0&&n<(old?6:DISTRICT_COUNT)))]:Array.from({length:Math.floor(run.checkpoint/3)},(_,n)=>n);
-    run.restored=old?restored.flatMap(n=>[n*3,n*3+1,n*3+2]):restored;
+    run.restored=restored;
     run.kills=raw.schema>=3?integer(r.kills,0,1e7,run.cleared.length+(run.complete?1:0)):Math.min(s.total,run.cleared.length+(run.complete?1:0));
-    if(r.position&&Number.isFinite(r.position.x)&&Number.isFinite(r.position.y))run.position={x:clamp(r.position.x*(old?3:1),40,WORLD.width-40),y:clamp(r.position.y,105,WORLD.ground-48)};
-    if(old)run.checkpoint=run.complete?SITE_COUNT:run.checkpoint*3;
-    run.frontier=Number.isFinite(r.frontier)?clamp(Math.max(r.frontier*(old?3:1),run.position.x),40,WORLD.width-40):Math.max(run.position.x,run.checkpoint*SITE_SPACING);
+    if(r.position&&Number.isFinite(r.position.x)&&Number.isFinite(r.position.y))run.position={x:clamp(r.position.x,40,WORLD.width-40),y:clamp(r.position.y,105,WORLD.ground-48)};
+    run.frontier=Number.isFinite(r.frontier)?clamp(Math.max(r.frontier,run.position.x),40,WORLD.width-40):Math.max(run.position.x,run.checkpoint*SITE_SPACING);
     if(old&&!run.complete&&!run.kills&&!run.bossHits&&!run.cleared.length&&!run.playSeconds&&r.position?.x===290&&(r.frontier??290)===290){run.position.x=290;run.frontier=290;}
   }
   s.level=integer(raw.level,0,unlockedLevel(s));

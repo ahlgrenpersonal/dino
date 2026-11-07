@@ -1,4 +1,4 @@
-import { BUILD, WORLD, SITE_COUNT, BOSS_X, DISTRICT_COUNT, SITE_SPACING, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world112';
+import { BUILD, WORLD, SITE_COUNT, BOSS_X, DISTRICT_COUNT, SITE_SPACING, LEVELS, roofsFor, sitesFor, freshRun, freshSave, readSave, unlockedLevel } from './levels.js?v=world113';
 export { BUILD, WORLD, SITE_COUNT, BOSS_X, LEVELS, freshSave, readSave, unlockedLevel };
 export const HERO_FEET=48,HERO_EYES=-33;
 export const WEAPONS={punchDamage:1,sparksDamage:.8,blastDamage:1,blastCooldown:2.2,blastRadius:562.5,sparksCooldown:1,chainLimit:20,chainRange:360,laserCooldown:2,laserDamage:5,laserRange:1100,laserDuration:.6,maxSweep:1.3};
@@ -83,6 +83,13 @@ export class SkyGame {
     const radius=Math.max(1050,Math.min(1800,bounds?(bounds.right-bounds.left)/2+350:1050));
     const left=this.player.x-radius,right=this.player.x+radius;
     this.enemies=this.enemies.filter(e=>e.hp>0&&e.homeX>left-400&&e.homeX<right+400);
+    const view=bounds||this.viewport||{left:this.player.x-650,right:this.player.x+650,top:0,bottom:1000};
+    const lagging=new Set(this.enemies.filter(e=>e.type==='rival'&&this.player.x-e.x>650&&!this.isVisible(e,view)).map(e=>e.id));
+    if(lagging.size){
+      this.enemies=this.enemies.filter(e=>!lagging.has(e.id));
+      this.projectiles=this.projectiles.filter(q=>!lagging.has(q.owner));
+      this.effects=this.effects.filter(f=>!lagging.has(f.owner));
+    }
     const active=new Set(this.enemies.map(e=>e.id)),l=this.level;
     for(const site of this.sites){
       if(site.x<left-250||site.x>right+250)continue;
@@ -102,7 +109,8 @@ export class SkyGame {
     }
     const encounter=this.bossEncounter,bossId=l.bossType==='rival'?`${l.id}-boss-${encounter?.index}`:`${l.id}-boss`;
     // A skipped or old-save encounter catches up instead of requiring a long backtrack.
-    const bossX=encounter&&encounter.x<left?Math.min(BOSS_X,this.player.x+450):encounter?.x;
+    const passedRival=l.bossType==='rival'&&encounter&&this.player.x-encounter.x>650&&!this.isVisible({type:'rival',x:encounter.x,y:450,radius:80},view);
+    const bossX=encounter&&(encounter.x<left||passedRival)?Math.min(BOSS_X,this.player.x+450):encounter?.x;
     if(encounter&&bossX>=left&&bossX<=right&&this.time>=this.rivalEscapeUntil){
       if(!active.has(bossId)){
         const y={wyvern:400,excavator:720,crab:705,dreadnought:380,scarab:680,leviathan:400,rival:450}[l.bossType]||640;
