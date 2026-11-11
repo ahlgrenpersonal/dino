@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {AREAS,FINAL_AREA,HOME,KEY_LOOP,LANDMARKS,PRIVATE_ZONES,freshSave,readSave,canWalk,isPrivate,pathfind,dist,visibleLandmarks} from '../world.js?v=world15';
-import {MiamiAdventure} from '../engine.js?v=world15';
+import {AREAS,FINAL_AREA,HOME,KEY_LOOP,LANDMARKS,PRIVATE_ZONES,freshSave,readSave,canWalk,isPrivate,pathfind,dist,visibleLandmarks} from '../world.js?v=world16';
+import {MiamiAdventure} from '../engine.js?v=world16';
 import {readFile} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 
@@ -46,10 +46,10 @@ test('all enemy spawns stay on public land and out of playground safe zones',()=
  const s=freshSave();s.unlocked=FINAL_AREA;const g=new MiamiAdventure(s);for(const e of g.enemies){assert(canWalk(s,e),e.id);assert(!isPrivate(e),e.id);assert(!g.isSafe(e),`${e.id} outside a playground`);}
 });
 
-test('Brickell City Centre gives its bubble weapon once, and keeps it across saves and replays',()=>{
- const g=new MiamiAdventure(freshSave()),l=LANDMARKS.find(l=>l.id==='city-centre');Object.assign(g.player,l);g.update(.016);assert(g.save.owned.includes('bubble'));assert.equal(g.save.weapon,'bubble');const discoveries=[...g.save.discoveries];
- for(let i=0;i<20;i++)g.update(.05);assert.deepEqual(g.save.discoveries,discoveries);assert.equal(g.save.owned.filter(id=>id==='bubble').length,1);
- const loaded=new MiamiAdventure(readSave(JSON.parse(JSON.stringify(g.snapshot()))));assert.equal(loaded.save.weapon,'bubble');loaded.save.king=true;loaded.replay();assert(loaded.save.owned.includes('bubble'));assert(loaded.save.discoveries.includes('city-centre'));
+test('City Centre gives wheels once, keeps the weapon and preserves its find across replay',()=>{
+ const g=new MiamiAdventure(freshSave()),l=LANDMARKS.find(l=>l.id==='city-centre');Object.assign(g.player,l);g.update(.016);assert(g.save.owned.includes('grip'));assert.equal(g.save.build.wheels,'grip');assert.equal(g.save.weapon,'bumper');assert(!g.save.owned.includes('bubble'));const discoveries=[...g.save.discoveries];
+ for(let i=0;i<20;i++)g.update(.05);assert.deepEqual(g.save.discoveries,discoveries);assert.equal(g.save.owned.filter(id=>id==='grip').length,1);
+ const loaded=new MiamiAdventure(readSave(JSON.parse(JSON.stringify(g.snapshot()))));assert.equal(loaded.save.build.wheels,'grip');loaded.save.king=true;loaded.replay();assert(loaded.save.owned.includes('grip'));assert(loaded.save.discoveries.includes('city-centre'));
 });
 
 test('park stamps award scrap once without becoming mandatory campaign gates',()=>{

@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import vm from 'node:vm';
-import {freshSave,readSave,EQUIPMENT,STARTERS,COLORS,equipmentStats,visibleEquipment,HOME} from '../world.js?v=world15';
-import {MiamiAdventure} from '../engine.js?v=world15';
-import {MiamiPainter,adventureZoom} from '../painter.js?v=world15';
-import {workshopHTML,drawWorkshop} from '../workshop.js?v=world15';
-import {adventureAudio} from '../audio.js?v=world15';
-import {bindPowerControl} from '../power-control.js?v=world15';
+import {freshSave,readSave,EQUIPMENT,STARTERS,COLORS,equipmentStats,visibleEquipment,HOME} from '../world.js?v=world16';
+import {MiamiAdventure} from '../engine.js?v=world16';
+import {MiamiPainter,adventureZoom} from '../painter.js?v=world16';
+import {workshopHTML,drawWorkshop} from '../workshop.js?v=world16';
+import {adventureAudio} from '../audio.js?v=world16';
+import {bindPowerControl} from '../power-control.js?v=world16';
 import {createPreviewServer} from '../tools/serve.mjs';
 const read=f=>readFile(new URL('../'+f,import.meta.url),'utf8');
 
@@ -17,9 +17,9 @@ test('Miami instrumental is pinned and loops with Adventure playback controls',a
  assert.match(await read('index.html'),/<audio id="music" src="assets\/miami-theme.mp3" preload="auto" loop hidden>/);assert((await read('sw.js')).includes("'assets/miami-theme.mp3'"));
 });
 
-test('camera matches Adventure scale and player screen size at phone and desktop widths',()=>{
- for(const w of [320,390,599,600,844,1200]){const expected=(w<600?Math.max(55,Math.min(76,w/6.3)):85)*.9;assert.equal(adventureZoom(w),expected);}
- assert(Math.abs(adventureZoom(390)*1.17-65.18571428571428)<1e-8);
+test('camera is ten percent wider than the previous Adventure scale at every viewport',()=>{
+ for(const w of [320,390,599,600,844,1200]){const expected=(w<600?Math.max(55,Math.min(76,w/6.3)):85)*.81;assert.equal(adventureZoom(w),expected);}
+ assert(Math.abs(adventureZoom(390)*1.17-58.66714285714286)<1e-8);
 });
 
 test('the first Adventure bumper camp can be cleared without boosts or a rescue',()=>{
@@ -28,7 +28,7 @@ test('the first Adventure bumper camp can be cleared without boosts or a rescue'
 
 test('starter equipment and four workshop tabs retain the Adventure arrangement',()=>{
  const s=freshSave();assert.deepEqual(s.build,STARTERS);assert.equal(equipmentStats(s).hp,70);assert.equal(equipmentStats(s).speed,2.15);assert.equal(COLORS.length,6);
- const html=workshopHTML(s,'gadget',false,()=>'<header></header>');assert.deepEqual([...html.matchAll(/data-tab="([^"]+)"/g)].map(m=>m[1]),['weapon','armor','wheels','gadget']);assert(html.includes('role="tablist"'));assert(html.includes('class="items"'));assert(html.includes('data-part="magnet"'));assert(!html.includes('weapon-grid'));assert(!html.includes('data-upgrade='));
+ s.scrap=30;s.gears=3;const html=workshopHTML(s,'gadget',false,()=>'<header></header>');assert.deepEqual([...html.matchAll(/data-tab="([^"]+)"/g)].map(m=>m[1]),['weapon','armor','wheels','gadget']);assert(html.includes('role="tablist"'));assert(html.includes('class="items"'));assert(html.includes('data-part="magnet"'));assert(!html.includes('weapon-grid'));assert(!html.includes('data-upgrade='));
 });
 
 test('crafting uses scrap and parts, equips a separate slot and refuses remote crafting',()=>{

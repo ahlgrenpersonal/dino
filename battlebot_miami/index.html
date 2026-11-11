@@ -10,9 +10,9 @@
  <link rel="icon" href="icon.svg" type="image/svg+xml">
  <link rel="apple-touch-icon" href="icon-192.png">
  <link rel="manifest" href="manifest.webmanifest">
- <link rel="stylesheet" href="adventure.css?v=world15">
- <link rel="stylesheet" href="adventure-layout.css?v=world15">
- <link rel="stylesheet" href="styles.css?v=world15">
+ <link rel="stylesheet" href="adventure.css?v=world16">
+ <link rel="stylesheet" href="adventure-layout.css?v=world16">
+ <link rel="stylesheet" href="styles.css?v=world16">
 </head>
 <body data-details="false">
  <main id="game">
@@ -24,7 +24,7 @@
   <section id="playfield" aria-label="Miami adventure">
    <canvas id="world" tabindex="0" aria-label="Tap land to move your bot. Tap a monster for power. Attacks happen automatically. Arrow keys or WASD also move."></canvas>
    <div class="compass" aria-label="North is up"><b class="adult-copy">N</b><span>↑</span></div>
-   <div id="bossHud" class="boss-hud" hidden><canvas id="bossPortrait" width="100" height="100" aria-hidden="true"></canvas><b id="bossName" class="adult-copy"></b><div><i id="bossHealth"></i></div></div>
+   <div id="bossHud" class="boss-hud" hidden><canvas id="bossPortrait" width="100" height="100" aria-hidden="true"></canvas><span id="royalGuard" aria-label="Use Power then tap the boss to break its shield" hidden>🛡 ϟ ☝</span><b id="bossName" class="adult-copy"></b><div><i id="bossHealth"></i></div></div>
    <div id="toast" class="toast" role="status"></div>
    <button id="interact" class="interact" aria-label="Recharge at charging station for 2 scrap" hidden><span aria-hidden="true">＋ ◆ 2</span><span class="adult-copy">Recharge</span></button>
    <div class="move-hint" id="moveHint" aria-hidden="true">☝ ⟶ 🤖</div>
@@ -42,6 +42,6 @@
  </main>
  <dialog id="panel" aria-labelledby="panelTitle"><div id="panelContent"></div></dialog>
  <audio id="music" src="assets/miami-theme.mp3" preload="auto" loop hidden></audio>
- <script type="module" src="app.js?v=world15"></script>
+ <script type="module" src="app.js?v=world16"></script>
 </body>
 </html>

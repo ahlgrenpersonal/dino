@@ -1,13 +1,13 @@
 // A compact, north-up Miami play map. Distances and streets are simplified.
-import {ADVENTURE_EQUIPMENT,ADVENTURE_COLORS} from './equipment.js?v=world15';
-export const BUILD='world15';
+import {ADVENTURE_EQUIPMENT,ADVENTURE_COLORS} from './equipment.js?v=world16';
+export const BUILD='world16';
 export const HOME={x:94,y:81};
 export const W=204,H=196;
 export const FINAL_AREA=7;
 export const MAP_LAYOUT=3;
 export const AREAS=[
  {id:0,name:'Brickell',short:'Brickell',theme:'vampire',color:'#b9d6bd',accent:'#ed81ad',hint:'Panorama Tower is your safe home. Head east across the bridge to Brickell Key.',entry:{x:100,y:77},boss:null,polys:[[[81,59],[105,59],[107,91],[91,97],[78,101],[63,101],[63,80],[78,80],[80,62]]]},
- {id:1,name:'Brickell Key',short:'Brickell Key',theme:'vampire',color:'#bee5d1',accent:'#ee86ba',hint:'East of Brickell, across the Brickell Key bridge. Find three batteries, then Count Neon!',entry:{x:117,y:78},boss:'Count Neon',reward:'neon',arena:{x:121,y:65.5},camps:[{x:114.5,y:66.5},{x:127,y:73},{x:122.5,y:86.5}],polys:[[[113,64],[128,64],[130,67],[128,75],[126,83],[123,89],[120,89],[117,81],[113,71]]]},
+ {id:1,name:'Brickell & Brickell Key',short:'Brickell',theme:'vampire',color:'#bee5d1',accent:'#ee86ba',hint:'East of Brickell, across the Brickell Key bridge. Find three batteries, then Count Neon!',entry:{x:117,y:78},boss:'Count Neon',reward:'neon',arena:{x:121,y:65.5},camps:[{x:96,y:74},{x:97,y:88},{x:122.5,y:86.5}],polys:[[[113,64],[128,64],[130,67],[128,75],[126,83],[123,89],[120,89],[117,81],[113,71]]]},
  {id:2,name:'Little Havana',short:'Little Havana',theme:'mummy',color:'#e7c794',accent:'#ffbd66',hint:'West of Brickell, along Calle Ocho. The mummies have mixed up the music!',entry:{x:75,y:70},boss:'The Rumba Pharaoh',reward:'drum',arena:{x:46,y:69},camps:[{x:68,y:68},{x:56,y:75},{x:45,y:77}],polys:[[[36,59],[81,59],[80,80],[36,80]]]},
  {id:3,name:'Coconut Grove',short:'Coconut Grove',theme:'witch',color:'#9ac89d',accent:'#bb9aef',hint:'Southwest of Brickell. Follow the leafy trail to the mangrove witches.',entry:{x:79,y:103},boss:'The Mangrove Witch',reward:'vine',arena:{x:40,y:121},camps:[{x:72,y:105},{x:56,y:113},{x:43,y:113}],polys:[[[63,101],[78,101],[91,97],[77,110],[63,125],[47,137],[26,137],[26,105],[56,101]]]},
  {id:4,name:'Virginia Key & Key Biscayne',short:'The Keys',theme:'skeleton',color:'#e9d79d',accent:'#5ce2df',hint:'From southern Brickell, cross Rickenbacker Causeway to Hobie Beach and Virginia Key. Cross Bear Cut to Crandon Beach on Key Biscayne.',entry:{x:117,y:111},boss:'Captain Rattle',reward:'tide',arena:{x:143,y:181},camps:[{x:119,y:112},{x:131,y:121},{x:138,y:143}],polys:[[[115,105],[130,102],[139,111],[138,124],[129,130],[118,125],[113,115]],[[130,135],[140,133],[149,143],[151,174],[147,190],[138,190],[131,176],[129,159],[127,145]]]},
@@ -40,12 +40,12 @@ export const PRIVATE_ZONES=[[[116,67.5],[126,67.5],[124.5,75],[122.5,82.3],[120.
 export const isPrivate=p=>PRIVATE_ZONES.some(poly=>inside(p,poly));
 export const LANDMARKS=[
  {id:'panorama',name:'Panorama Tower · Trash Can Building',area:0,x:94,y:81,kind:'home',mapName:'Panorama Tower'},
- {id:'city-centre',name:'Brickell City Centre',area:0,x:88,y:71,kind:'mall',reward:'bubble'},
+ {id:'city-centre',name:'Brickell City Centre',area:0,x:88,y:71,kind:'mall',equipment:{type:'wheels',id:'grip'}},
  {id:'brickell-park',name:'Brickell Park',area:0,x:101,y:63,kind:'park'},
  {id:'hammock',name:'The Hammock Playground · Underline',area:0,x:84,y:88,kind:'playground',stamp:true},
- {id:'1814-park',name:'1814 Brickell Park',area:0,x:93,y:95,kind:'playground',stamp:true},
+ {id:'1814-park',name:'1814 Brickell Park',area:0,x:93,y:95,kind:'playground',stamp:true,equipment:{type:'armor',id:'steel'}},
  {id:'key-park',name:'Brickell Key · south park',area:1,x:122.5,y:86,kind:'park',stamp:true},
- {id:'domino',name:'Domino Park',area:2,x:52,y:69,kind:'domino',stamp:true},
+ {id:'domino',name:'Domino Park',area:2,x:52,y:69,kind:'domino',stamp:true,equipment:{type:'gadget',id:'magnet'}},
  {id:'tower-theater',name:'Tower Theater',area:2,x:46,y:65,kind:'theater'},
  {id:'riverside-play',name:'Riverside playground · Little Havana',area:2,x:74,y:63,kind:'playground',stamp:true},
  {id:'calle-ocho',name:'Calle Ocho',area:2,x:55,y:64,kind:'cafe'},
@@ -55,7 +55,7 @@ export const LANDMARKS=[
  {id:'mr-c',name:'Mr. C Residences',area:3,x:73,y:106,kind:'curved-towers'},
  {id:'city-hall',name:'City Hall · Dinner Key',area:3,x:63,y:119,kind:'city-hall'},
  {id:'park-grove',name:'Park Grove towers',area:3,x:59,y:117,kind:'grove-towers'},
- {id:'regatta',name:'Regatta Park',area:3,x:59,y:125,kind:'park',stamp:true},
+ {id:'regatta',name:'Regatta Park',area:3,x:59,y:125,kind:'park',stamp:true,equipment:{type:'gadget',id:'shield'}},
  {id:'dinner-key',name:'Dinner Key Marina',area:3,x:68,y:123,kind:'marina',stamp:true},
  {id:'hobie',name:'Hobie Beach',area:4,x:115,y:109,kind:'beach',stamp:true},
  {id:'north-point',name:'Virginia Key North Point Beach',area:4,x:133,y:106,kind:'guarded-beach',stamp:true},
@@ -63,14 +63,14 @@ export const LANDMARKS=[
  {id:'cape-beach',name:'Cape Florida Beach',area:4,x:147,y:178,kind:'beach'},
  {id:'crandon-play',name:'Crandon Park playground',area:4,x:140,y:146,kind:'playground',stamp:true},
  {id:'virginia-key',name:'Virginia Key',area:4,x:127,y:113,kind:'beach'},
- {id:'crandon',name:'Crandon Beach · Key Biscayne',area:4,x:147,y:152,kind:'guarded-beach',stamp:true},
+ {id:'crandon',name:'Crandon Beach · Key Biscayne',area:4,x:147,y:152,kind:'guarded-beach',stamp:true,equipment:{type:'armor',id:'heavy'}},
  {id:'bayfront',name:'Bayfront Park',area:5,x:104,y:45,kind:'bayfront',stamp:true},
  {id:'fountain',name:'Bayfront Park fountain',area:5,x:102,y:47,kind:'fountain',stamp:true},
- {id:'bayside',name:'Bayside Marketplace',area:5,x:103,y:39,kind:'bayside',stamp:true},
+ {id:'bayside',name:'Bayside Marketplace',area:5,x:103,y:39,kind:'bayside',stamp:true,equipment:{type:'wheels',id:'treads'}},
  {id:'miamarina',name:'Miamarina · Bayside waterfront',area:5,x:106,y:37,kind:'bayside-marina',stamp:true},
  {id:'skyviews',name:'Bayside observation wheel',area:5,x:107,y:42,kind:'wheel',stamp:true},
  {id:'arena',name:'Downtown arena',area:5,x:101,y:29,kind:'arena'},
- {id:'museum-park',name:'Museum Park',area:6,x:105,y:23,kind:'sculpture-park',stamp:true},
+ {id:'museum-park',name:'Museum Park',area:6,x:105,y:23,kind:'sculpture-park',stamp:true,equipment:{type:'gadget',id:'capacitor'}},
  {id:'art-museum',name:'Art museum · Museum Park',area:6,x:106,y:14,kind:'art-museum'},
  {id:'bayfront-play',name:'Bayfront Park playground',area:5,x:104,y:51,kind:'pirate-playground',mapName:'Bayfront playground',stamp:true},
  {id:'frost',name:'Frost Science',area:6,x:100,y:12,kind:'museum',stamp:true},
@@ -81,15 +81,16 @@ export const LANDMARKS=[
 ];
 export const visibleLandmarks=save=>LANDMARKS.filter(l=>save.champion||l.area<=save.unlocked);
 export const CHARGING_STATIONS=LANDMARKS.filter(l=>['playground','pirate-playground','splash-park'].includes(l.kind)).map(l=>({id:`charge-${l.id}`,x:l.x,y:l.y,area:l.area}));
-export const safeAt=(save,p)=>visibleLandmarks(save).some(l=>['home','playground','pirate-playground','splash-park'].includes(l.kind)&&dist(l,p)<2.5);
+export const HOME_SAFE_RADIUS=3.25;
+export const safeAt=(save,p)=>visibleLandmarks(save).some(l=>['home','playground','pirate-playground','splash-park'].includes(l.kind)&&dist(l,p)<(l.kind==='home'?HOME_SAFE_RADIUS:2.5));
 export const allBossesCleared=save=>AREAS.slice(1,FINAL_AREA).every(a=>save.cleared.includes(`boss-${a.id}`));
 export const WEAPONS=[
  {id:'starter',name:'Bumper Blaster',art:'blaster',damage:9,range:4.8,rate:.64,color:'#a6ffdf',desc:'Your trusty starting blaster. Aim by moving near a monster.'},
- {id:'bubble',name:'Ribbon Bubbler',art:'miami-bubble',damage:10,range:5.2,rate:.64,color:'#b5f4ff',desc:'A free bubble blaster from Brickell City Centre’s ribbon roof.'},
- {id:'neon',name:'Neon Fang',art:'miami-neon',damage:15,range:5.6,rate:.48,color:'#ff9dda',desc:'Count Neon’s bright pink energy bolts.'},
- {id:'drum',name:'Rumba Hammer',art:'miami-rumba',damage:38,range:2.7,rate:.85,color:'#ffd276',desc:'A musical shockwave that bumps every nearby monster.'},
+ {id:'bubble',name:'Ribbon Bubbler',art:'miami-bubble',damage:10,range:5.2,rate:.64,color:'#b5f4ff',desc:'A keepsake bubble wand from an earlier adventure.'},
+ {id:'neon',name:'Neon Fang',art:'miami-neon',damage:15,range:5.6,rate:.48,color:'#ff9dda',desc:'Count Neon’s quick pink bolts. Reach one monster from a distance.'},
+ {id:'drum',name:'Rumba Hammer',art:'miami-rumba',damage:38,range:2.7,rate:.85,color:'#ffd276',desc:'The Pharaoh’s conga mallet. Big close-up shockwaves hit a whole group.'},
  {id:'vine',name:'Mangrove Spark',art:'miami-mangrove',damage:24,range:5.6,rate:.62,color:'#c9a4ff',desc:'Witchy lightning jumps between three monsters.'},
- {id:'tide',name:'Tidal Spinner',art:'miami-tidal',damage:23,range:6,rate:.5,color:'#89ffff',desc:'A sea-blue spinning blade. It cuts through a whole row.'},
+ {id:'tide',name:'Tidal Spinner',art:'miami-tidal',damage:23,range:6,rate:.5,color:'#89ffff',desc:'Captain Rattle’s surf fins. Cut through a row and hit again on the way back.'},
  {id:'metro',name:'Bass Rocket',art:'miami-bass',damage:50,range:6.5,rate:.85,color:'#ffbe72',desc:'DJ Zombox’s rockets make a splash of bass.'},
  {id:'prism',name:'Queen’s Prism',art:'miami-prism',damage:46,range:7,rate:.5,color:'#dcceff',desc:'The Frost Queen’s long rainbow beam.'},
  {id:'firejet',name:'Fire-Jet Launcher',art:'firejet',damage:85,range:8,rate:.68,color:'#ff9354',desc:'The King’s flaming arrow, with fins and a glowing jet engine!'}
@@ -101,20 +102,25 @@ export const STARTERS={weapon:'bumper',armor:'light',wheels:'basic',gadget:'none
 export const weaponFor=id=>WEAPONS.find(w=>w.id===id)||WEAPONS.find(w=>w.id==='bumper');
 export const item=(type,id)=>EQUIPMENT[type]?.find(p=>p.id===id)||EQUIPMENT[type]?.[0];
 export function available(save,p){if(save.owned.includes(p.id))return true;if(p.royalReward||p.unlock===undefined)return false;if(p.unlock<0)return true;const area=p.unlock<5?p.unlock+1:p.unlock<10?6:7;return save.cleared.includes(`boss-${area}`);}
-export const visibleEquipment=(save,type)=>EQUIPMENT[type].filter(p=>save.owned.includes(p.id)||available(save,p));
+export const visibleEquipment=(save,type)=>EQUIPMENT[type].filter(p=>save.owned.includes(p.id)||(type!=='weapon'&&available(save,p)&&save.scrap>=p.cost&&save.gears>=p.gears));
+export const nextChapter=save=>AREAS.find(a=>a.id&&!save.cleared.includes(`boss-${a.id}`))||null;
+export const visibleChapters=save=>visibleAreas(save).filter(a=>a.id);
+export const chapterForRegion=r=>r===0?1:r;
 export function equipmentStats(save){const armor=item('armor',save.build?.armor||['light','steel','heavy'][save.armor||0]),wheels=item('wheels',save.build?.wheels||['basic','grip','speed'][save.wheels||0]);return {hp:armor.hp+(wheels.hp||0),defense:armor.defense,reflect:!!armor.reflect,speed:wheels.speed,weapon:weaponFor(save.weapon)};}
 export const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 export function inside(p,poly){let hit=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if((a[1]>p.y)!==(b[1]>p.y)&&p.x<(b[0]-a[0])*(p.y-a[1])/(b[1]-a[1])+a[0])hit=!hit;}return hit;}
 export function segmentDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));return dist(p,{x:a.x+t*dx,y:a.y+t*dy});}
 export const onLine=(p,points,width)=>points.slice(1).some((b,i)=>segmentDistance(p,points[i],b)<width/2);
 export function regionAt(p){const b=BRIDGES.find(b=>onLine(p,b.points,b.width));if(b)return b.area;return AREAS.findLast(a=>a.polys.some(poly=>inside(p,poly)))?.id??-1;}
-export function freshSave(){return {schema:1,equipmentVersion:1,mapLayout:MAP_LAYOUT,discoveries:[],unlocked:1,cleared:[],camps:[],defeated:[],owned:Object.values(STARTERS),build:{...STARTERS},weapon:'bumper',armor:0,wheels:0,color:COLORS[0],scrap:0,gears:0,drops:[],cycle:1,champion:false,queen:false,king:false,position:{...HOME},hp:70,sound:false,gentle:true,details:false};}
+export function freshSave(){return {schema:1,equipmentVersion:1,progressionVersion:2,mapLayout:MAP_LAYOUT,discoveries:[],unlocked:1,cleared:[],camps:[],defeated:[],owned:Object.values(STARTERS),build:{...STARTERS},weapon:'bumper',armor:0,wheels:0,color:COLORS[0],scrap:0,gears:0,drops:[],cycle:1,champion:false,queen:false,king:false,position:{...HOME},hp:70,sound:false,gentle:true,details:false};}
 export function readSave(raw){
  const s=freshSave();if(!raw||raw.schema!==1)return s;
  for(const key of ['unlocked','armor','wheels','scrap','cycle'])if(Number.isFinite(raw[key]))s[key]=Math.floor(Math.max(key==='cycle'?1:0,Math.min(key==='scrap'?999999:key==='cycle'?9999:key==='unlocked'?FINAL_AREA:2,raw[key])));
  for(const key of ['cleared','camps','defeated','discoveries'])s[key]=Array.isArray(raw[key])?[...new Set(raw[key].filter(v=>typeof v==='string'&&/^[a-z0-9-]{1,45}$/.test(v)))]:[];
  s.owned=[...new Set([...Object.values(STARTERS),...(Array.isArray(raw.owned)?raw.owned:[]).filter(v=>Object.values(EQUIPMENT).some(parts=>parts.some(p=>p.id===v)))])];
- s.weapon=s.owned.includes(raw.weapon)&&WEAPONS.some(w=>w.id===raw.weapon)?raw.weapon:STARTERS.weapon;
+ if(s.owned.includes('starter')&&s.owned.includes('bumper'))s.owned=s.owned.filter(id=>id!==(raw.weapon==='bumper'?'starter':'bumper'));
+ for(const l of LANDMARKS)if(l.equipment&&s.discoveries.includes(l.id)&&!s.owned.includes(l.equipment.id))s.owned.push(l.equipment.id);
+ s.weapon=s.owned.includes(raw.weapon)&&WEAPONS.some(w=>w.id===raw.weapon)?raw.weapon:s.owned.includes(STARTERS.weapon)?STARTERS.weapon:s.owned.find(id=>WEAPONS.some(w=>w.id===id))||STARTERS.weapon;
  s.build.weapon=s.weapon;
  if(raw.equipmentVersion===1){for(const type of ['armor','wheels','gadget'])if(s.owned.includes(raw.build?.[type])&&EQUIPMENT[type].some(p=>p.id===raw.build[type]))s.build[type]=raw.build[type];}
  else{for(const type of ['armor','wheels']){const id=(type==='armor'?['light','steel','heavy']:['basic','grip','speed'])[s[type]];s.build[type]=id;if(!s.owned.includes(id))s.owned.push(id);}}

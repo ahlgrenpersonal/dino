@@ -25,3 +25,5 @@ dialog[data-mode="workshop"][data-details="false"] .adult-copy{display:none!impo
 .item.locked canvas,.item.unaffordable:not(.equipped) canvas{filter:none;opacity:.85}
 dialog[data-mode="workshop"] .item h3.adult-copy,dialog[data-mode="workshop"] .item p.adult-copy{display:block!important}
 @media(max-width:380px){.item{grid-template-columns:82px minmax(0,1fr) 44px;gap:7px;padding:7px}.item canvas{width:82px;height:82px}.item h3{font-size:13px}.item p{font-size:11px}}
+
+.current-destination,.active-region{border-color:#ffe17b;background:#ffd35c28}.item.equipped button:disabled{background:var(--mint);color:var(--ink);opacity:1}#royalGuard{font-size:19px;white-space:nowrap}

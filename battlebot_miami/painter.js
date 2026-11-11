@@ -1,10 +1,10 @@
-import {AREAS,BRIDGES,ROADS,LANDMARKS,HOME,KEY_LOOP,PRIVATE_ZONES,isPrivate,visibleAreas,weaponFor,regionAt,inside,onLine,dist,CHARGING_STATIONS} from './world.js?v=world15';
-import {bot,rounded,atlasBot} from './bot-art.js?v=world15';
-import {peacock} from './wildlife-art.js?v=world15';
-import {drawLandmark} from './landmark-art.js?v=world15';
+import {AREAS,BRIDGES,ROADS,LANDMARKS,HOME,KEY_LOOP,PRIVATE_ZONES,isPrivate,visibleAreas,weaponFor,regionAt,inside,onLine,dist,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter} from './world.js?v=world16';
+import {bot,rounded,atlasBot,equipmentIcon} from './bot-art.js?v=world16';
+import {peacock} from './wildlife-art.js?v=world16';
+import {drawLandmark} from './landmark-art.js?v=world16';
 const ink='#244647';
 // The standard Adventure camera, paired with its 1.17-unit player artwork.
-export const adventureZoom=width=>(width<600?Math.max(55,Math.min(76,width/6.3)):85)*.9;
+export const adventureZoom=width=>(width<600?Math.max(55,Math.min(76,width/6.3)):85)*.81;
 function line(c,points,color,width){c.beginPath();points.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.strokeStyle=color;c.lineWidth=width;c.lineJoin='round';c.lineCap='round';c.stroke();}
 function poly(c,points,fill,stroke,width=.1){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke();}}
 function oval(c,x,y,rx,ry,fill){c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fillStyle=fill;c.fill();}
@@ -25,6 +25,7 @@ export class MiamiPainter{
   if(ids.has(1)){line(c,KEY_LOOP,'#f1e6c3',1.6);for(const p of PRIVATE_ZONES){poly(c,p,'#9eaea6','#687f7d',.12);}if(!map){for(const p of [{x:118,y:70},{x:123,y:70},{x:122,y:76}])building(c,p.x,p.y,2,'#a6bdc5');label(c,'PRIVATE RESIDENCES',121,73,.3);}}
   if(ids.has(7)){poly(c,[[184.5,28],[189.6,36],[189.5,56],[185,65],[182.8,65],[186.5,55],[187,36],[182.5,28]],'#f5e8bd',null);}
   if(map)return;
+  oval(c,HOME.x,HOME.y,HOME_SAFE_RADIUS,HOME_SAFE_RADIUS,'#d8f5af30');c.beginPath();c.arc(HOME.x,HOME.y,HOME_SAFE_RADIUS,0,Math.PI*2);c.strokeStyle='#d4efb7';c.lineWidth=.06;c.stroke();
   const b={left:this.camera.x-this.width/2/this.scale-3,right:this.camera.x+this.width/2/this.scale+3,top:this.camera.y-this.height/2/this.scale-1,bottom:this.camera.y+this.height/2/this.scale+5};
   for(let y=Math.floor(b.top/3)*3;y<b.bottom;y+=3)for(let x=Math.floor(b.left/3)*3;x<b.right;x+=3){
    const p={x:x+hash(x,y),y:y+hash(y,x)},r=regionAt(p),a=AREAS[r];if(!ids.has(r)||!a||isPrivate(p)||hash(x,y)<.25)continue;
@@ -37,7 +38,7 @@ export class MiamiPainter{
   for(const l of LANDMARKS.filter(l=>ids.has(l.area)&&l.x>b.left-6&&l.x<b.right+6&&l.y>b.top&&l.y<b.bottom+8))this.landmark(c,l,t,save);
   for(const s of CHARGING_STATIONS.filter(s=>ids.has(s.area))){oval(c,s.x,s.y+.1,.9,.5,'#94e5b133');c.beginPath();c.ellipse(s.x,s.y+.1,.9,.5,0,0,Math.PI*2);c.strokeStyle='#a9efd0';c.lineWidth=.06;c.stroke();label(c,'＋',s.x+.65,s.y-.3,.42,'#e5ffdb');}
  }
- landmark(c,l,t,save={discoveries:[]}){if(drawLandmark(c,l,{seen:save.discoveries?.includes(l.id)}))return;c.save();c.translate(l.x,l.y);
+ landmark(c,l,t,save={discoveries:[]}){const drawn=drawLandmark(c,l,{seen:save.discoveries?.includes(l.id)});if(l.equipment&&!save.discoveries?.includes(l.id)){c.save();c.translate(l.x,l.y+1.3);oval(c,0,0,.85,.7,'#fff1b3');c.scale(.021,.021);c.translate(-34,-34);equipmentIcon(c,l.equipment.type,l.equipment.id);c.restore();}if(drawn)return;c.save();c.translate(l.x,l.y);
   if(l.kind==='museum'){
    rounded(c,-3,-1.1,6,1.3,.12,'#e9f2e5',ink,.05);oval(c,-1,-1.3,1.3,1,'#8ec3d0');poly(c,[[-2.3,-1.3],[-2.3,-.9],[.3,-.9],[.3,-1.3]],'#8ec3d0',null);rounded(c,.7,-2,2.1,1.6,.12,'#e9f2e5',ink,.05);for(let i=0;i<4;i++)line(c,[{x:1+i*.45,y:-1.8},{x:1+i*.45,y:-.65}],'#87bac4',.1);label(c,'FROST SCIENCE',0,-2.8,.48);
   }else if(l.kind==='beach'){
@@ -52,6 +53,7 @@ export class MiamiPainter{
   if(e.peacock){peacock(c,e.x,e.y,1.1,t,{hit:e.hit,moving:true});if(e.hp<e.maxHp){rounded(c,e.x-.4,e.y-.8,.8,.07,.03,'#264e58');rounded(c,e.x-.4,e.y-.8,.8*Math.max(0,e.hp/e.maxHp),.07,.03,'#f18a7c');}return;}
   const a=AREAS[e.area],boss=e.boss,s=boss?(e.king?1.9:1.7):.72;
   bot(c,e.x,e.y,s,{color:e.king?'#779a65':a.theme==='ghost'?'#b5e5e8':a.theme==='mummy'?'#ccb589':a.theme==='witch'?'#a991c6':a.theme==='vampire'?'#ad80ad':a.theme==='skeleton'?'#dbd5b9':'#8fb477',halloween:e.king?'zombie':a.theme,gun:e.king?'firejet':boss?weaponFor(a.reward).art:'bumper',armor:boss?'steel':'light',wheels:boss?'rover':'basic',angle:e.angle,hit:e.hit,swing:e.swing,health:e.hp/e.maxHp,reducedMotion:this.reducedMotion},t);
+  if(boss&&e.area>=6&&!e.guardBroken){oval(c,e.x,e.y,.95,1.15,'#a3e8ff22');c.beginPath();c.ellipse(e.x,e.y,.95,1.15,0,0,Math.PI*2);c.strokeStyle='#b9f8ff';c.lineWidth=.07;c.stroke();label(c,'ϟ ☝',e.x,e.y+1.6,.5);}
   if(boss){c.save();c.translate(e.x,e.y);c.scale(s/80,s/80);
    if(e.king){poly(c,[[-24,-36],[-30,-58],[-15,-48],[0,-65],[15,-48],[30,-58],[24,-36]],'#ffe28c',ink,2);for(const x of [-13,0,13])oval(c,x,-42,3,4,'#f19b69');for(const x of [-38,38]){rounded(c,x-5,6,10,22,2,'#425b65',ink,2);poly(c,[[x-5,26],[x,40+Math.sin(t*10)*3],[x+5,26]],'#ffb652',null);}}
    else if(e.area===6){poly(c,[[-23,-35],[-26,-52],[-12,-44],[0,-62],[13,-44],[26,-52],[23,-35]],'#c8eaff',ink,2);oval(c,0,-44,5,7,'#a287df');for(const side of [-1,1])poly(c,[[side*26,2],[side*46,22],[side*28,37]],'#e6e6ff',ink,2);}
@@ -80,11 +82,12 @@ export class MiamiPainter{
  }
  mapPlace(c,l,x,y){c.save();c.translate(x,y);rounded(c,-29,-30,58,58,10,'#e8eed8ee','#d2e5d7',1);const scale=l.kind==='home'||l.kind==='lighthouse'?4:7;c.scale(scale,scale);c.translate(-l.x,-l.y+(l.kind==='home'?3.5:l.kind==='lighthouse'?2:0));this.landmark(c,l,0,{discoveries:[]});c.restore();}
  map(canvas,g,{showPlayer=true}={}){const c=canvas.getContext('2d'),visible=visibleAreas(g.save),points=visible.flatMap(a=>a.polys.flat()),minX=Math.min(...points.map(p=>p[0]))-6,maxX=Math.max(...points.map(p=>p[0]))+6,minY=Math.min(...points.map(p=>p[1]))-8,maxY=Math.max(...points.map(p=>p[1]))+8;canvas.width=600;canvas.height=760;const s=Math.min(550/(maxX-minX),700/(maxY-minY)),ox=(600-(maxX+minX)*s)/2,oy=(760-(maxY+minY)*s)/2;
-  c.showLabels=false;c.fillStyle='#235767';c.fillRect(0,0,600,760);c.save();c.translate(ox,oy);c.scale(s,s);this.terrain(c,g.save,0,true);
-  for(const a of visible){const p=a.id?a.entry:HOME;oval(c,p.x,p.y,1.5,1.5,a.id===g.save.unlocked?'#ffd47b':'#e9f2d6');if(a.id)label(c,g.save.cleared.includes(`boss-${a.id}`)?'✓':'★',p.x,p.y+.45,1.2);}
+  c.showLabels=false;c.fillStyle='#235767';c.fillRect(0,0,600,760);c.save();c.translate(ox,oy);c.scale(s,s);this.terrain(c,g.save,0,true);const next=nextChapter(g.save);if(next)for(const a of visible.filter(a=>a.id===next.id||next.id===1&&a.id===0))for(const points of a.polys)poly(c,points,'#ffd35c99','#ffe17b',2.5/s);
+  for(const a of visible){const p=a.id?a.entry:HOME;oval(c,p.x,p.y,1.5,1.5,a.id===next?.id?'#ffd47b':'#e9f2d6');if(a.id)label(c,g.save.cleared.includes(`boss-${a.id}`)?'✓':'★',p.x,p.y+.45,1.2);}
   c.restore();
-  for(const l of LANDMARKS.filter(l=>visible.some(a=>a.id===l.area))){const x=l.x*s+ox,y=l.y*s+oy;oval(c,x,y,4.5,4.5,l.reward?'#ffd46f':['playground','pirate-playground','splash-park'].includes(l.kind)?'#f1a7ab':'#80b9b1');}
+  for(const l of LANDMARKS.filter(l=>visible.some(a=>a.id===l.area))){const x=l.x*s+ox,y=l.y*s+oy;oval(c,x,y,4.5,4.5,l.equipment&&!g.save.discoveries.includes(l.id)?'#ffd46f':['playground','pirate-playground','splash-park'].includes(l.kind)?'#f1a7ab':'#80b9b1');}
   for(const a of visible){const l=LANDMARKS.find(l=>l.id===['panorama','key-park','domino','park-grove','cape-florida','skyviews','frost','south-of-fifth'][a.id])||LANDMARKS.find(l=>l.area===a.id);if(!l)continue;const x=l.x*s+ox,y=l.y*s+oy;this.mapPlace(c,l,x,y);}
+  if(next){const p=next.camps.find((_,i)=>!g.save.camps.includes(`camp-${next.id}-${i}`))||next.arena;oval(c,ox+p.x*s,oy+p.y*s,13,13,'#ffe17b');label(c,'➜',ox+p.x*s,oy+p.y*s+6,22);}
   if(showPlayer)atlasBot(c,ox+g.player.x*s,oy+g.player.y*s,g.save,weaponFor(g.save.weapon).art);
   c.textAlign='start';c.fillStyle='#d7f7e9';c.font='800 28px system-ui';c.fillText('↑',550,40);this.mapTransform={s,ox,oy};
  }

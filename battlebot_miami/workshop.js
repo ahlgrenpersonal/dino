@@ -1,13 +1,13 @@
-import {COLORS,EQUIPMENT,visibleEquipment,available,equipmentStats,weaponFor} from './world.js?v=world15';
-import {equipmentIcon,categoryIcon,bot,rounded} from './bot-art.js?v=world15';
+import {COLORS,EQUIPMENT,visibleEquipment,equipmentStats,weaponFor} from './world.js?v=world16';
+import {equipmentIcon,categoryIcon,bot,rounded} from './bot-art.js?v=world16';
 
 // Standard Adventure workshop: same tabs, vertical item rows and separate actions.
 export function workshopHTML(save,tab,details,head){
  const st=equipmentStats(save),tabs=Object.keys(EQUIPMENT);
  return `${head('Panorama workshop','Fully repaired. Ready for something new.','SAFE & SOUND')}<div class="workbench"><canvas id="botPreview" width="440" height="350" aria-label="Your bot"></canvas><div class="bot-stats"><div class="adult-copy">Health <strong>${st.hp}</strong></div><div class="adult-copy">Power <strong>${st.weapon.damage}</strong></div><div class="adult-copy">Reach <strong>${st.weapon.range>2?'Long':'Close'}</strong></div><div class="swatches">${COLORS.map((color,i)=>`<button class="swatch ${save.color===color?'selected':''}" style="--swatch:${color}" data-color="${color}" aria-label="${['Coral','Blue','Green','Yellow','Orange','Purple'][i]} robot"></button>`).join('')}</div></div></div><div class="inventory-line"><span><span class="adult-copy">Scrap </span><b>◆ ${save.scrap}</b></span><span><span class="adult-copy">Parts </span><b>⚙ ${save.gears}</b></span></div><div class="tabs" role="tablist" aria-label="Equipment categories">${tabs.map(type=>`<button role="tab" aria-label="${type}" aria-selected="${type===tab}" tabindex="${type===tab?0:-1}" class="${type===tab?'active':''}" data-tab="${type}"><canvas width="88" height="72" data-category="${type}" aria-hidden="true"></canvas><small class="adult-copy">${{weapon:'Weapons',armor:'Armor',wheels:'Wheels',gadget:'Gear'}[type]}</small></button>`).join('')}</div><div class="items">${visibleEquipment(save,tab).map(p=>{
- const owned=save.owned.includes(p.id),equipped=save.build[tab]===p.id,can=owned||available(save,p),afford=save.scrap>=p.cost&&save.gears>=p.gears;
- const label=equipped?'Equipped':!can?'Locked':owned?'Equip':'Build';
- return `<article class="item ${equipped?'equipped':''} ${can?'':'locked'} ${!owned&&!afford?'unaffordable':''}"><canvas width="136" height="136" data-item="${p.id}" aria-label="${p.name}"></canvas><div><h3 class="adult-copy">${p.name}</h3><p class="adult-copy">${p.desc}</p>${owned?`<small class="adult-copy">${equipped?'Equipped':'Built'} · yours forever</small>`:`<small>◆ ${p.cost} + ⚙ ${p.gears}</small>`}</div><button data-part="${p.id}" aria-label="${label} ${p.name}" ${!can||equipped||(!owned&&!afford)?'disabled':''}>${equipped?'✓':!can?'<span class="lock-icon" aria-hidden="true"></span>':owned?'↥':'+'}</button></article>`;
+ const owned=save.owned.includes(p.id),equipped=save.build[tab]===p.id;
+ const label=equipped?'Equipped':owned?'Equip':'Build';
+ return `<article class="item ${equipped?'equipped':''}"><canvas width="136" height="136" data-item="${p.id}" aria-label="${p.name}"></canvas><div><h3 class="adult-copy">${p.name}</h3><p class="adult-copy">${p.desc}</p>${owned?`<small class="adult-copy">${equipped?'Equipped':'Built'} · yours forever</small>`:`<small>◆ ${p.cost} + ⚙ ${p.gears}</small>`}</div><button data-part="${p.id}" aria-label="${label} ${p.name}" ${equipped?'disabled':''}>${equipped?'✓':owned?'↥':'+'}</button></article>`;
  }).join('')}</div><div class="panel-foot"><button class="primary pictorial-action" data-action="depart" aria-label="Go adventuring"><span>▶</span><small class="adult-copy">Adventure</small></button></div>`;
 }
 export function drawWorkshop(root,save,tab){

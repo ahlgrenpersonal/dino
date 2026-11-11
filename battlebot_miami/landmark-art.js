@@ -1,5 +1,5 @@
 // Original game illustrations, drawn from public building and park references.
-import {rounded} from './bot-art.js?v=world15';
+import {rounded} from './bot-art.js?v=world16';
 const ink='#345f68';
 function line(c,x,y,xx,yy,color,width=.07){c.beginPath();c.moveTo(x,y);c.lineTo(xx,yy);c.strokeStyle=color;c.lineWidth=width;c.stroke();}
 function oval(c,x,y,rx,ry,color){c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fillStyle=color;c.fill();}
@@ -26,7 +26,7 @@ function mall(c,l,seen){
  for(const side of [-1,1])for(let y=-1.5;y<.1;y+=.5)rounded(c,side<0?-2.8:.7,y,2.1,.27,.02,'#78afb5');
  // A wave-like Climate Ribbon canopy connects the shopping blocks.
  for(let x=-2.6;x<=2.6;x+=.3){const y=-2.35+Math.sin(x*1.2)*.35;line(c,x,y,x+.3,y-.1,'#fff4d8',.2);line(c,x,y+.05,x,y+.55,'#a5c6c0',.04);}
- rounded(c,-.8,.1,1.6,.8,.12,'#efc994',ink,.06);text(c,seen?'✓':'ϟ',0,.72,.6);text(c,l.name,0,-3.35,.44);text(c,seen?'Bubble blaster found':'Free bubble blaster!',0,1.65,.36);
+ rounded(c,-.8,.1,1.6,.8,.12,'#efc994',ink,.06);text(c,seen?'✓':'ϟ',0,.72,.6);text(c,l.name,0,-3.35,.44);text(c,seen?'Trail tires found':'Trail tires inside',0,1.65,.36);
 }
 function play(c,l){
  lawn(c);const pirate=l.kind==='pirate-playground',hammock=l.id==='hammock';
