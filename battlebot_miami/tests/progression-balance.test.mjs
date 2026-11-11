@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {freshSave,readSave,visibleEquipment,visibleChapters,nextChapter,EQUIPMENT,AREAS,LANDMARKS,HOME,HOME_SAFE_RADIUS,dist,canWalk} from '../world.js?v=world25';
-import {MiamiAdventure} from '../engine.js?v=world25';
-import {workshopHTML} from '../workshop.js?v=world25';
+import {freshSave,readSave,visibleEquipment,visibleChapters,nextChapter,EQUIPMENT,AREAS,LANDMARKS,HOME,HOME_SAFE_RADIUS,dist,canWalk} from '../world.js?v=world26';
+import {MiamiAdventure} from '../engine.js?v=world26';
+import {workshopHTML} from '../workshop.js?v=world26';
 
 test('new games have exactly one weapon, no weapon shop, and no unaffordable choices',()=>{
  const s=freshSave(),g=new MiamiAdventure(s);assert.deepEqual(visibleEquipment(s,'weapon').map(p=>p.id),['bumper']);
@@ -17,7 +17,7 @@ test('each boss grants exactly its own weapon and no future weapons appear',()=>
   const before=visibleEquipment(g.save,'weapon').map(p=>p.id);assert(!before.includes(a.reward));
   for(const e of [...g.enemies].filter(e=>(e.chapter??e.area)===a.id&&!e.boss))g.hit(e,10000);
   const boss=g.enemies.find(e=>e.id===`boss-${a.id}`);g.hit(boss,10000,{targeted:true,powered:true});
-  const after=visibleEquipment(g.save,'weapon').map(p=>p.id);assert.deepEqual(after.filter(id=>!before.includes(id)),[a.reward]);assert.equal(g.save.weapon,a.reward);
+  const after=visibleEquipment(g.save,'weapon').map(p=>p.id);assert.deepEqual(after.filter(id=>!before.includes(id)),[a.reward]);assert.equal(g.save.weapon,'bumper');
  }
  assert.equal(visibleEquipment(g.save,'weapon').length,8);
 });
@@ -31,7 +31,7 @@ test('old free starter alternatives collapse to one while earned weapons and lan
 test('landmark equipment is permanent, never awards a weapon, and never downgrades a better shell',()=>{
  const g=new MiamiAdventure(freshSave());g.save.unlocked=7;g.enemies=[];const initialWeapons=visibleEquipment(g.save,'weapon').map(p=>p.id);
  for(const l of LANDMARKS.filter(l=>l.equipment)){Object.assign(g.player,l);g.update(.05);assert(g.save.owned.includes(l.equipment.id));assert.equal(g.save.weapon,'bumper');}
- assert.deepEqual(visibleEquipment(g.save,'weapon').map(p=>p.id),initialWeapons);assert.equal(g.save.build.armor,'star');
+ assert.deepEqual(visibleEquipment(g.save,'weapon').map(p=>p.id),initialWeapons);assert.equal(g.save.build.armor,'light');
  const before=[...g.save.owned];g.save.king=true;g.replay();assert.deepEqual(g.save.owned,before);
 });
 

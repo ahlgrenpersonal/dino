@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {MiamiPainter} from '../painter.js?v=world25';
-import {MiamiAdventure} from '../engine.js?v=world25';
-import {freshSave,LANDMARKS,HOME,canWalk,dist} from '../world.js?v=world25';
-import {mountAtlas} from '../atlas.js?v=world25';
-import {bindWorldNavigation} from '../world-input.js?v=world25';
+import {MiamiPainter} from '../painter.js?v=world26';
+import {MiamiAdventure} from '../engine.js?v=world26';
+import {freshSave,LANDMARKS,HOME,canWalk,dist} from '../world.js?v=world26';
+import {mountAtlas} from '../atlas.js?v=world26';
+import {bindWorldNavigation} from '../world-input.js?v=world26';
 
 function canvas(){const el=new EventTarget();el.width=600;el.height=760;el.getContext=()=>new Proxy({measureText:s=>({width:String(s).length*10}),createLinearGradient:()=>({addColorStop(){}})},{get:(o,k)=>k in o?o[k]:()=>{}});el.getBoundingClientRect=()=>({left:42,top:100,width:300,height:380});el.setPointerCapture=()=>{};el.focus=()=>{};return el;}
 function pointer(el,type,x,y,id=1,extra={}){const e=new Event(type,{cancelable:true});Object.assign(e,{clientX:x,clientY:y,pointerId:id,pointerType:'touch',button:0,...extra});el.dispatchEvent(e);}

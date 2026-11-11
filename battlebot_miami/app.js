@@ -1,14 +1,15 @@
-import {BUILD,AREAS,HOME,weaponFor,readSave,visibleLandmarks,FINAL_AREA,dist,item,visibleChapters,nextChapter,equipmentClaimed} from './world.js?v=world25';
-import {MiamiAdventure} from './engine.js?v=world25';
-import {MiamiPainter} from './painter.js?v=world25';
-import {paintPictures,areaPicture,enemyPicture,weaponPicture,robotPicture} from './ui-art.js?v=world25';
-import {workshopHTML,drawWorkshop} from './workshop.js?v=world25';
-import {adventureAudio} from './audio.js?v=world25';
-import {bindPowerControl,updatePowerControl} from './power-control.js?v=world25';
-import {atlasBot} from './bot-art.js?v=world25';
-import {bindWorldNavigation} from './world-input.js?v=world25';
-import {mountAtlas} from './atlas.js?v=world25';
-const buildVersion='world25';
+import {weaponRewardHTML} from './reward-view.js?v=world26';
+import {BUILD,AREAS,HOME,weaponFor,readSave,visibleLandmarks,FINAL_AREA,dist,item,visibleChapters,nextChapter,equipmentClaimed} from './world.js?v=world26';
+import {MiamiAdventure} from './engine.js?v=world26';
+import {MiamiPainter} from './painter.js?v=world26';
+import {paintPictures,areaPicture,enemyPicture,weaponPicture,robotPicture} from './ui-art.js?v=world26';
+import {workshopHTML,drawWorkshop} from './workshop.js?v=world26';
+import {adventureAudio} from './audio.js?v=world26';
+import {bindPowerControl,updatePowerControl} from './power-control.js?v=world26';
+import {atlasBot} from './bot-art.js?v=world26';
+import {bindWorldNavigation} from './world-input.js?v=world26';
+import {mountAtlas} from './atlas.js?v=world26';
+const buildVersion='world26';
 const SAVE_KEY='battlebot-miami-save-v1';
 const $=id=>document.getElementById(id);
 let stored;try{stored=JSON.parse(localStorage.getItem(SAVE_KEY));}catch{}
@@ -36,8 +37,8 @@ function showMap(){const visible=visibleChapters(game.save),next=nextArea();open
  atlasController=mountAtlas($('atlas'),{source,initialZoom:1,maxZoom:10,onOverlay:(c,zoom)=>{c.save();c.translate(transform.ox+game.player.x*transform.s,transform.oy+game.player.y*transform.s);c.scale(1/zoom,1/zoom);atlasBot(c,0,0,game.save,weaponFor(game.save.weapon).art);c.restore();},onChange:zoom=>{$('mapZoom').value=`${Math.round(zoom*100)}%`;$('mapZoomOut').disabled=zoom<=1;$('mapZoomIn').disabled=zoom>=10;},onSelect:p=>{const point=painter.mapDestination(p,game.save);if(point){close();workshopRequested=false;game.moveTo(point);}}});
  $('mapZoomIn').onclick=()=>atlasController.zoomBy(1.35);$('mapZoomOut').onclick=()=>atlasController.zoomBy(1/1.35);$('mapFit').onclick=()=>atlasController.reset();$('mapGo').onclick=trail;
 }
-function workshop(){if(!game.isHome()){close();workshopRequested=true;game.goHome();toast('Heading to the workshop.','⌂ ➜');return;}workshopRequested=false;game.repair();persist();open('workshop',workshopHTML(game.save,workTab,workshopDetails,head));panel.dataset.details=String(workshopDetails);panel.querySelector('.close').insertAdjacentHTML('beforebegin',`<button class="icon-button workshop-info" data-action="equipment-details" aria-label="Equipment details" aria-pressed="${workshopDetails}">ⓘ</button>`);drawWorkshop(panel,game.save,workTab);workshopObserver=new ResizeObserver(()=>drawWorkshop(panel,game.save,workTab));workshopObserver.observe($('botPreview'));}
-function reward(id,area){const w=weaponFor(id),victory=id==='firejet';open('reward',`${head(victory?'Miami champion!':'New weapon!',w.name)}<div class="panel-body"><div class="reward-sequence"><canvas width="140" height="140" data-enemy="${victory?7:id==='prism'?6:area-1}" aria-hidden="true"></canvas><span aria-hidden="true">✓ ➜</span><canvas width="280" height="190" data-weapon="${id}" aria-label="${w.name}"></canvas></div><p class="copy adult-copy">${w.desc} Already equipped, and yours forever. ${victory?'You can explore anywhere or respawn every camp and boss.':id==='prism'?'Cross MacArthur Causeway to Miami Beach next.':`Next: ${AREAS[area].name}.`}</p><div class="reward-next">${victory?'<span class="victory-crown" aria-hidden="true">♛ ★</span>':`<canvas width="220" height="150" data-area="${area}" aria-hidden="true"></canvas>`}</div><div class="pause-picture-grid">${iconAction(victory?'close':'trail','▶','Continue adventure',true)}${victory?iconAction('replay','↻','Respawn the world'):iconAction('map',mapIcon,'Miami map')}${iconAction('build','⚙','Workshop')}</div></div>`);}
+function workshop(){if(!game.isHome()){close();workshopRequested=true;game.goHome();toast('Heading to the workshop.','⌂ ➜');return;}workshopRequested=false;game.route=[];game.target=null;game.powerTarget=null;game.repair();persist();open('workshop',workshopHTML(game.save,workTab,workshopDetails,head));panel.dataset.details=String(workshopDetails);panel.querySelector('.close').insertAdjacentHTML('beforebegin',`<button class="icon-button workshop-info" data-action="equipment-details" aria-label="Equipment details" aria-pressed="${workshopDetails}">ⓘ</button>`);drawWorkshop(panel,game.save,workTab);workshopObserver=new ResizeObserver(()=>drawWorkshop(panel,game.save,workTab));workshopObserver.observe($('botPreview'));}
+function reward(id,area){workTab='weapon';open('reward',weaponRewardHTML(id,area,{head,iconAction,mapIcon}));}
 function equipmentFind(e){
  workTab=e.kind;const found=item(e.kind,e.id);
  open('equipment',`${head(e.fresh?'Equipment found!':'Equipment ready!',found.name)}<div class="panel-body"><div class="equipment-reveal"><canvas width="88" height="72" data-category="${e.kind}" aria-hidden="true"></canvas><span aria-hidden="true">➜</span><canvas class="equipment-prize" width="272" height="272" data-equipment="${e.id}" data-type="${e.kind}" aria-label="${esc(found.name)}"></canvas><b aria-hidden="true">✓</b></div><p class="adult-copy">${esc(found.desc)} ${e.equipped?'Equipped and ready to use.':'Yours to choose in the workshop.'}</p><div class="pause-picture-grid">${iconAction('close','▶','Keep exploring',true)}${iconAction('build','⚙','See this equipment in the workshop')}</div></div>`);
@@ -55,7 +56,7 @@ game.onEvent=e=>{
  if(e.type==='victory'){persist();reward('firejet',FINAL_AREA);}
  if(e.type==='findEquipment'){persist();tone(1100,.3);equipmentFind(e);}
  if(e.type==='rescue'){persist();toast('Recharged at home. Progress kept.','⌂ ♥');}
- if(e.type==='home'){persist();if(workshopRequested)workshop();}
+ if(e.type==='home'){persist();if(workshopRequested||e.arrival)workshop();}
  if(e.type==='charging'){persist();toast('Charging…','＋');}if(e.type==='charged'){persist();toast('Fully charged. Ready to roll!','✓');}
  if(e.type==='block')tone(760,.1);
  if(e.type==='pickup')tone(850,.04);

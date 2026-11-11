@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {AREAS,FINAL_AREA,HOME,KEY_LOOP,LANDMARKS,PRIVATE_ZONES,freshSave,readSave,canWalk,isPrivate,pathfind,dist,visibleLandmarks} from '../world.js?v=world25';
-import {MiamiAdventure} from '../engine.js?v=world25';
+import {AREAS,FINAL_AREA,HOME,KEY_LOOP,LANDMARKS,PRIVATE_ZONES,freshSave,readSave,canWalk,isPrivate,pathfind,dist,visibleLandmarks} from '../world.js?v=world26';
+import {MiamiAdventure} from '../engine.js?v=world26';
 import {readFile} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 
@@ -47,13 +47,13 @@ test('all enemy spawns stay on public land and out of playground safe zones',()=
 });
 
 test('City Centre gives wheels once, keeps the weapon and preserves its find across replay',()=>{
- const g=new MiamiAdventure(freshSave()),l=LANDMARKS.find(l=>l.id==='city-centre');Object.assign(g.player,l);g.update(.016);assert(g.save.owned.includes('grip'));assert.equal(g.save.build.wheels,'grip');assert.equal(g.save.weapon,'bumper');assert(!g.save.owned.includes('bubble'));const discoveries=[...g.save.discoveries];
+ const g=new MiamiAdventure(freshSave()),l=LANDMARKS.find(l=>l.id==='city-centre');Object.assign(g.player,l);g.update(.016);assert(g.save.owned.includes('grip'));assert.equal(g.save.build.wheels,'basic');assert.equal(g.save.weapon,'bumper');assert(!g.save.owned.includes('bubble'));const discoveries=[...g.save.discoveries];
  for(let i=0;i<20;i++)g.update(.05);assert.deepEqual(g.save.discoveries,discoveries);assert.equal(g.save.owned.filter(id=>id==='grip').length,1);
- const loaded=new MiamiAdventure(readSave(JSON.parse(JSON.stringify(g.snapshot()))));assert.equal(loaded.save.build.wheels,'grip');loaded.save.king=true;loaded.replay();assert(loaded.save.owned.includes('grip'));assert(loaded.save.discoveries.includes('city-centre'));
+ const loaded=new MiamiAdventure(readSave(JSON.parse(JSON.stringify(g.snapshot()))));assert.equal(loaded.save.build.wheels,'basic');loaded.save.king=true;loaded.replay();assert(loaded.save.owned.includes('grip'));assert(loaded.save.discoveries.includes('city-centre'));
 });
 
 test('playgrounds give an immediate usable item once, without a currency or collection requirement',()=>{
- const g=new MiamiAdventure(freshSave()),park=LANDMARKS.find(l=>l.id==='hammock'),events=[];g.onEvent=e=>events.push(e);Object.assign(g.player,park);g.update(.016);assert.equal(g.save.scrap,0);assert(g.save.owned.includes('spark-cell'));assert.equal(g.save.build.gadget,'spark-cell');assert(g.save.equipmentClaims.includes(park.id));assert.equal(events.filter(e=>e.type==='findEquipment').length,1);g.power();assert.equal(g.powerCd,24);
+ const g=new MiamiAdventure(freshSave()),park=LANDMARKS.find(l=>l.id==='hammock'),events=[];g.onEvent=e=>events.push(e);Object.assign(g.player,park);g.update(.016);assert.equal(g.save.scrap,0);assert(g.save.owned.includes('spark-cell'));assert.equal(g.save.build.gadget,'none');assert(g.save.equipmentClaims.includes(park.id));assert.equal(events.filter(e=>e.type==='findEquipment').length,1);g.power();assert.equal(g.powerCd,28);
  g.goHome();Object.assign(g.player,park);g.update(.016);assert.equal(events.filter(e=>e.type==='findEquipment').length,1);assert.equal(g.save.unlocked,1);assert.deepEqual(g.save.camps,[]);
 });
 

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {AREAS,HOME,BRIDGES,WEAPONS,freshSave,readSave,regionAt,canWalk,pathfind,visibleAreas,dist,FINAL_AREA,chapterForRegion,weaponFor} from '../world.js?v=world25';
-import {MiamiAdventure} from '../engine.js?v=world25';
+import {AREAS,HOME,BRIDGES,WEAPONS,freshSave,readSave,regionAt,canWalk,pathfind,visibleAreas,dist,FINAL_AREA,chapterForRegion,weaponFor} from '../world.js?v=world26';
+import {MiamiAdventure} from '../engine.js?v=world26';
 
 test('all missions are reachable as each district unlocks, future land stays locked',()=>{
  const s=freshSave();assert.deepEqual(visibleAreas(s).map(a=>a.id),[0,1]);
@@ -24,9 +24,9 @@ test('full campaign can be played with ordinary movement, auto attacks and Power
  for(const a of AREAS.slice(1)){
   const boss=g.enemies.find(e=>e.id===`boss-${a.id}`);assert(boss);assert(!g.awake(boss));const original=boss.hp;g.hit(boss,9999);assert.equal(boss.hp,original,'locked bosses ignore damage');
   for(let i=0;i<3;i++)playUntil(()=>g.save.camps.includes(`camp-${a.id}-${i}`),a.camps[i]);
-  assert(g.awake(boss));playUntil(()=>g.save.cleared.includes(`boss-${a.id}`),a.arena);
-  assert(g.save.owned.includes(a.reward));assert.equal(g.save.weapon,a.reward);assert(g.save.unlocked>=Math.min(FINAL_AREA,a.id+1));
-  g.goHome();
+  const chosen=g.save.weapon;assert(g.awake(boss));playUntil(()=>g.save.cleared.includes(`boss-${a.id}`),a.arena);
+  assert(g.save.owned.includes(a.reward));assert.equal(g.save.weapon,chosen);assert(g.save.unlocked>=Math.min(FINAL_AREA,a.id+1));
+  g.goHome();for(let tick=0;tick<5000&&!g.isHome();tick++)g.update(.05);assert(g.isHome());assert(g.equip('weapon',a.reward));
  }
  assert(g.save.king,'the Miami Beach boss is the King');
  assert(g.save.champion);assert.equal(g.save.weapon,'firejet');assert(AREAS.slice(1).every(a=>g.save.owned.includes(a.reward)));assert(!g.save.owned.includes('bubble'),'landmarks do not award extra weapons');assert.equal(g.save.camps.length,21);assert(events.includes('victory'));assert(rescues<12,'gentle mode remains forgiving');
@@ -43,7 +43,7 @@ test('full campaign can be played with ordinary movement, auto attacks and Power
 test('one mission press reaches a displaced boss with the short-range hammer',()=>{
  const s=freshSave();s.unlocked=3;s.cleared=['boss-1','boss-2'];s.camps=[0,1,2].map(i=>`camp-3-${i}`);s.owned.push('drum');s.weapon='drum';s.position={...AREAS[3].arena};const g=new MiamiAdventure(s),boss=g.enemies.find(e=>e.id==='boss-3');boss.y-=3.9;
  g.goNext();for(let tick=0;tick<600&&boss.hp>0;tick++)g.update(.05);
- assert(boss.hp<=0,'the mission helper closes the hammer range without another movement tap');assert(g.save.cleared.includes('boss-3'));assert.equal(g.save.weapon,'vine');
+ assert(boss.hp<=0,'the mission helper closes the hammer range without another movement tap');assert(g.save.cleared.includes('boss-3'));assert(g.save.owned.includes('vine'));assert.equal(g.save.weapon,'drum');
 });
 
 test('pause freezes walking, monster damage, projectiles, effects and cooldowns',()=>{

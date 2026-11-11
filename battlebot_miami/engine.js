@@ -1,7 +1,7 @@
-import {AREAS,HOME,weaponFor,dist,regionAt,canWalk,pathfind,visibleAreas,FINAL_AREA,allBossesCleared,isPrivate,safeAt,visibleLandmarks,EQUIPMENT,item,available,equipmentStats,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter,powerStats,equipmentClaimed,CAMP_SIZE,campEnemyId,reconcileCampProgress} from './world.js?v=world25';
+import {AREAS,HOME,weaponFor,dist,regionAt,canWalk,pathfind,visibleAreas,FINAL_AREA,allBossesCleared,isPrivate,safeAt,visibleLandmarks,EQUIPMENT,item,available,equipmentStats,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter,powerStats,equipmentClaimed,CAMP_SIZE,campEnemyId,reconcileCampProgress} from './world.js?v=world26';
 export const AUTO_DAMAGE=.6,TAP_DAMAGE=2,TAP_COOLDOWN=1.5;
 export class MiamiAdventure{
- constructor(save){this.save=save;this.player={...save.position,hp:save.hp,angle:0,cd:0,hit:0,swing:0,invincible:2};this.time=0;this.paused=false;this.route=[];this.effects=[];this.projectiles=[];this.enemies=[];this.target=null;this.powerCd=0;this.powerTime=0;this.tapCd=0;this.shieldCd=0;this.buddyCd=0;this.powerTarget=null;this.drops=save.drops||[];this.onEvent=()=>{};this.populate();}
+ constructor(save){this.save=save;this.player={...save.position,hp:save.hp,angle:0,cd:0,hit:0,swing:0,invincible:2};this.time=0;this.paused=false;this.route=[];this.effects=[];this.projectiles=[];this.enemies=[];this.target=null;this.powerCd=0;this.powerTime=0;this.tapCd=0;this.shieldCd=0;this.buddyCd=0;this.powerTarget=null;this.drops=save.drops||[];this.onEvent=()=>{};this.homeInside=this.isHome();this.populate();}
  emit(type,data={}){this.onEvent({type,...data});}
  maxHp(){return equipmentStats(this.save).hp;}
  get boostTime(){return this.powerTime;}
@@ -11,7 +11,12 @@ export class MiamiAdventure{
  repair(){if(this.isHome()){this.player.hp=this.maxHp();return true;}const station=this.stationNear();if(!station||this.charging||this.player.hp>=this.maxHp())return false;if(this.save.scrap<2){this.emit('toast',{text:'Charging costs 2 scrap. Home repairs are free.'});return false;}this.save.scrap-=2;this.route=[];this.target=null;this.powerTarget=null;this.charging=station.id;this.emit('charging');return true;}
  upgradeCost(kind){return ['armor','wheels'].includes(kind)&&this.save[kind]<2?(this.save[kind]===0?45:95):null;}
  upgrade(kind){const cost=this.upgradeCost(kind);if(cost===null||this.save.scrap<cost||!this.isHome())return false;this.save.scrap-=cost;this.save[kind]++;const id=(kind==='armor'?['light','steel','heavy']:['basic','grip','speed'])[this.save[kind]];if(!this.save.owned.includes(id))this.save.owned.push(id);this.save.build[kind]=id;this.player.hp=this.maxHp();this.emit('upgrade',{kind});return true;}
- equip(type,id){if(id===undefined){id=type;type='weapon';}if(!this.isHome()||!this.save.owned.includes(id)||!EQUIPMENT[type]?.some(p=>p.id===id))return false;this.save.build[type]=id;if(type==='weapon')this.save.weapon=id;this.player.hp=this.maxHp();this.emit('equip',{type,id});return true;}
+ equip(type,id){
+  if(id===undefined){id=type;type='weapon';}if(!this.isHome()||!this.save.owned.includes(id)||!EQUIPMENT[type]?.some(p=>p.id===id))return false;
+  const oldPower=powerStats(this.save),previous=this.save.build[type];this.save.build[type]=id;if(type==='weapon')this.save.weapon=id;
+  if(type==='gadget'&&previous!==id){const next=powerStats(this.save);this.powerCd=Math.min(next.cooldown,this.powerCd*next.cooldown/oldPower.cooldown);this.shieldCd=0;this.buddyCd=0;}
+  this.player.hp=this.maxHp();this.emit('equip',{type,id});return true;
+ }
  craft(type,id){if(type==='weapon')return false;const p=item(type,id);if(!this.isHome()||p?.id!==id||this.save.owned.includes(id)||!available(this.save,p)||this.save.scrap<p.cost||this.save.gears<p.gears)return false;this.save.scrap-=p.cost;this.save.gears-=p.gears;this.save.owned.push(id);this.equip(type,id);this.emit('crafted',{type,id});return true;}
  inView(e){const b=this.viewBounds;return !b||(e.x>b.left+.35&&e.x<b.right-.35&&e.y>b.top+.5&&e.y<b.bottom-.3);}
  populate(){
@@ -32,10 +37,7 @@ export class MiamiAdventure{
  isSafe(p){return safeAt(this.save,p);}
  awardEquipment(type,id){
   if(!EQUIPMENT[type]?.some(p=>p.id===id)||type==='weapon'||this.save.owned.includes(id))return false;
-  const oldPower=powerStats(this.save);this.save.owned.push(id);const previous=item(type,this.save.build[type]),found=item(type,id);
-  const better=type==='armor'?found.hp>previous.hp:type==='wheels'?found.speed>=previous.speed&&(found.hp||0)>=(previous.hp||0)&&(found.speed>previous.speed||(found.hp||0)>(previous.hp||0)):!(found.powerCooldown&&previous.powerCooldown&&found.powerCooldown>previous.powerCooldown)&&!(found.helperDamage&&previous.helperDamage&&found.helperDamage<previous.helperDamage)&&!(id==='shield'&&previous.id==='aegis')&&!(id==='magnet'&&previous.id==='vacuum');
-  if(better){this.save.build[type]=id;this.powerCd=Math.min(this.powerCd,this.powerCd*powerStats(this.save).cooldown/oldPower.cooldown);if(type==='gadget'){this.shieldCd=0;this.buddyCd=0;}}
-  this.player.hp=this.maxHp();return true;
+  this.save.owned.push(id);return true;
  }
  visitPlaces(){for(const l of visibleLandmarks(this.save)){
   if(dist(this.player,l)>1.8)continue;if(!this.save.discoveries.includes(l.id))this.save.discoveries.push(l.id);
@@ -49,8 +51,8 @@ export class MiamiAdventure{
   return {area:a.id,camp,enemy,position:enemy?{x:enemy.x,y:enemy.y}:camp>=0?a.camps[camp]:a.arena};
  }
  goNext(){reconcileCampProgress(this.save);const goal=this.nextObjective();if(!goal)return;if(goal.camp<0&&goal.enemy)this.tap(goal.enemy);else this.moveTo(goal.position);}
- goHome(){this.moveTo(HOME);this.headingHome=true;if(this.isHome()){this.repair();this.headingHome=false;this.emit('home');}return true;}
- rescueHome(){this.route=[];this.target=null;this.powerTarget=null;this.headingHome=false;this.charging=null;this.projectiles=[];Object.assign(this.player,HOME,{hp:this.maxHp(),invincible:3});this.emit('home');}
+ goHome(){this.moveTo(HOME);this.headingHome=true;if(this.isHome()){this.repair();this.headingHome=false;this.homeInside=true;this.emit('home',{arrival:true});}return true;}
+ rescueHome(){this.route=[];this.target=null;this.powerTarget=null;this.headingHome=false;this.charging=null;this.projectiles=[];this.homeInside=true;Object.assign(this.player,HOME,{hp:this.maxHp(),invincible:3});this.emit('home');}
  power(){if(this.paused||this.powerCd>0)return false;const stats=powerStats(this.save);this.powerCd=stats.cooldown;this.powerTime=stats.duration;this.player.invincible=1;this.player.cd=0;this.emit('power');return true;}
  tap(p,screenScale=0){if(this.paused)return;if(!Number.isFinite(p?.x)||!Number.isFinite(p?.y)||!canWalk(this.save,p)){this.moveTo(p);return;}this.headingHome=false;const e=this.enemies.filter(e=>e.hp>0&&this.awake(e)&&(screenScale<=0||this.inView(e))&&dist(p,{x:e.x,y:e.y-(screenScale>0?(e.boss?(e.king?1.9:1.7):.72)*.15:0)})<(screenScale>0?Math.max(.4,(e.boss?(e.king?1.9:1.7):.72)*.5)+22/screenScale:1.5)).sort((a,b)=>dist(a,p)-dist(b,p))[0];if(e){this.target=e;this.route=pathfind(this.save,this.player,e);this.powerTarget=e.id;this.tryPowerAttack();}else this.moveTo(p);}
  tryPowerAttack(){const e=this.enemies.find(e=>e.id===this.powerTarget&&e.hp>0&&this.awake(e));if(!e){this.powerTarget=null;return false;}if(this.tapCd>0||this.isSafe(this.player)||!this.inView(e)||!this.clearShot(this.player,e)||dist(this.player,e)>=weaponFor(this.save.weapon).range)return false;this.powerTarget=null;this.tapCd=TAP_COOLDOWN;this.attack(e,true);return true;}
@@ -71,7 +73,7 @@ export class MiamiAdventure{
   }
  }
  populateNewArea(r){const existing=this.enemies,ids=new Set(existing.map(e=>e.id));this.populate();this.enemies=[...existing,...this.enemies.filter(e=>!ids.has(e.id))];}
- award(id){if(!this.save.owned.includes(id))this.save.owned.push(id);this.save.weapon=id;this.save.build.weapon=id;this.player.hp=this.maxHp();this.emit('reward',{weapon:id});}
+ award(id){if(!this.save.owned.includes(id))this.save.owned.push(id);this.player.hp=this.maxHp();this.emit('reward',{weapon:id});}
  hurt(amount,attacker){const p=this.player;if(p.invincible>0||this.powerTime>0||this.isSafe(p))return;if(['shield','aegis'].includes(this.save.build.gadget)&&this.shieldCd<=0){this.shieldCd=this.save.build.gadget==='aegis'?4:8;this.effects.push({type:'burst',x:p.x,y:p.y,life:.4,max:.4,color:'#a9efd0'});this.emit('block');return;}const st=equipmentStats(this.save);p.hp-=Math.max(1,amount-st.defense)*(this.save.gentle?.65:1);if(st.reflect&&attacker)this.hit(attacker,amount*.3);p.hit=.2;p.invincible=.4;this.emit('hurt');if(p.hp<=0){this.rescueHome();this.emit('rescue');}}
  shoot(from,to,weapon,enemy=false,damage=null,activity={}){const angle=Math.atan2(to.y-from.y,to.x-from.x),speed=enemy?eSpeed(weapon):17,w=weaponFor(weapon),life=enemy?2.7:w.range/speed+.1;this.projectiles.push({x:from.x,y:from.y,ox:from.x,oy:from.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,angle,weapon,enemy,owner:from.id,target:to.id,damage:damage??(enemy?(weapon==='firejet'?14:weapon==='prism'?13:weapon==='metro'?14:9):w.damage*AUTO_DAMAGE*(this.powerTime>0?1.65:1)),life,maxLife:life,hit:[],targeted:!!activity.targeted,powered:!!activity.powered});}
  attack(e,power=false){const p=this.player,w=weaponFor(this.save.weapon),damage=w.damage*(power?TAP_DAMAGE:AUTO_DAMAGE)*(this.powerTime>0?1.65:1);if(this.isSafe(p)||!this.clearShot(p,e))return;if(!power)p.cd=w.rate*(this.powerTime>0?.7:1);p.angle=Math.atan2(e.y-p.y,e.x-p.x);p.swing=power?.65:.42;this.emit('attack');
@@ -87,7 +89,8 @@ export class MiamiAdventure{
   const length=Math.hypot(dx,dy)||1,speed=Math.min(equipmentStats(this.save).speed*dt,routeDistance);dx=dx/length*speed;dy=dy/length*speed;p.moving=!!(dx||dy);
   if(canWalk(this.save,{x:p.x+dx,y:p.y}))p.x+=dx;if(canWalk(this.save,{x:p.x,y:p.y+dy}))p.y+=dy;
   this.visitPlaces();if(this.paused)return;
-  if(this.headingHome&&this.isHome()){this.headingHome=false;this.route=[];this.repair();this.emit('home');}
+  const atHome=this.isHome(),arrived=atHome&&(this.headingHome||!this.homeInside);this.homeInside=atHome;
+  if(arrived){if(this.headingHome)this.route=[];this.headingHome=false;this.repair();this.emit('home',{arrival:true});if(this.paused)return;}
   const pickupRange=this.save.build.gadget==='vacuum'?5.5:this.save.build.gadget==='magnet'?3.2:1.45;for(const drop of this.drops)if(!drop.collected&&dist(p,drop)<pickupRange&&this.clearShot(p,drop)){drop.collected=true;this.save.scrap+=drop.scrap;this.save.gears+=drop.gears;this.emit('pickup');}this.drops=this.drops.filter(d=>!d.collected);
   const current=regionAt(p);if(current!==this.region){this.region=current;this.emit('region',{area:current});}
   if(this.target?.hp>0&&!this.route.length&&dist(this.target,p)>=weaponFor(this.save.weapon).range)this.route=pathfind(this.save,p,this.target);
