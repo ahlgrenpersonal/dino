@@ -1,7 +1,7 @@
-import {AREAS,BRIDGES,ROADS,LANDMARKS,HOME,KEY_LOOP,PRIVATE_ZONES,isPrivate,visibleAreas,weaponFor,regionAt,inside,onLine,dist,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter,canWalk,equipmentClaimed} from './world.js?v=world19';
-import {bot,rounded,atlasBot,equipmentIcon} from './bot-art.js?v=world19';
-import {peacock} from './wildlife-art.js?v=world19';
-import {drawLandmark} from './landmark-art.js?v=world19';
+import {AREAS,BRIDGES,ROADS,LANDMARKS,HOME,KEY_LOOP,PRIVATE_ZONES,isPrivate,visibleAreas,weaponFor,regionAt,inside,onLine,dist,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter,canWalk,equipmentClaimed} from './world.js?v=world20';
+import {bot,rounded,atlasBot,equipmentIcon} from './bot-art.js?v=world20';
+import {peacock} from './wildlife-art.js?v=world20';
+import {drawLandmark} from './landmark-art.js?v=world20';
 const ink='#244647';
 // A wider world with the previous build’s player size preserved in screen pixels.
 const viewportScale=width=>width<600?Math.max(55,Math.min(76,width/6.3)):85;
@@ -90,7 +90,7 @@ export class MiamiPainter{
   c.restore();
   for(const l of LANDMARKS.filter(l=>visible.some(a=>a.id===l.area))){const x=l.x*s+ox,y=l.y*s+oy;this.mapTargets.push({x:x-10,y:y-10,width:20,height:20,destination:{x:l.x,y:l.y}});oval(c,x,y,4.5,4.5,l.equipment&&!equipmentClaimed(g.save,l)?'#ffd46f':['playground','pirate-playground','splash-park'].includes(l.kind)?'#f1a7ab':'#80b9b1');}
   for(const a of visible){const l=LANDMARKS.find(l=>l.id===['panorama','key-park','domino','park-grove','cape-florida','skyviews','frost','south-of-fifth'][a.id])||LANDMARKS.find(l=>l.area===a.id);if(!l)continue;const x=l.x*s+ox,y=l.y*s+oy;this.mapPlace(c,l,x,y,g.save);this.mapTargets.push({x:x-29,y:y-30,width:58,height:58,destination:{x:l.x,y:l.y}});}
-  if(next){const p=next.camps.find((_,i)=>!g.save.camps.includes(`camp-${next.id}-${i}`))||next.arena;this.mapTargets.push({x:ox+p.x*s-13,y:oy+p.y*s-13,width:26,height:26,destination:{x:p.x,y:p.y}});oval(c,ox+p.x*s,oy+p.y*s,13,13,'#ffe17b');label(c,'➜',ox+p.x*s,oy+p.y*s+6,22);}
+  if(next){const p=g.nextObjective()?.position||next.arena;this.mapTargets.push({x:ox+p.x*s-13,y:oy+p.y*s-13,width:26,height:26,destination:{x:p.x,y:p.y}});oval(c,ox+p.x*s,oy+p.y*s,13,13,'#ffe17b');label(c,'➜',ox+p.x*s,oy+p.y*s+6,22);}
   if(showPlayer)atlasBot(c,ox+g.player.x*s,oy+g.player.y*s,g.save,weaponFor(g.save.weapon).art);
   c.textAlign='start';c.fillStyle='#d7f7e9';c.font='800 28px system-ui';c.fillText('↑',550,40);this.mapTransform={s,ox,oy};
  }

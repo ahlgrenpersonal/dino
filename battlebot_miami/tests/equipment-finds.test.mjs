@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {LANDMARKS,EQUIPMENT,freshSave,readSave,visibleEquipment,equipmentClaimed,powerStats} from '../world.js?v=world19';
-import {MiamiAdventure} from '../engine.js?v=world19';
-import {paintPictures} from '../ui-art.js?v=world19';
-import {drawWorkshop} from '../workshop.js?v=world19';
+import {LANDMARKS,EQUIPMENT,freshSave,readSave,visibleEquipment,equipmentClaimed,powerStats} from '../world.js?v=world20';
+import {MiamiAdventure} from '../engine.js?v=world20';
+import {paintPictures} from '../ui-art.js?v=world20';
+import {drawWorkshop} from '../workshop.js?v=world20';
 
 test('every playground and former exploration-reward place gives a distinct real nonstarter equipment item',()=>{
  const ids=['city-centre','hammock','1814-park','key-park','domino','riverside-play','cocowalk','peacock','regatta','dinner-key','hobie','north-point','cape-florida','crandon-play','crandon','bayfront','fountain','bayside','miamarina','skyviews','museum-park','bayfront-play','frost','south-pointe'];

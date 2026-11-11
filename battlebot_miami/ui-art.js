@@ -1,7 +1,7 @@
-import {AREAS,LANDMARKS,WEAPONS,weaponFor,HOME,KEY_LOOP} from './world.js?v=world19';
-import {drawLandmark} from './landmark-art.js?v=world19';
-import {bot,weapon,equipmentIcon,categoryIcon} from './bot-art.js?v=world19';
-import {MiamiPainter} from './painter.js?v=world19';
+import {AREAS,LANDMARKS,WEAPONS,weaponFor,HOME,KEY_LOOP} from './world.js?v=world20';
+import {drawLandmark} from './landmark-art.js?v=world20';
+import {bot,weapon,equipmentIcon,categoryIcon} from './bot-art.js?v=world20';
+import {MiamiPainter} from './painter.js?v=world20';
 export const AREA_PICTURES=['panorama','key-park','domino','dinner-key','cape-florida','skyviews','frost','south-of-fifth'];
 function start(canvas){const c=canvas.getContext('2d');c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,canvas.width,canvas.height);c.showLabels=false;return c;}
 export function placePicture(canvas,place){const c=start(canvas),w=canvas.width,h=canvas.height,l=typeof place==='string'?LANDMARKS.find(l=>l.id===place):place;if(!l)return;c.save();const tall=['home','lighthouse'].includes(l.kind),scale=Math.min(w/(tall?7:10),h/(tall?14:8));c.translate(w/2,h*(tall?.78:.59));c.scale(scale,scale);c.translate(-l.x,-l.y);MiamiPainter.prototype.landmark.call({},c,l,0,{discoveries:[]});c.restore();}

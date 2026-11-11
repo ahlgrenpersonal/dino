@@ -1,4 +1,4 @@
-import {AREAS,HOME,weaponFor,dist,regionAt,canWalk,pathfind,visibleAreas,FINAL_AREA,allBossesCleared,isPrivate,safeAt,visibleLandmarks,EQUIPMENT,item,available,equipmentStats,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter,powerStats,equipmentClaimed} from './world.js?v=world19';
+import {AREAS,HOME,weaponFor,dist,regionAt,canWalk,pathfind,visibleAreas,FINAL_AREA,allBossesCleared,isPrivate,safeAt,visibleLandmarks,EQUIPMENT,item,available,equipmentStats,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter,powerStats,equipmentClaimed,CAMP_SIZE,campEnemyId,reconcileCampProgress} from './world.js?v=world20';
 export const AUTO_DAMAGE=.6,TAP_DAMAGE=2,TAP_COOLDOWN=1.5;
 export class MiamiAdventure{
  constructor(save){this.save=save;this.player={...save.position,hp:save.hp,angle:0,cd:0,hit:0,swing:0,invincible:2};this.time=0;this.paused=false;this.route=[];this.effects=[];this.projectiles=[];this.enemies=[];this.target=null;this.powerCd=0;this.powerTime=0;this.tapCd=0;this.shieldCd=0;this.buddyCd=0;this.powerTarget=null;this.drops=save.drops||[];this.onEvent=()=>{};this.populate();}
@@ -15,12 +15,12 @@ export class MiamiAdventure{
  craft(type,id){if(type==='weapon')return false;const p=item(type,id);if(!this.isHome()||p?.id!==id||this.save.owned.includes(id)||!available(this.save,p)||this.save.scrap<p.cost||this.save.gears<p.gears)return false;this.save.scrap-=p.cost;this.save.gears-=p.gears;this.save.owned.push(id);this.equip(type,id);this.emit('crafted',{type,id});return true;}
  inView(e){const b=this.viewBounds;return !b||(e.x>b.left+.35&&e.x<b.right-.35&&e.y>b.top+.5&&e.y<b.bottom-.3);}
  populate(){
-  this.enemies=[];
+  reconcileCampProgress(this.save);this.enemies=[];
   for(const a of visibleAreas(this.save)){
    if(!a.id)continue;
    for(const [i,c] of a.camps.entries()){
     if(this.save.camps.includes(`camp-${a.id}-${i}`))continue;
-    for(let j=0;j<4;j++){const id=`mob-${a.id}-${i}-${j}`;if(this.save.defeated.includes(id))continue;const angle=j*Math.PI/2,hp=a.id===1?13:18+a.id*9,spread=a.id===1?.5:1.15;this.enemies.push({id,area:regionAt(c),chapter:a.id,camp:i,x:c.x+Math.cos(angle)*spread,y:c.y+Math.sin(angle)*spread,home:{...c},hp,maxHp:hp,theme:a.theme,peacock:a.id===3&&j%2===0,cd:1+j*.3,angle:0,hit:0,swing:0});}
+    for(let j=0;j<CAMP_SIZE;j++){const id=campEnemyId(a.id,i,j);if(this.save.defeated.includes(id))continue;const angle=j*Math.PI/2,hp=a.id===1?13:18+a.id*9,spread=a.id===1?.5:1.15;this.enemies.push({id,area:regionAt(c),chapter:a.id,camp:i,x:c.x+Math.cos(angle)*spread,y:c.y+Math.sin(angle)*spread,home:{...c},hp,maxHp:hp,theme:a.theme,peacock:a.id===3&&j%2===0,cd:1+j*.3,angle:0,hit:0,swing:0});}
    }
    if(!this.save.cleared.includes(`boss-${a.id}`))this.addBoss(a);
   }
@@ -43,7 +43,12 @@ export class MiamiAdventure{
  }}
  moveTo(p){this.target=null;this.powerTarget=null;this.headingHome=false;this.charging=null;this.route=pathfind(this.save,this.player,p);return this.route.length>0;}
  goArea(r){if(!visibleAreas(this.save).some(a=>a.id===r))return;this.moveTo(r===0?HOME:AREAS[r].entry);}
- goNext(){const a=nextChapter(this.save);if(!a)return;const c=a.camps.find((_,i)=>!this.save.camps.includes(`camp-${a.id}-${i}`));if(c){this.moveTo(c);return;}const boss=this.enemies.find(e=>e.id===`boss-${a.id}`&&e.hp>0);if(boss)this.tap(boss);else this.moveTo(a.arena);}
+ nextObjective(){
+  const a=nextChapter(this.save);if(!a)return null;const camp=a.camps.findIndex((_,i)=>!this.save.camps.includes(`camp-${a.id}-${i}`));
+  const enemy=camp>=0?this.enemies.filter(e=>!e.boss&&e.hp>0&&(e.chapter??e.area)===a.id&&e.camp===camp).sort((x,y)=>dist(x,this.player)-dist(y,this.player))[0]:this.enemies.find(e=>e.id===`boss-${a.id}`&&e.hp>0);
+  return {area:a.id,camp,enemy,position:enemy?{x:enemy.x,y:enemy.y}:camp>=0?a.camps[camp]:a.arena};
+ }
+ goNext(){reconcileCampProgress(this.save);const goal=this.nextObjective();if(!goal)return;if(goal.camp<0&&goal.enemy)this.tap(goal.enemy);else this.moveTo(goal.position);}
  goHome(){this.moveTo(HOME);this.headingHome=true;if(this.isHome()){this.repair();this.headingHome=false;this.emit('home');}return true;}
  rescueHome(){this.route=[];this.target=null;this.powerTarget=null;this.headingHome=false;this.charging=null;this.projectiles=[];Object.assign(this.player,HOME,{hp:this.maxHp(),invincible:3});this.emit('home');}
  power(){if(this.paused||this.powerCd>0)return false;const stats=powerStats(this.save);this.powerCd=stats.cooldown;this.powerTime=stats.duration;this.player.invincible=1;this.player.cd=0;this.emit('power');return true;}

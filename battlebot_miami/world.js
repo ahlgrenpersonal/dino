@@ -1,6 +1,6 @@
 // A compact, north-up Miami play map. Distances and streets are simplified.
-import {ADVENTURE_EQUIPMENT,ADVENTURE_COLORS} from './equipment.js?v=world19';
-export const BUILD='world19';
+import {ADVENTURE_EQUIPMENT,ADVENTURE_COLORS} from './equipment.js?v=world20';
+export const BUILD='world20';
 export const HOME={x:94,y:81};
 export const W=204,H=196;
 export const FINAL_AREA=7;
@@ -123,6 +123,17 @@ export function inside(p,poly){let hit=false;for(let i=0,j=poly.length-1;i<poly.
 export function segmentDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));return dist(p,{x:a.x+t*dx,y:a.y+t*dy});}
 export const onLine=(p,points,width)=>points.slice(1).some((b,i)=>segmentDistance(p,points[i],b)<width/2);
 export function regionAt(p){const b=BRIDGES.find(b=>onLine(p,b.points,b.width));if(b)return b.area;return AREAS.findLast(a=>a.polys.some(poly=>inside(p,poly)))?.id??-1;}
+export const CAMP_SIZE=4;
+export const campEnemyId=(chapter,camp,slot)=>`mob-${chapter}-${camp}-${slot}`;
+// Defeated enemy IDs are durable proof; repair a missing ledger entry without rewards.
+export function reconcileCampProgress(save){
+ const defeated=new Set(save.defeated),credited=new Set(save.camps),repaired=[];
+ for(const a of AREAS.filter(a=>a.id))for(let i=0;i<a.camps.length;i++){
+  const key=`camp-${a.id}-${i}`;
+  if(!credited.has(key)&&Array.from({length:CAMP_SIZE},(_,j)=>campEnemyId(a.id,i,j)).every(id=>defeated.has(id))){save.camps.push(key);credited.add(key);repaired.push(key);}
+ }
+ return repaired;
+}
 export function freshSave(){return {schema:1,equipmentVersion:1,progressionVersion:2,mapLayout:MAP_LAYOUT,discoveries:[],equipmentClaims:[],unlocked:1,cleared:[],camps:[],defeated:[],owned:Object.values(STARTERS),build:{...STARTERS},weapon:'bumper',armor:0,wheels:0,color:COLORS[0],scrap:0,gears:0,drops:[],cycle:1,champion:false,queen:false,king:false,position:{...HOME},hp:70,sound:false,gentle:true,details:false};}
 export function readSave(raw){
  const s=freshSave();if(!raw||raw.schema!==1)return s;
@@ -142,6 +153,7 @@ export function readSave(raw){
  if(Number.isFinite(raw.position?.x)&&Number.isFinite(raw.position?.y)){const r=regionAt(raw.position);if(r>=0&&r<=(s.champion?FINAL_AREA:s.unlocked))s.position={x:raw.position.x,y:raw.position.y};}
  if(Number.isFinite(raw.hp)){const hp=raw.equipmentVersion===1?raw.hp:raw.hp/(110+s.armor*55)*equipmentStats(s).hp;s.hp=Math.max(1,Math.min(equipmentStats(s).hp,hp));}
  if(Array.isArray(raw.drops))s.drops=raw.drops.filter(d=>d&&Number.isFinite(d.x)&&Number.isFinite(d.y)&&canWalk(s,d)&&typeof d.id==='string'&&/^[a-z0-9-]{1,70}$/.test(d.id)).slice(0,500).map(d=>({id:d.id,x:d.x,y:d.y,scrap:Math.floor(Math.max(0,Math.min(3,Number(d.scrap)||0))),gears:Math.floor(Math.max(0,Math.min(1,Number(d.gears)||0)))}));
+ reconcileCampProgress(s);
  if(!canWalk(s,s.position))s.position=nearestWalkable(s,s.position)||{...HOME};
  return s;
 }

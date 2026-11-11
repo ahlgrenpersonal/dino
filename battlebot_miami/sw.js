@@ -1,6 +1,6 @@
-const CACHE_NAME='battlebot-miami-world19';
+const CACHE_NAME='battlebot-miami-world20';
 const ROOT=new URL('./',self.location.href);
-const ASSETS=['./','index.html','styles.css?v=world19','adventure.css?v=world19','adventure-layout.css?v=world19','app.js?v=world19','world.js?v=world19','engine.js?v=world19','painter.js?v=world19','bot-art.js?v=world19','miami-weapon-art.js?v=world19','costumes.js?v=world19','landmark-art.js?v=world19','ui-art.js?v=world19','wildlife-art.js?v=world19','equipment.js?v=world19','workshop.js?v=world19','audio.js?v=world19','power-control.js?v=world19','atlas.js?v=world19','world-input.js?v=world19','assets/miami-theme.mp3','icon.svg','icon-192.png','icon-512.png','manifest.webmanifest','version.json'];
+const ASSETS=['./','index.html','styles.css?v=world20','adventure.css?v=world20','adventure-layout.css?v=world20','app.js?v=world20','world.js?v=world20','engine.js?v=world20','painter.js?v=world20','bot-art.js?v=world20','miami-weapon-art.js?v=world20','costumes.js?v=world20','landmark-art.js?v=world20','ui-art.js?v=world20','wildlife-art.js?v=world20','equipment.js?v=world20','workshop.js?v=world20','audio.js?v=world20','power-control.js?v=world20','atlas.js?v=world20','world-input.js?v=world20','assets/miami-theme.mp3','icon.svg','icon-192.png','icon-512.png','manifest.webmanifest','version.json'];
 const PUBLIC_ASSETS=new Set(ASSETS.map(asset=>new URL(asset,ROOT).href));
 const NAVIGATIONS=new Set([ROOT.pathname,new URL('index.html',ROOT).pathname]);
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
