@@ -1,4 +1,4 @@
-// Standard Adventure music, gesture unlock, level and mute/visibility behavior.
+// Adventure audio controls: gesture unlock, level and mute/visibility behavior.
 export function adventureAudio(enabled,doc=document){
  let audio,musicUnlocked=false;const music=doc.getElementById('music');
  function soundContext(){if(!audio){audio=new(window.AudioContext||window.webkitAudioContext)();const source=audio.createMediaElementSource(music),gain=audio.createGain();gain.gain.value=.28;source.connect(gain);gain.connect(audio.destination);}return audio;}

@@ -1,6 +1,6 @@
 # Battle Bot Miami
 
-A Miami chapter using the standard Bot Adventure's robot and equipment artwork, workshop layout, equipment definitions, Power control, atlas controls, styles, music and camera rules. It installs separately and keeps its own progress. The map, landmarks, staged chapters and monster bosses belong to Miami.
+A Miami chapter using the standard Bot Adventure's robot and equipment artwork, workshop layout, equipment definitions, Power control, atlas controls, styles, audio controls and camera rules. It installs separately and keeps its own progress. The map, landmarks, staged chapters and monster bosses belong to Miami.
 
 Tap land to walk and the bot automatically battles nearby monsters. Tap a monster for Adventure's stronger targeted strike; the lightning button gives the familiar six-second Power boost, ready every 28 seconds. Three battery pictures wake each district boss. Boss portraits, weapons, arrows and check marks carry the play flow without requiring reading. Startup protection is a steady shield.
 
@@ -8,7 +8,9 @@ Build walks back to Panorama's free workshop. The original four tabs are Weapons
 
 The map uses Adventure's pinch/pan, zoom buttons, fit button and highlighted current destination; other destinations stay collapsed. Public playgrounds have green-ring charging pads: the ＋ button spends two scrap to recharge, and Charge Coupler doubles the rate. Safe playgrounds prevent both damage and attacks. Gentle mode starts on; rescues retain discoveries and equipment.
 
-Tap ♪ to enable the exact same music file as standard Bot Adventure. It loops at the original level, keeps playing through menus, and pauses when muted or the page is hidden. Offline byte-range playback is supported. Browser audio requires an initial gesture.
+Tap ♪ to enable the original Miami instrumental: a sunny Latin-inspired exploration theme, about 95 seconds long, with a smooth loop and balanced background level. It uses Adventure's audio controls, keeps playing through menus, and pauses when muted or the page is hidden. Offline byte-range playback is supported. Browser audio requires an initial gesture.
+
+Taps on water, private property or locked areas quietly stop movement. The map also ignores inaccessible destinations without a warning sign.
 
 Brickell is safe, with Panorama Tower’s single blue-glass “Trash Can Building” silhouette, Brickell City Centre’s free Ribbon Bubbler, Brickell Park, the Hammock Playground and 1814 Brickell Park. Brickell Key is a waterfront circuit around an inaccessible residential center. Little Havana has Domino Park, Tower Theater and a riverside playground, with mummy robots to battle.
 
@@ -24,4 +26,4 @@ The game preserves broad relative locations with an enlarged arcade scale. It do
 
 From the repository root, run `npm start --prefix battlebot_miami`, then open `http://127.0.0.1:4217/`. No dependency installation is needed. `MIAMI_PORT` selects another port. `npm test --prefix battlebot_miami` checks campaign completion, landmark walks, private boundaries, bridge-only crossings, combat, peacocks, rewards, replay, saves, picture rendering, viewport changes and PWA behavior.
 
-Keyboard: arrows/WASD move, Space gives Power, M opens the map, and P/Escape pauses. Native keyboard controls work within paused dialogs. The PWA caches only listed app assets, uses separate save/cache namespaces, and never loads personal place overrides. Build world13.
+Keyboard: arrows/WASD move, Space gives Power, M opens the map, and P/Escape pauses. Native keyboard controls work within paused dialogs. The PWA caches only listed app assets, uses separate save/cache namespaces, and never loads personal place overrides. Build world14.

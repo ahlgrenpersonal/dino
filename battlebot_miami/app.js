@@ -1,12 +1,12 @@
-import {BUILD,AREAS,HOME,ROADS,BRIDGES,LANDMARKS,WEAPONS,weaponFor,readSave,visibleAreas,visibleLandmarks,FINAL_AREA,regionAt,dist,onLine,equipmentStats} from './world.js?v=world13';
-import {MiamiAdventure} from './engine.js?v=world13';
-import {MiamiPainter} from './painter.js?v=world13';
-import {paintPictures,areaPicture,enemyPicture,weaponPicture,robotPicture} from './ui-art.js?v=world13';
-import {workshopHTML,drawWorkshop} from './workshop.js?v=world13';
-import {adventureAudio} from './audio.js?v=world13';
-import {bindPowerControl,updatePowerControl} from './power-control.js?v=world13';
-import {mountAtlas} from './atlas.js?v=world13';
-const buildVersion='world13';
+import {BUILD,AREAS,HOME,ROADS,BRIDGES,LANDMARKS,WEAPONS,weaponFor,readSave,visibleAreas,visibleLandmarks,FINAL_AREA,regionAt,dist,onLine,equipmentStats,canWalk} from './world.js?v=world14';
+import {MiamiAdventure} from './engine.js?v=world14';
+import {MiamiPainter} from './painter.js?v=world14';
+import {paintPictures,areaPicture,enemyPicture,weaponPicture,robotPicture} from './ui-art.js?v=world14';
+import {workshopHTML,drawWorkshop} from './workshop.js?v=world14';
+import {adventureAudio} from './audio.js?v=world14';
+import {bindPowerControl,updatePowerControl} from './power-control.js?v=world14';
+import {mountAtlas} from './atlas.js?v=world14';
+const buildVersion='world14';
 const SAVE_KEY='battlebot-miami-save-v1';
 const $=id=>document.getElementById(id);
 let stored;try{stored=JSON.parse(localStorage.getItem(SAVE_KEY));}catch{}
@@ -31,13 +31,13 @@ function pause(){open('pause',`${head('Take a breather','Your adventure is saved
 function placeCard(l){return `<button class="place picture-place" data-landmark="${l.id}" aria-label="Walk to ${esc(l.name)}"><canvas width="220" height="150" data-place="${l.id}" aria-hidden="true"></canvas><span class="place-mark" aria-hidden="true">${game.save.discoveries.includes(l.id)?'✓':l.reward?'ϟ':'➜'}</span><b class="adult-copy">${esc(l.name)}</b></button>`;}
 function showMap(){const visible=visibleAreas(game.save),next=nextArea();open('map',`${head('Miami adventure map','New areas appear one at a time.')}<div class="panel-body"><button class="region-row current-destination" data-action="trail" aria-label="Follow highlighted trail"><canvas width="88" height="72" data-area="${next.id}" aria-hidden="true"></canvas><div><b class="adult-copy">${next.name}</b><span aria-hidden="true">${game.save.king?'♛ ✓':'ϟ '.repeat(game.campsIn(next.id))}</span></div><em>➜</em></button><div class="atlas-stage"><div class="atlas-tools" role="group" aria-label="Map zoom"><output id="mapZoom" class="atlas-zoom" aria-label="Map zoom level">100%</output><button id="mapZoomOut" aria-label="Zoom out">−</button><button id="mapZoomIn" aria-label="Zoom in">+</button><button id="mapFit" aria-label="Show whole map">⛶</button><button id="mapGo" class="atlas-go" aria-label="Follow highlighted trail">➜</button></div><canvas id="atlas" class="map-canvas" aria-label="Unlocked Miami map. Pinch to zoom. Tap public land to walk there."></canvas></div><details class="other-destinations"><summary aria-label="Other destinations"><span aria-hidden="true">◇ ⌖</span><b class="adult-copy">Other destinations</b></summary><div class="region-list">${visible.map(a=>`<button class="region-row ${a.id===next.id?'active-region':''}" data-area="${a.id}" aria-label="Walk to ${a.name}"><canvas width="88" height="72" data-area="${a.id}" aria-hidden="true"></canvas><div><b class="adult-copy">${a.name}</b></div><em>${a.id===0?'⌂':game.save.cleared.includes(`boss-${a.id}`)?'✓':'➜'}</em></button>`).join('')}</div></details><details class="places-list"><summary aria-label="Parks and places"><span aria-hidden="true">♧ ⌖</span><b class="adult-copy">Parks and places</b></summary><div class="region-list">${visibleLandmarks(game.save).map(placeCard).join('')}</div></details></div>`);
  const source=document.createElement('canvas');painter.map(source,game);const transform={...painter.mapTransform};
- atlasController=mountAtlas($('atlas'),{source,initialZoom:1,maxZoom:10,onChange:zoom=>{$('mapZoom').value=`${Math.round(zoom*100)}%`;$('mapZoomOut').disabled=zoom<=1;$('mapZoomIn').disabled=zoom>=10;},onSelect:p=>{const point={x:(p.x-transform.ox)/transform.s,y:(p.y-transform.oy)/transform.s},r=regionAt(point);if(r>=0&&visible.some(a=>a.id===r)){close();game.moveTo(point);}else toast('Choose the land or a bridge.','🚫');}});
+ atlasController=mountAtlas($('atlas'),{source,initialZoom:1,maxZoom:10,onChange:zoom=>{$('mapZoom').value=`${Math.round(zoom*100)}%`;$('mapZoomOut').disabled=zoom<=1;$('mapZoomIn').disabled=zoom>=10;},onSelect:p=>{const point={x:(p.x-transform.ox)/transform.s,y:(p.y-transform.oy)/transform.s};if(canWalk(game.save,point)){close();game.moveTo(point);}}});
  $('mapZoomIn').onclick=()=>atlasController.zoomBy(1.35);$('mapZoomOut').onclick=()=>atlasController.zoomBy(1/1.35);$('mapFit').onclick=()=>atlasController.reset();$('mapGo').onclick=trail;
 }
 function workshop(){if(!game.isHome()){close();workshopRequested=true;game.goHome();toast('Heading to the workshop.','⌂ ➜');return;}workshopRequested=false;game.repair();persist();open('workshop',workshopHTML(game.save,workTab,workshopDetails,head));panel.dataset.details=String(workshopDetails);panel.querySelector('.close').insertAdjacentHTML('beforebegin',`<button class="icon-button workshop-info" data-action="equipment-details" aria-label="Equipment details" aria-pressed="${workshopDetails}">ⓘ</button>`);drawWorkshop(panel,game.save,workTab);workshopObserver=new ResizeObserver(()=>drawWorkshop(panel,game.save,workTab));workshopObserver.observe($('botPreview'));}
 function reward(id,area){const w=weaponFor(id),victory=id==='firejet';open('reward',`${head(victory?'Miami champion!':'New weapon!',w.name)}<div class="panel-body"><div class="reward-sequence"><canvas width="140" height="140" data-enemy="${victory?7:id==='prism'?6:area-1}" aria-hidden="true"></canvas><span aria-hidden="true">✓ ➜</span><canvas width="280" height="190" data-weapon="${id}" aria-label="${w.name}"></canvas></div><p class="copy adult-copy">${w.desc} Already equipped, and yours forever. ${victory?'You can explore anywhere or respawn every camp and boss.':id==='prism'?'Cross MacArthur Causeway to Miami Beach next.':`Next: ${AREAS[area].name}.`}</p><div class="reward-next">${victory?'<span class="victory-crown" aria-hidden="true">♛ ★</span>':`<canvas width="220" height="150" data-area="${area}" aria-hidden="true"></canvas>`}</div><div class="pause-picture-grid">${iconAction(victory?'close':'trail','▶','Continue adventure',true)}${victory?iconAction('replay','↻','Respawn the world'):iconAction('map','◇','Miami map')}${iconAction('build','⚙','Workshop')}</div></div>`);}
 game.onEvent=e=>{
- if(e.type==='toast')toast(e.text,'🚫');
+ if(e.type==='toast')toast(e.text,'ⓘ');
  if(e.type==='attack')tone(weaponFor(game.save.weapon).id==='firejet'?180:560,.07);
  if(e.type==='power')tone(900,.2);
  if(e.type==='hurt')tone(130,.08);

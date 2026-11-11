@@ -1,4 +1,4 @@
-import {AREAS,HOME,weaponFor,dist,regionAt,canWalk,pathfind,visibleAreas,FINAL_AREA,allBossesCleared,isPrivate,safeAt,visibleLandmarks,EQUIPMENT,item,available,equipmentStats,CHARGING_STATIONS} from './world.js?v=world13';
+import {AREAS,HOME,weaponFor,dist,regionAt,canWalk,pathfind,visibleAreas,FINAL_AREA,allBossesCleared,isPrivate,safeAt,visibleLandmarks,EQUIPMENT,item,available,equipmentStats,CHARGING_STATIONS} from './world.js?v=world14';
 export const AUTO_DAMAGE=.6,TAP_DAMAGE=2,TAP_COOLDOWN=1.5;
 export class MiamiAdventure{
  constructor(save){this.save=save;this.player={...save.position,hp:save.hp,angle:0,cd:0,hit:0,swing:0,invincible:2};this.time=0;this.paused=false;this.route=[];this.effects=[];this.projectiles=[];this.enemies=[];this.target=null;this.powerCd=0;this.powerTime=0;this.tapCd=0;this.shieldCd=0;this.buddyCd=0;this.powerTarget=null;this.drops=save.drops||[];this.onEvent=()=>{};this.populate();}
@@ -31,13 +31,13 @@ export class MiamiAdventure{
  clearShot(from,to){const n=Math.max(1,Math.ceil(dist(from,to)*5));for(let i=0;i<=n;i++)if(isPrivate({x:from.x+(to.x-from.x)*i/n,y:from.y+(to.y-from.y)*i/n}))return false;return true;}
  isSafe(p){return safeAt(this.save,p);}
  visitPlaces(){for(const l of visibleLandmarks(this.save)){if(dist(this.player,l)>1.8||this.save.discoveries.includes(l.id))continue;this.save.discoveries.push(l.id);if(l.reward){this.award(l.reward);this.emit('find',{weapon:l.reward,place:l.name});}else if(l.stamp){this.save.scrap+=8;this.player.hp=Math.min(this.maxHp(),this.player.hp+20);this.emit('visit',{place:l.name});}}}
- moveTo(p){this.target=null;this.powerTarget=null;this.headingHome=false;this.charging=null;this.route=pathfind(this.save,this.player,p);if(!this.route.length&&dist(this.player,p)>1)this.emit('toast',{text:'Choose a path on the land or bridge.'});}
+ moveTo(p){this.target=null;this.powerTarget=null;this.headingHome=false;this.charging=null;this.route=pathfind(this.save,this.player,p);return this.route.length>0;}
  goArea(r){if(!visibleAreas(this.save).some(a=>a.id===r))return;this.moveTo(r===0?HOME:AREAS[r].entry);}
  goNext(){const a=AREAS.find(a=>a.id&&!this.save.cleared.includes(`boss-${a.id}`));if(!a)return;const c=a.camps.find((_,i)=>!this.save.camps.includes(`camp-${a.id}-${i}`));if(c){this.moveTo(c);return;}const boss=this.enemies.find(e=>e.id===`boss-${a.id}`&&e.hp>0);if(boss)this.tap(boss);else this.moveTo(a.arena);}
  goHome(){this.moveTo(HOME);this.headingHome=true;if(this.isHome()){this.repair();this.headingHome=false;this.emit('home');}return true;}
  rescueHome(){this.route=[];this.target=null;this.powerTarget=null;this.headingHome=false;this.charging=null;this.projectiles=[];Object.assign(this.player,HOME,{hp:this.maxHp(),invincible:3});this.emit('home');}
  power(){if(this.paused||this.powerCd>0)return false;const capacitor=this.save.build.gadget==='capacitor';this.powerCd=capacitor?18:28;this.powerTime=capacitor?8:6;this.player.invincible=1;this.player.cd=0;this.emit('power');return true;}
- tap(p){if(this.paused)return;this.headingHome=false;const e=this.enemies.filter(e=>e.hp>0&&this.awake(e)&&dist(e,p)<1.5).sort((a,b)=>dist(a,p)-dist(b,p))[0];if(e){this.target=e;this.route=pathfind(this.save,this.player,e);this.powerTarget=e.id;this.tryPowerAttack();}else this.moveTo(p);}
+ tap(p){if(this.paused)return;if(!Number.isFinite(p?.x)||!Number.isFinite(p?.y)||!canWalk(this.save,p)){this.moveTo(p);return;}this.headingHome=false;const e=this.enemies.filter(e=>e.hp>0&&this.awake(e)&&dist(e,p)<1.5).sort((a,b)=>dist(a,p)-dist(b,p))[0];if(e){this.target=e;this.route=pathfind(this.save,this.player,e);this.powerTarget=e.id;this.tryPowerAttack();}else this.moveTo(p);}
  tryPowerAttack(){const e=this.enemies.find(e=>e.id===this.powerTarget&&e.hp>0&&this.awake(e));if(!e){this.powerTarget=null;return false;}if(this.tapCd>0||this.isSafe(this.player)||!this.inView(e)||!this.clearShot(this.player,e)||dist(this.player,e)>=weaponFor(this.save.weapon).range)return false;this.powerTarget=null;this.tapCd=TAP_COOLDOWN;this.attack(e,true);return true;}
  hit(e,damage){if(e.hp<=0||!this.awake(e))return;e.hp-=damage;e.hit=.18;if(e.hp<=0)this.defeat(e);}
  defeat(e){

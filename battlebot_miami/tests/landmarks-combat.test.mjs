@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {AREAS,FINAL_AREA,HOME,KEY_LOOP,LANDMARKS,PRIVATE_ZONES,freshSave,readSave,canWalk,isPrivate,pathfind,dist,visibleLandmarks} from '../world.js?v=world13';
-import {MiamiAdventure} from '../engine.js?v=world13';
+import {AREAS,FINAL_AREA,HOME,KEY_LOOP,LANDMARKS,PRIVATE_ZONES,freshSave,readSave,canWalk,isPrivate,pathfind,dist,visibleLandmarks} from '../world.js?v=world14';
+import {MiamiAdventure} from '../engine.js?v=world14';
 import {readFile} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 
@@ -22,6 +22,16 @@ test('Brickell Key has a blocked center and a continuous public circuit in both 
 test('keyboard steering cannot enter the residential center or walk on water',()=>{
  const g=new MiamiAdventure(freshSave());g.enemies=[];Object.assign(g.player,{x:114.5,y:70.5});for(let i=0;i<400;i++)g.update(.05,{x:1,y:0});assert(canWalk(g.save,g.player));assert(g.player.x<117);
  Object.assign(g.player,{x:101,y:90});for(let i=0;i<400;i++)g.update(.05,{x:1,y:0});assert(canWalk(g.save,g.player));assert(g.player.x<108);
+});
+
+test('invalid movement taps stop silently on water, private land and locked districts',()=>{
+ for(const destination of [{x:145,y:75},{x:121,y:72},{x:95,y:40},{x:NaN,y:81},null]){
+  const g=new MiamiAdventure(freshSave()),events=[];g.enemies=[];g.onEvent=e=>events.push(e);g.moveTo(AREAS[1].entry);assert(g.route.length);const start={x:g.player.x,y:g.player.y};g.tap(destination);assert.equal(g.route.length,0);assert.equal(g.target,null);assert.equal(g.powerTarget,null);for(let i=0;i<20;i++)g.update(.05);assert.deepEqual({x:g.player.x,y:g.player.y},start);assert(!events.some(e=>e.type==='toast'));
+ }
+});
+
+test('water taps cannot select an enemy standing near the shoreline',()=>{
+ const g=new MiamiAdventure(freshSave()),events=[];g.onEvent=e=>events.push(e);const enemy={id:'shore-bot',area:1,x:114.5,y:64.7,hp:100,maxHp:100};g.enemies=[enemy];assert(canWalk(g.save,enemy));const water={x:114.5,y:63.8};assert(!canWalk(g.save,water));assert(dist(enemy,water)<1.5);g.tap(water);assert.equal(g.target,null);assert.equal(g.powerTarget,null);assert.equal(g.route.length,0);assert.equal(g.tapCd,0);assert(!events.some(e=>e.type==='toast'||e.type==='attack'));
 });
 
 test('public fractional boundary positions can route home even when their grid center is private',()=>{

@@ -1,6 +1,6 @@
 // A compact, north-up Miami play map. Distances and streets are simplified.
-import {ADVENTURE_EQUIPMENT,ADVENTURE_COLORS} from './equipment.js?v=world13';
-export const BUILD='world13';
+import {ADVENTURE_EQUIPMENT,ADVENTURE_COLORS} from './equipment.js?v=world14';
+export const BUILD='world14';
 export const HOME={x:94,y:81};
 export const W=204,H=196;
 export const FINAL_AREA=7;

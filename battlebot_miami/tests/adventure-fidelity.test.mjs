@@ -3,18 +3,18 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import vm from 'node:vm';
-import {freshSave,readSave,EQUIPMENT,STARTERS,COLORS,equipmentStats,visibleEquipment,HOME} from '../world.js?v=world13';
-import {MiamiAdventure} from '../engine.js?v=world13';
-import {MiamiPainter,adventureZoom} from '../painter.js?v=world13';
-import {workshopHTML,drawWorkshop} from '../workshop.js?v=world13';
-import {adventureAudio} from '../audio.js?v=world13';
-import {bindPowerControl} from '../power-control.js?v=world13';
+import {freshSave,readSave,EQUIPMENT,STARTERS,COLORS,equipmentStats,visibleEquipment,HOME} from '../world.js?v=world14';
+import {MiamiAdventure} from '../engine.js?v=world14';
+import {MiamiPainter,adventureZoom} from '../painter.js?v=world14';
+import {workshopHTML,drawWorkshop} from '../workshop.js?v=world14';
+import {adventureAudio} from '../audio.js?v=world14';
+import {bindPowerControl} from '../power-control.js?v=world14';
 import {createPreviewServer} from '../tools/serve.mjs';
 const read=f=>readFile(new URL('../'+f,import.meta.url),'utf8');
 
-test('music is the exact standard Adventure song and install shell loops it',async()=>{
- const song=await readFile(new URL('../assets/adventure-theme.mp3',import.meta.url));assert.equal(createHash('sha256').update(song).digest('hex'),'aa2233fa4739259bacc05938c2a664e32141dc200b012e887c1be52ae88d5f50');
- assert.match(await read('index.html'),/<audio id="music" src="assets\/adventure-theme.mp3" preload="auto" loop hidden>/);assert((await read('sw.js')).includes("'assets/adventure-theme.mp3'"));
+test('Miami instrumental is pinned and loops with Adventure playback controls',async()=>{
+ const song=await readFile(new URL('../assets/miami-theme.mp3',import.meta.url));assert.equal(createHash('sha256').update(song).digest('hex'),'48dc33e0d2ed8dab5a09a59cf5bfc28e87f77e622e7f032cde01889cd9724d97');
+ assert.match(await read('index.html'),/<audio id="music" src="assets\/miami-theme.mp3" preload="auto" loop hidden>/);assert((await read('sw.js')).includes("'assets/miami-theme.mp3'"));
 });
 
 test('camera matches Adventure scale and player screen size at phone and desktop widths',()=>{
@@ -79,11 +79,11 @@ test('Adventure Power accepts a second-finger pointerdown and avoids double-firi
 
 test('cached music supports offline byte ranges, suffixes and invalid ranges',async()=>{
  const listeners={},bytes=new Uint8Array([0,1,2,3,4,5,6,7,8,9]);const context={URL,Response,self:{location:{href:'https://example.test/miami/sw.js'},addEventListener:(type,fn)=>listeners[type]=fn},caches:{open:async name=>{assert(name.startsWith('battlebot-miami-'));return {match:async()=>new Response(bytes)};}},fetch:async()=>{throw Error('offline');}};vm.runInNewContext(await read('sw.js'),context);
- for(const [range,status,expected] of [['bytes=2-5',206,[2,3,4,5]],['bytes=-3',206,[7,8,9]],['bytes=50-',416,[]]]){let response;listeners.fetch({request:new Request('https://example.test/miami/assets/adventure-theme.mp3',{headers:{range}}),respondWith:p=>response=p});const r=await response;assert.equal(r.status,status);assert.deepEqual([...new Uint8Array(await r.arrayBuffer())],expected);}
+ for(const [range,status,expected] of [['bytes=2-5',206,[2,3,4,5]],['bytes=-3',206,[7,8,9]],['bytes=50-',416,[]]]){let response;listeners.fetch({request:new Request('https://example.test/miami/assets/miami-theme.mp3',{headers:{range}}),respondWith:p=>response=p});const r=await response;assert.equal(r.status,status);assert.deepEqual([...new Uint8Array(await r.arrayBuffer())],expected);}
 });
 
 test('preview serves music as audio and honors Safari range requests',async()=>{
- const server=createPreviewServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));try{const base=`http://127.0.0.1:${server.address().port}/assets/adventure-theme.mp3`;const r=await fetch(base,{headers:{range:'bytes=0-31'}});assert.equal(r.status,206);assert.equal(r.headers.get('content-type'),'audio/mpeg');assert.equal((await r.arrayBuffer()).byteLength,32);assert.equal((await fetch(base,{headers:{range:'bytes=999999999-'}})).status,416);}finally{await new Promise(r=>server.close(r));}
+ const server=createPreviewServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));try{const base=`http://127.0.0.1:${server.address().port}/assets/miami-theme.mp3`;const r=await fetch(base,{headers:{range:'bytes=0-31'}});assert.equal(r.status,206);assert.equal(r.headers.get('content-type'),'audio/mpeg');assert.equal((await r.arrayBuffer()).byteLength,32);assert.equal((await fetch(base,{headers:{range:'bytes=999999999-'}})).status,416);}finally{await new Promise(r=>server.close(r));}
 });
 
 test('directional Adventure beams hit the corridor and spare off-axis or rear enemies',()=>{

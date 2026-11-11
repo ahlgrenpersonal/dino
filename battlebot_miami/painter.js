@@ -1,7 +1,7 @@
-import {AREAS,BRIDGES,ROADS,LANDMARKS,HOME,KEY_LOOP,PRIVATE_ZONES,isPrivate,visibleAreas,weaponFor,regionAt,inside,onLine,dist,CHARGING_STATIONS} from './world.js?v=world13';
-import {bot,rounded} from './bot-art.js?v=world13';
-import {peacock} from './wildlife-art.js?v=world13';
-import {drawLandmark} from './landmark-art.js?v=world13';
+import {AREAS,BRIDGES,ROADS,LANDMARKS,HOME,KEY_LOOP,PRIVATE_ZONES,isPrivate,visibleAreas,weaponFor,regionAt,inside,onLine,dist,CHARGING_STATIONS} from './world.js?v=world14';
+import {bot,rounded} from './bot-art.js?v=world14';
+import {peacock} from './wildlife-art.js?v=world14';
+import {drawLandmark} from './landmark-art.js?v=world14';
 const ink='#244647';
 // The standard Adventure camera, paired with its 1.17-unit player artwork.
 export const adventureZoom=width=>(width<600?Math.max(55,Math.min(76,width/6.3)):85)*.9;
