@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile,readdir} from 'node:fs/promises';
 import vm from 'node:vm';
-import {BUILD,freshSave} from '../world.js?v=world10';
-import {MiamiPainter} from '../painter.js?v=world10';
-import {MiamiAdventure} from '../engine.js?v=world10';
+import {BUILD,freshSave} from '../world.js?v=world13';
+import {MiamiPainter} from '../painter.js?v=world13';
+import {MiamiAdventure} from '../engine.js?v=world13';
 const read=name=>readFile(new URL('../'+name,import.meta.url),'utf8');
 
 test('build references, install icons, local module files and save namespaces agree',async()=>{
@@ -19,7 +19,7 @@ test('container-only size changes preserve square pixels, pointer mapping and ze
  const context=new Proxy({}, {get:(o,k)=>k==='createLinearGradient'?()=>({addColorStop(){}}):()=>{}});
  const canvas={width:1,height:1,getContext:()=>context,getBoundingClientRect:()=>({width,height})};
  const painter=new MiamiPainter(canvas),g=new MiamiAdventure(freshSave());
- for(const size of [[390,550],[390,420],[844,220],[1200,700],[0,0],[390,550]]){[width,height]=size;painter.draw(g,.016);assert(Number.isFinite(painter.scale));assert(painter.scale>0);assert.equal(canvas.width,Math.round(width*2));assert.equal(canvas.height,Math.round(height*2));if(width){const p=painter.worldPoint(width/2,height/2);assert.deepEqual(p,painter.camera);}}
+ for(const size of [[390,550],[390,420],[844,220],[1200,700],[0,0],[390,550]]){[width,height]=size;painter.draw(g,.016);assert(Number.isFinite(painter.scale));assert(painter.scale>0);assert.equal(canvas.width,Math.round(width*2));assert.equal(canvas.height,Math.round(height*2));if(width){const p=painter.worldPoint(width/2,height*.51);assert.deepEqual(p,painter.camera);}}
 });
 
 test('service worker removes only Miami caches and uses network-first navigation',async()=>{

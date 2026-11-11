@@ -1,5 +1,6 @@
 // A compact, north-up Miami play map. Distances and streets are simplified.
-export const BUILD='world10';
+import {ADVENTURE_EQUIPMENT,ADVENTURE_COLORS} from './equipment.js?v=world13';
+export const BUILD='world13';
 export const HOME={x:94,y:81};
 export const W=204,H=196;
 export const FINAL_AREA=7;
@@ -79,6 +80,7 @@ export const LANDMARKS=[
  {id:'south-beach',name:'Miami Beach',area:7,x:188,y:48,kind:'beach'}
 ];
 export const visibleLandmarks=save=>LANDMARKS.filter(l=>save.champion||l.area<=save.unlocked);
+export const CHARGING_STATIONS=LANDMARKS.filter(l=>['playground','pirate-playground','splash-park'].includes(l.kind)).map(l=>({id:`charge-${l.id}`,x:l.x,y:l.y,area:l.area}));
 export const safeAt=(save,p)=>visibleLandmarks(save).some(l=>['home','playground','pirate-playground','splash-park'].includes(l.kind)&&dist(l,p)<2.5);
 export const allBossesCleared=save=>AREAS.slice(1,FINAL_AREA).every(a=>save.cleared.includes(`boss-${a.id}`));
 export const WEAPONS=[
@@ -92,24 +94,37 @@ export const WEAPONS=[
  {id:'prism',name:'Queen’s Prism',art:'crystalbeam',damage:46,range:7,rate:.5,color:'#dcceff',desc:'The Frost Queen’s long rainbow beam.'},
  {id:'firejet',name:'Fire-Jet Launcher',art:'firejet',damage:85,range:8,rate:.68,color:'#ff9354',desc:'The King’s flaming arrow, with fins and a glowing jet engine!'}
 ];
-export const weaponFor=id=>WEAPONS.find(w=>w.id===id)||WEAPONS[0];
+WEAPONS.push(...ADVENTURE_EQUIPMENT.weapon.map(w=>({...w,art:w.id,color:'#a9efd0'})));
+export const COLORS=ADVENTURE_COLORS;
+export const EQUIPMENT={...ADVENTURE_EQUIPMENT,weapon:WEAPONS};
+export const STARTERS={weapon:'bumper',armor:'light',wheels:'basic',gadget:'none'};
+export const weaponFor=id=>WEAPONS.find(w=>w.id===id)||WEAPONS.find(w=>w.id==='bumper');
+export const item=(type,id)=>EQUIPMENT[type]?.find(p=>p.id===id)||EQUIPMENT[type]?.[0];
+export function available(save,p){if(save.owned.includes(p.id))return true;if(p.royalReward||p.unlock===undefined)return false;if(p.unlock<0)return true;const area=p.unlock<5?p.unlock+1:p.unlock<10?6:7;return save.cleared.includes(`boss-${area}`);}
+export const visibleEquipment=(save,type)=>EQUIPMENT[type].filter(p=>save.owned.includes(p.id)||available(save,p));
+export function equipmentStats(save){const armor=item('armor',save.build?.armor||['light','steel','heavy'][save.armor||0]),wheels=item('wheels',save.build?.wheels||['basic','grip','speed'][save.wheels||0]);return {hp:armor.hp+(wheels.hp||0),defense:armor.defense,reflect:!!armor.reflect,speed:wheels.speed,weapon:weaponFor(save.weapon)};}
 export const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 export function inside(p,poly){let hit=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if((a[1]>p.y)!==(b[1]>p.y)&&p.x<(b[0]-a[0])*(p.y-a[1])/(b[1]-a[1])+a[0])hit=!hit;}return hit;}
 export function segmentDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));return dist(p,{x:a.x+t*dx,y:a.y+t*dy});}
 export const onLine=(p,points,width)=>points.slice(1).some((b,i)=>segmentDistance(p,points[i],b)<width/2);
 export function regionAt(p){const b=BRIDGES.find(b=>onLine(p,b.points,b.width));if(b)return b.area;return AREAS.findLast(a=>a.polys.some(poly=>inside(p,poly)))?.id??-1;}
-export function freshSave(){return {schema:1,mapLayout:MAP_LAYOUT,discoveries:[],unlocked:1,cleared:[],camps:[],defeated:[],owned:['starter'],weapon:'starter',armor:0,wheels:0,color:'#f27e67',scrap:0,cycle:1,champion:false,queen:false,king:false,position:{...HOME},hp:110,sound:false,gentle:true,details:false};}
+export function freshSave(){return {schema:1,equipmentVersion:1,mapLayout:MAP_LAYOUT,discoveries:[],unlocked:1,cleared:[],camps:[],defeated:[],owned:Object.values(STARTERS),build:{...STARTERS},weapon:'bumper',armor:0,wheels:0,color:COLORS[0],scrap:0,gears:0,drops:[],cycle:1,champion:false,queen:false,king:false,position:{...HOME},hp:70,sound:false,gentle:true,details:false};}
 export function readSave(raw){
  const s=freshSave();if(!raw||raw.schema!==1)return s;
  for(const key of ['unlocked','armor','wheels','scrap','cycle'])if(Number.isFinite(raw[key]))s[key]=Math.floor(Math.max(key==='cycle'?1:0,Math.min(key==='scrap'?999999:key==='cycle'?9999:key==='unlocked'?FINAL_AREA:2,raw[key])));
  for(const key of ['cleared','camps','defeated','discoveries'])s[key]=Array.isArray(raw[key])?[...new Set(raw[key].filter(v=>typeof v==='string'&&/^[a-z0-9-]{1,45}$/.test(v)))]:[];
- s.owned=[...new Set(['starter',...(Array.isArray(raw.owned)?raw.owned:[]).filter(v=>WEAPONS.some(w=>w.id===v))])];
- s.weapon=s.owned.includes(raw.weapon)?raw.weapon:'starter';
+ s.owned=[...new Set([...Object.values(STARTERS),...(Array.isArray(raw.owned)?raw.owned:[]).filter(v=>Object.values(EQUIPMENT).some(parts=>parts.some(p=>p.id===v)))])];
+ s.weapon=s.owned.includes(raw.weapon)&&WEAPONS.some(w=>w.id===raw.weapon)?raw.weapon:STARTERS.weapon;
+ s.build.weapon=s.weapon;
+ if(raw.equipmentVersion===1){for(const type of ['armor','wheels','gadget'])if(s.owned.includes(raw.build?.[type])&&EQUIPMENT[type].some(p=>p.id===raw.build[type]))s.build[type]=raw.build[type];}
+ else{for(const type of ['armor','wheels']){const id=(type==='armor'?['light','steel','heavy']:['basic','grip','speed'])[s[type]];s.build[type]=id;if(!s.owned.includes(id))s.owned.push(id);}}
+ if(Number.isFinite(raw.gears))s.gears=Math.max(0,Math.min(999999,Math.floor(raw.gears)));
  for(const key of ['champion','queen','king','sound','gentle','details'])if(typeof raw[key]==='boolean')s[key]=raw[key];
  if(raw.mapLayout!==MAP_LAYOUT){if((raw.mapLayout||0)<2&&(s.queen||s.king)){s.unlocked=FINAL_AREA;s.king=false;}s.mapLayout=MAP_LAYOUT;}
- if(['#f27e67','#56b9e0','#a6de81','#e2a5f0'].includes(raw.color))s.color=raw.color;
+ if([...COLORS,'#f27e67','#56b9e0','#a6de81','#e2a5f0'].includes(raw.color))s.color=raw.color;
  if(Number.isFinite(raw.position?.x)&&Number.isFinite(raw.position?.y)){const r=regionAt(raw.position);if(r>=0&&r<=(s.champion?FINAL_AREA:s.unlocked))s.position={x:raw.position.x,y:raw.position.y};}
- if(Number.isFinite(raw.hp))s.hp=Math.max(1,Math.min(110+s.armor*55,raw.hp));
+ if(Number.isFinite(raw.hp)){const hp=raw.equipmentVersion===1?raw.hp:raw.hp/(110+s.armor*55)*equipmentStats(s).hp;s.hp=Math.max(1,Math.min(equipmentStats(s).hp,hp));}
+ if(Array.isArray(raw.drops))s.drops=raw.drops.filter(d=>d&&Number.isFinite(d.x)&&Number.isFinite(d.y)&&canWalk(s,d)&&typeof d.id==='string'&&/^[a-z0-9-]{1,70}$/.test(d.id)).slice(0,500).map(d=>({id:d.id,x:d.x,y:d.y,scrap:Math.floor(Math.max(0,Math.min(3,Number(d.scrap)||0))),gears:Math.floor(Math.max(0,Math.min(1,Number(d.gears)||0)))}));
  if(!canWalk(s,s.position))s.position=nearestWalkable(s,s.position)||{...HOME};
  return s;
 }

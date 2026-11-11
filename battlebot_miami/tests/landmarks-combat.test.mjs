@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {AREAS,FINAL_AREA,HOME,KEY_LOOP,LANDMARKS,PRIVATE_ZONES,freshSave,readSave,canWalk,isPrivate,pathfind,dist,visibleLandmarks} from '../world.js?v=world10';
-import {MiamiAdventure} from '../engine.js?v=world10';
+import {AREAS,FINAL_AREA,HOME,KEY_LOOP,LANDMARKS,PRIVATE_ZONES,freshSave,readSave,canWalk,isPrivate,pathfind,dist,visibleLandmarks} from '../world.js?v=world13';
+import {MiamiAdventure} from '../engine.js?v=world13';
 import {readFile} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 
@@ -60,12 +60,12 @@ test('rocket splash damages nearby monsters once and cannot hurt a sleeping boss
  const g=new MiamiAdventure(freshSave());Object.assign(g.player,{x:115,y:66.5});const mob=(id,x,y)=>({id,area:1,x,y,hp:300,maxHp:300,cd:100,home:{x,y},angle:0});const a=mob('a',117,66.5),b=mob('b',117.7,66.5),boss={...mob('boss-1',118.2,66.5),boss:true};g.enemies=[a,b,boss];g.shoot(g.player,a,'metro');for(let i=0;i<4;i++)g.update(.05);assert(a.hp<300);assert(b.hp<300);assert.equal(boss.hp,300);assert(g.projectiles.every(q=>q.life>0));
 });
 
-test('Power doubles damage temporarily, obeys its cooldown and freezes while paused',()=>{
- const g=new MiamiAdventure(freshSave());g.power();g.shoot(g.player,{x:100,y:81},'starter');assert.equal(g.projectiles[0].damage,18);for(let i=0;i<20;i++)g.update(.05);const remaining=g.powerCd;g.power();assert.equal(g.powerCd,remaining);for(let i=0;i<25;i++)g.update(.05);g.shoot(g.player,{x:100,y:81},'starter');assert.equal(g.projectiles.at(-1).damage,9);assert(g.powerCd>0);
+test('Adventure Power lasts six seconds, recharges in 28 and pauses with play',()=>{
+ const g=new MiamiAdventure(freshSave());g.power();assert.equal(g.powerTime,6);assert.equal(g.powerCd,28);g.shoot(g.player,{x:100,y:81},'starter');assert(Math.abs(g.projectiles[0].damage-9*.6*1.65)<1e-8);g.paused=true;g.update(.05);assert.equal(g.powerTime,6);g.paused=false;for(let i=0;i<125;i++)g.update(.05);g.shoot(g.player,{x:100,y:81},'starter');assert.equal(g.projectiles.at(-1).damage,9*.6);assert(!g.power());
 });
 
 test('upgrades spend exactly their price, refuse unavailable purchases and survive reload',()=>{
- const g=new MiamiAdventure(freshSave());assert(!g.upgrade('armor'));assert(!g.upgrade('invalid'));g.save.scrap=140;assert(g.upgrade('armor'));assert.equal(g.save.scrap,95);assert.equal(g.maxHp(),165);assert(g.upgrade('armor'));assert.equal(g.save.scrap,0);assert.equal(g.maxHp(),220);assert(!g.upgrade('armor'));assert(!g.equip('firejet'));g.award('neon');assert(g.equip('starter'));assert.equal(readSave(g.snapshot()).armor,2);
+ const g=new MiamiAdventure(freshSave());assert(!g.upgrade('armor'));assert(!g.upgrade('invalid'));g.save.scrap=140;assert(g.upgrade('armor'));assert.equal(g.save.scrap,95);assert.equal(g.maxHp(),115);assert(g.upgrade('armor'));assert.equal(g.save.scrap,0);assert.equal(g.maxHp(),185);assert(!g.upgrade('armor'));assert(!g.equip('firejet'));g.award('neon');assert(g.equip('bumper'));assert.equal(readSave(g.snapshot()).armor,2);
 });
 
 test('legacy progress opens the new beach chapter and relocates saves off private land',()=>{

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {AREAS,HOME,BRIDGES,WEAPONS,freshSave,readSave,regionAt,canWalk,pathfind,visibleAreas,dist,FINAL_AREA} from '../world.js?v=world10';
-import {MiamiAdventure} from '../engine.js?v=world10';
+import {AREAS,HOME,BRIDGES,WEAPONS,freshSave,readSave,regionAt,canWalk,pathfind,visibleAreas,dist,FINAL_AREA} from '../world.js?v=world13';
+import {MiamiAdventure} from '../engine.js?v=world13';
 
 test('all missions are reachable as each district unlocks, future land stays locked',()=>{
  const s=freshSave();assert.deepEqual(visibleAreas(s).map(a=>a.id),[0,1]);
@@ -16,8 +16,8 @@ test('all missions are reachable as each district unlocks, future land stays loc
 
 test('full campaign can be played with ordinary movement, auto attacks and Power',()=>{
  const g=new MiamiAdventure(freshSave());const events=[];g.onEvent=e=>events.push(e.type);let rescues=0;g.onEvent=e=>{events.push(e.type);if(e.type==='rescue')rescues++;};
- function playUntil(done,destination){for(let tick=0;tick<22000&&!done();tick++){
-   if(!g.route.length&&dist(g.player,destination)>1.8)g.moveTo(destination);
+ function playUntil(done,destination){g.goNext();for(let tick=0;tick<22000&&!done();tick++){
+   if(!g.route.length&&g.isHome())g.goNext();
    if(g.powerCd===0)g.power();g.update(.05);
   }assert(done(),`completed objective at ${JSON.stringify(destination)}`);}
  assert(!g.enemies.some(e=>e.area===0),'Brickell stays safe');
@@ -29,7 +29,7 @@ test('full campaign can be played with ordinary movement, auto attacks and Power
   g.goHome();
  }
  assert(g.save.king,'the Miami Beach boss is the King');
- assert(g.save.champion);assert.equal(g.save.weapon,'firejet');assert.equal(g.save.owned.length,WEAPONS.length-1,'optional city-centre weapon is a separate discovery');assert.equal(g.save.camps.length,21);assert(events.includes('victory'));assert(rescues<12,'gentle mode remains forgiving');
+ assert(g.save.champion);assert.equal(g.save.weapon,'firejet');assert(AREAS.slice(1).every(a=>g.save.owned.includes(a.reward)));assert.equal(g.save.owned.includes('bubble'),g.save.discoveries.includes('city-centre'),'optional weapon comes from visiting City Centre');assert.equal(g.save.camps.length,21);assert(events.includes('victory'));assert(rescues<12,'gentle mode remains forgiving');
  const saved=readSave(JSON.parse(JSON.stringify(g.snapshot())));assert.equal(saved.weapon,'firejet');assert(saved.king);assert.equal(new MiamiAdventure(saved).enemies.filter(e=>e.hp>0).length,0);
  const owned=[...g.save.owned],scrap=g.save.scrap;g.save.armor=2;g.save.wheels=2;assert(g.replay());assert.equal(g.save.cycle,2);assert.equal(g.save.scrap,scrap);assert.deepEqual(g.save.owned,owned);assert.equal(g.save.armor,2);assert.equal(g.save.wheels,2);assert.equal(g.save.weapon,'firejet');assert.equal(g.save.camps.length,0);assert.equal(visibleAreas(g.save).length,8);assert(g.enemies.some(e=>e.king&&!g.awake(e)));assert(!g.replay(),'cannot skip a round');
  // All beach camps can be cleared early after victory, but the King stays locked.
@@ -59,5 +59,5 @@ test('rescue and home preserve equipment, scrap, camps and bridge travel saves',
 });
 
 test('malformed saves fall back to safe values and never load other games',()=>{
- assert.deepEqual(readSave(null),freshSave());const s=readSave({schema:1,unlocked:100,position:{x:999,y:999},owned:['invalid'],weapon:'invalid',armor:-3,wheels:Infinity,hp:NaN,camps:'bad',color:'<script>'});assert.equal(s.unlocked,FINAL_AREA);assert.deepEqual(s.position,HOME);assert.equal(s.weapon,'starter');assert.equal(s.armor,0);assert.equal(s.wheels,0);assert.equal(s.hp,110);assert.deepEqual(s.camps,[]);
+ assert.deepEqual(readSave(null),freshSave());const s=readSave({schema:1,unlocked:100,position:{x:999,y:999},owned:['invalid'],weapon:'invalid',armor:-3,wheels:Infinity,hp:NaN,camps:'bad',color:'<script>'});assert.equal(s.unlocked,FINAL_AREA);assert.deepEqual(s.position,HOME);assert.equal(s.weapon,'bumper');assert.equal(s.armor,0);assert.equal(s.wheels,0);assert.equal(s.hp,70);assert.deepEqual(s.camps,[]);
 });
