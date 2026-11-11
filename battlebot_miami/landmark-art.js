@@ -1,5 +1,5 @@
 // Original game illustrations, drawn from public building and park references.
-import {rounded} from './bot-art.js?v=world23';
+import {rounded} from './bot-art.js?v=world24';
 const ink='#294e59',cream='#f7eed7',glass='#427f98';
 function line(c,x,y,xx,yy,color,width=.07){c.beginPath();c.moveTo(x,y);c.lineTo(xx,yy);c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.lineJoin='round';c.stroke();}
 function oval(c,x,y,rx,ry,color,stroke=null,width=.06){c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fillStyle=color;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke();}}

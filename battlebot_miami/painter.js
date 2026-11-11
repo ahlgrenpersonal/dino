@@ -1,8 +1,8 @@
-import {AREAS,BRIDGES,ROADS,LANDMARKS,HOME,KEY_LOOP,PRIVATE_ZONES,isPrivate,visibleAreas,weaponFor,regionAt,inside,onLine,dist,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter,canWalk,equipmentClaimed} from './world.js?v=world23';
-import {bot,rounded,atlasBot,equipmentIcon} from './bot-art.js?v=world23';
-import {drawProjectile,drawAttackEffect} from './combat-art.js?v=world23';
-import {peacock} from './wildlife-art.js?v=world23';
-import {drawLandmark} from './landmark-art.js?v=world23';
+import {AREAS,BRIDGES,ROADS,LANDMARKS,HOME,KEY_LOOP,PRIVATE_ZONES,isPrivate,visibleAreas,weaponFor,regionAt,inside,onLine,dist,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter,canWalk,equipmentClaimed} from './world.js?v=world24';
+import {bot,rounded,atlasBot,equipmentIcon} from './bot-art.js?v=world24';
+import {drawProjectile,drawAttackEffect} from './combat-art.js?v=world24';
+import {peacock} from './wildlife-art.js?v=world24';
+import {drawLandmark} from './landmark-art.js?v=world24';
 const ink='#244647';
 // A wider world with the previous build’s player size preserved in screen pixels.
 const viewportScale=width=>width<600?Math.max(55,Math.min(76,width/6.3)):85;
