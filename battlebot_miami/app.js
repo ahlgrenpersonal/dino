@@ -1,14 +1,14 @@
-import {BUILD,AREAS,HOME,weaponFor,readSave,visibleLandmarks,FINAL_AREA,dist,item,visibleChapters,nextChapter,equipmentClaimed} from './world.js?v=world21';
-import {MiamiAdventure} from './engine.js?v=world21';
-import {MiamiPainter} from './painter.js?v=world21';
-import {paintPictures,areaPicture,enemyPicture,weaponPicture,robotPicture} from './ui-art.js?v=world21';
-import {workshopHTML,drawWorkshop} from './workshop.js?v=world21';
-import {adventureAudio} from './audio.js?v=world21';
-import {bindPowerControl,updatePowerControl} from './power-control.js?v=world21';
-import {atlasBot} from './bot-art.js?v=world21';
-import {bindWorldNavigation} from './world-input.js?v=world21';
-import {mountAtlas} from './atlas.js?v=world21';
-const buildVersion='world21';
+import {BUILD,AREAS,HOME,weaponFor,readSave,visibleLandmarks,FINAL_AREA,dist,item,visibleChapters,nextChapter,equipmentClaimed} from './world.js?v=world22';
+import {MiamiAdventure} from './engine.js?v=world22';
+import {MiamiPainter} from './painter.js?v=world22';
+import {paintPictures,areaPicture,enemyPicture,weaponPicture,robotPicture} from './ui-art.js?v=world22';
+import {workshopHTML,drawWorkshop} from './workshop.js?v=world22';
+import {adventureAudio} from './audio.js?v=world22';
+import {bindPowerControl,updatePowerControl} from './power-control.js?v=world22';
+import {atlasBot} from './bot-art.js?v=world22';
+import {bindWorldNavigation} from './world-input.js?v=world22';
+import {mountAtlas} from './atlas.js?v=world22';
+const buildVersion='world22';
 const SAVE_KEY='battlebot-miami-save-v1';
 const $=id=>document.getElementById(id);
 let stored;try{stored=JSON.parse(localStorage.getItem(SAVE_KEY));}catch{}

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {createPreviewServer} from '../tools/serve.mjs';
-import {BUILD} from '../world.js?v=world21';
+import {BUILD} from '../world.js?v=world22';
 
 test('offline navigation returns the Miami shell from its own cache',async()=>{
  const listeners={},keys=[],shell={body:'cached game'};const context={URL,self:{location:{href:'https://example.test/miami/sw.js'},addEventListener:(n,fn)=>listeners[n]=fn},fetch:async()=>{throw Error('offline');},caches:{open:async key=>{keys.push(key);return {match:async url=>{assert.equal(url.pathname,'/miami/index.html');return shell;}};}}};vm.runInNewContext(await readFile(new URL('../sw.js',import.meta.url),'utf8'),context);let result;listeners.fetch({request:{method:'GET',url:'https://example.test/miami/index.html?fresh=1',mode:'navigate'},respondWith:p=>result=p});assert.equal(await result,shell);assert.deepEqual(keys,[`battlebot-miami-${BUILD}`]);

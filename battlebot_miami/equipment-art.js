@@ -27,7 +27,8 @@ export function wheelArt(c,id,t=0){
  if(id==='treads'){
   box(c,-25,-16,50,34,13,'#617d85',ink,3);box(c,-20,-11,40,24,10,'#213c50');
   for(const x of [-14,0,14]){oval(c,x,1,7,9,'#344c5b');oval(c,x,1,3,4,'#efca74');}
-  for(let i=0;i<7;i++){const x=-21+i*7;line(c,x,-16,x+2,-11,'#bacac8',3);line(c,x,13,x+2,18,'#bacac8',3);}line(c,-23,-7,-24,9,'#bacac8',3);line(c,24,-7,24,9,'#bacac8',3);c.restore();return;
+  for(const x of [-12,-6,0,6,12]){box(c,x-1.5,-14,3,3,1.2,'#bacac8',null);box(c,x-1.5,13,3,3,1.2,'#bacac8',null);}
+  for(const x of [-22,22])for(const y of [-5,2,9])box(c,x-1,y-1,2,3,1,'#bacac8',null);c.restore();return;
  }
  if(id==='hover'){
   box(c,-16,-24,32,33,9,metal(c,-16,-24,32,33,'#d1e8ec'));box(c,-12,-19,24,15,5,'#315369');
@@ -46,7 +47,7 @@ export function wheelArt(c,id,t=0){
  oval(c,-1,-1,r-7,r-7,hub);oval(c,-1,-1,r-11,r-11,id==='grip'?'#407744':'#26485e');
  for(let i=0;i<(id==='speed'?3:5);i++){const a=i*Math.PI*2/(id==='speed'?3:5)+t*2;line(c,-1,-1,-1+Math.cos(a)*(r-9),-1+Math.sin(a)*(r-9),id==='speed'?'#fff1a0':'#d9f0e9',id==='speed'?3:2.5);}
  oval(c,-1,-1,4,4,hub);oval(c,-2,-2,1.5,1.5,'#fff5d1',null);c.beginPath();c.arc(-1,-1,r-4,Math.PI*1.12,Math.PI*1.7);c.strokeStyle='#d4e7e64d';c.lineWidth=2;c.stroke();
- if(id==='speed'){shape(c,[[-23,0],[-33,6],[-23,6],[-32,12],[-17,7]],'#6bdcf5',null);}
+ if(id==='speed'){for(const [x,y,length] of [[-36,-6,7],[-38,1,10],[-34,8,6]])line(c,x,y,x+length,y,'#6bdcf5',2.5);}
  c.restore();
 }
 export function mobilityIcon(c,id,t=0){
