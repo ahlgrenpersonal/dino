@@ -1,7 +1,7 @@
-import {AREAS,LANDMARKS,WEAPONS,weaponFor,HOME,KEY_LOOP} from './world.js?v=world17';
-import {drawLandmark} from './landmark-art.js?v=world17';
-import {bot,weapon,equipmentIcon} from './bot-art.js?v=world17';
-import {MiamiPainter} from './painter.js?v=world17';
+import {AREAS,LANDMARKS,WEAPONS,weaponFor,HOME,KEY_LOOP} from './world.js?v=world18';
+import {drawLandmark} from './landmark-art.js?v=world18';
+import {bot,weapon,equipmentIcon,categoryIcon} from './bot-art.js?v=world18';
+import {MiamiPainter} from './painter.js?v=world18';
 export const AREA_PICTURES=['panorama','key-park','domino','dinner-key','cape-florida','skyviews','frost','south-of-fifth'];
 function start(canvas){const c=canvas.getContext('2d');c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,canvas.width,canvas.height);c.showLabels=false;return c;}
 export function placePicture(canvas,place){const c=start(canvas),w=canvas.width,h=canvas.height,l=typeof place==='string'?LANDMARKS.find(l=>l.id===place):place;if(!l)return;c.save();const tall=['home','lighthouse'].includes(l.kind),scale=Math.min(w/(tall?7:10),h/(tall?14:8));c.translate(w/2,h*(tall?.78:.59));c.scale(scale,scale);c.translate(-l.x,-l.y);MiamiPainter.prototype.landmark.call({},c,l,0,{discoveries:[]});c.restore();}
@@ -23,5 +23,5 @@ export function paintPictures(root,save){
  for(const el of root.querySelectorAll('canvas[data-enemy]'))enemyPicture(el,Number(el.dataset.enemy));
  for(const el of root.querySelectorAll('canvas[data-weapon]'))weaponPicture(el,el.dataset.weapon);
  for(const el of root.querySelectorAll('canvas[data-robot]'))robotPicture(el,save);
- for(const el of root.querySelectorAll('canvas[data-category]'))categoryPicture(el,el.dataset.category,save[el.dataset.category]);
+ for(const el of root.querySelectorAll('canvas[data-category]')){const c=start(el);c.save();c.scale(el.width/44,el.height/36);categoryIcon(c,el.dataset.category);c.restore();}
 }

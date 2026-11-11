@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import vm from 'node:vm';
-import {freshSave,readSave,EQUIPMENT,STARTERS,COLORS,equipmentStats,visibleEquipment,HOME} from '../world.js?v=world17';
-import {MiamiAdventure} from '../engine.js?v=world17';
-import {MiamiPainter,adventureZoom} from '../painter.js?v=world17';
-import {workshopHTML,drawWorkshop} from '../workshop.js?v=world17';
-import {adventureAudio} from '../audio.js?v=world17';
-import {bindPowerControl} from '../power-control.js?v=world17';
+import {freshSave,readSave,EQUIPMENT,STARTERS,COLORS,equipmentStats,visibleEquipment,HOME} from '../world.js?v=world18';
+import {MiamiAdventure} from '../engine.js?v=world18';
+import {MiamiPainter,adventureZoom} from '../painter.js?v=world18';
+import {workshopHTML,drawWorkshop} from '../workshop.js?v=world18';
+import {adventureAudio} from '../audio.js?v=world18';
+import {bindPowerControl} from '../power-control.js?v=world18';
 import {createPreviewServer} from '../tools/serve.mjs';
 const read=f=>readFile(new URL('../'+f,import.meta.url),'utf8');
 
@@ -95,7 +95,7 @@ test('safe playgrounds prevent auto attacks, targeted strikes and helper fire',(
 });
 
 test('public playground charging uses two scrap and the Coupler doubles its rate',()=>{
- const gains=[];for(const gadget of ['none','repair']){const g=new MiamiAdventure(freshSave());g.enemies=[];g.save.owned.push('repair');g.equip('gadget',gadget);g.save.scrap=10;g.save.discoveries.push('hammock');Object.assign(g.player,{x:84,y:88,hp:1});assert(g.stationNear());assert(g.repair());assert.equal(g.save.scrap,8);assert(!g.repair());for(let i=0;i<20;i++)g.update(.05);gains.push(g.player.hp-1);g.paused=true;const hp=g.player.hp;g.update(.05);assert.equal(g.player.hp,hp);g.paused=false;g.moveTo({x:85,y:88});assert.equal(g.charging,null);}assert(Math.abs(gains[1]-gains[0]*2)<1e-8);
+ const gains=[];for(const gadget of ['none','repair']){const g=new MiamiAdventure(freshSave());g.enemies=[];g.save.owned.push('repair');g.equip('gadget',gadget);g.save.scrap=10;g.save.discoveries.push('hammock');g.save.equipmentClaims.push('hammock');Object.assign(g.player,{x:84,y:88,hp:1});assert(g.stationNear());assert(g.repair());assert.equal(g.save.scrap,8);assert(!g.repair());for(let i=0;i<20;i++)g.update(.05);gains.push(g.player.hp-1);g.paused=true;const hp=g.player.hp;g.update(.05);assert.equal(g.player.hp,hp);g.paused=false;g.moveTo({x:85,y:88});assert.equal(g.charging,null);}assert(Math.abs(gains[1]-gains[0]*2)<1e-8);
 });
 
 function artContext(onFill=()=>{}){const stack=[],target={globalAlpha:1,save(){stack.push({globalAlpha:this.globalAlpha,fillStyle:this.fillStyle});},restore(){Object.assign(this,stack.pop());},fill(){onFill(this.fillStyle,this.globalAlpha);},createLinearGradient:()=>({addColorStop(){}}),measureText:s=>({width:String(s).length*10})};return new Proxy(target,{get:(o,k)=>k in o?o[k]:()=>{}});}

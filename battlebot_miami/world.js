@@ -1,6 +1,6 @@
 // A compact, north-up Miami play map. Distances and streets are simplified.
-import {ADVENTURE_EQUIPMENT,ADVENTURE_COLORS} from './equipment.js?v=world17';
-export const BUILD='world17';
+import {ADVENTURE_EQUIPMENT,ADVENTURE_COLORS} from './equipment.js?v=world18';
+export const BUILD='world18';
 export const HOME={x:94,y:81};
 export const W=204,H=196;
 export const FINAL_AREA=7;
@@ -42,40 +42,40 @@ export const LANDMARKS=[
  {id:'panorama',name:'Panorama Tower · Trash Can Building',area:0,x:94,y:81,kind:'home',mapName:'Panorama Tower'},
  {id:'city-centre',name:'Brickell City Centre',area:0,x:88,y:71,kind:'mall',equipment:{type:'wheels',id:'grip'}},
  {id:'brickell-park',name:'Brickell Park',area:0,x:101,y:63,kind:'park'},
- {id:'hammock',name:'The Hammock Playground · Underline',area:0,x:84,y:88,kind:'playground',stamp:true},
- {id:'1814-park',name:'1814 Brickell Park',area:0,x:93,y:95,kind:'playground',stamp:true,equipment:{type:'armor',id:'steel'}},
- {id:'key-park',name:'Brickell Key · south park',area:1,x:122.5,y:86,kind:'park',stamp:true},
- {id:'domino',name:'Domino Park',area:2,x:52,y:69,kind:'domino',stamp:true,equipment:{type:'gadget',id:'magnet'}},
+ {id:'hammock',name:'The Hammock Playground · Underline',area:0,x:84,y:88,kind:'playground',equipment:{type:'gadget',id:'spark-cell'}},
+ {id:'1814-park',name:'1814 Brickell Park',area:0,x:93,y:95,kind:'playground',equipment:{type:'armor',id:'steel'}},
+ {id:'key-park',name:'Brickell Key · south park',area:1,x:122.5,y:86,kind:'park',equipment:{type:'wheels',id:'boardwalk'}},
+ {id:'domino',name:'Domino Park',area:2,x:52,y:69,kind:'domino',equipment:{type:'gadget',id:'magnet'}},
  {id:'tower-theater',name:'Tower Theater',area:2,x:46,y:65,kind:'theater'},
- {id:'riverside-play',name:'Riverside playground · Little Havana',area:2,x:74,y:63,kind:'playground',stamp:true},
+ {id:'riverside-play',name:'Riverside playground · Little Havana',area:2,x:74,y:63,kind:'playground',equipment:{type:'gadget',id:'repair'}},
  {id:'calle-ocho',name:'Calle Ocho',area:2,x:55,y:64,kind:'cafe'},
- {id:'cocowalk',name:'CocoWalk',area:3,x:43,y:117,kind:'cocowalk',stamp:true},
- {id:'peacock',name:'Peacock Park playground',area:3,x:49,y:124,kind:'playground',stamp:true},
+ {id:'cocowalk',name:'CocoWalk',area:3,x:43,y:117,kind:'cocowalk',equipment:{type:'wheels',id:'speed'}},
+ {id:'peacock',name:'Peacock Park playground',area:3,x:49,y:124,kind:'playground',equipment:{type:'armor',id:'grove-shell'}},
  {id:'grand-bay',name:'Grove at Grand Bay',area:3,x:65,y:113,kind:'twisting-towers'},
  {id:'mr-c',name:'Mr. C Residences',area:3,x:73,y:106,kind:'curved-towers'},
  {id:'city-hall',name:'City Hall · Dinner Key',area:3,x:63,y:119,kind:'city-hall'},
  {id:'park-grove',name:'Park Grove towers',area:3,x:59,y:117,kind:'grove-towers'},
- {id:'regatta',name:'Regatta Park',area:3,x:59,y:125,kind:'park',stamp:true,equipment:{type:'gadget',id:'shield'}},
- {id:'dinner-key',name:'Dinner Key Marina',area:3,x:68,y:123,kind:'marina',stamp:true},
- {id:'hobie',name:'Hobie Beach',area:4,x:115,y:109,kind:'beach',stamp:true},
- {id:'north-point',name:'Virginia Key North Point Beach',area:4,x:133,y:106,kind:'guarded-beach',stamp:true},
- {id:'cape-florida',name:'Cape Florida Lighthouse',area:4,x:146,y:186,kind:'lighthouse',stamp:true},
+ {id:'regatta',name:'Regatta Park',area:3,x:59,y:125,kind:'park',equipment:{type:'gadget',id:'shield'}},
+ {id:'dinner-key',name:'Dinner Key Marina',area:3,x:68,y:123,kind:'marina',equipment:{type:'gadget',id:'quick-coil'}},
+ {id:'hobie',name:'Hobie Beach',area:4,x:115,y:109,kind:'beach',equipment:{type:'wheels',id:'balloon'}},
+ {id:'north-point',name:'Virginia Key North Point Beach',area:4,x:133,y:106,kind:'guarded-beach',equipment:{type:'armor',id:'reflect'}},
+ {id:'cape-florida',name:'Cape Florida Lighthouse',area:4,x:146,y:186,kind:'lighthouse',equipment:{type:'armor',id:'bastion'}},
  {id:'cape-beach',name:'Cape Florida Beach',area:4,x:147,y:178,kind:'beach'},
- {id:'crandon-play',name:'Crandon Park playground',area:4,x:140,y:146,kind:'playground',stamp:true},
+ {id:'crandon-play',name:'Crandon Park playground',area:4,x:140,y:146,kind:'playground',equipment:{type:'gadget',id:'scout'}},
  {id:'virginia-key',name:'Virginia Key',area:4,x:127,y:113,kind:'beach'},
- {id:'crandon',name:'Crandon Beach · Key Biscayne',area:4,x:147,y:152,kind:'guarded-beach',stamp:true,equipment:{type:'armor',id:'heavy'}},
- {id:'bayfront',name:'Bayfront Park',area:5,x:104,y:45,kind:'bayfront',stamp:true},
- {id:'fountain',name:'Bayfront Park fountain',area:5,x:102,y:47,kind:'fountain',stamp:true},
- {id:'bayside',name:'Bayside Marketplace',area:5,x:103,y:39,kind:'bayside',stamp:true,equipment:{type:'wheels',id:'treads'}},
- {id:'miamarina',name:'Miamarina · Bayside waterfront',area:5,x:106,y:37,kind:'bayside-marina',stamp:true},
- {id:'skyviews',name:'Bayside observation wheel',area:5,x:107,y:42,kind:'wheel',stamp:true},
+ {id:'crandon',name:'Crandon Beach · Key Biscayne',area:4,x:147,y:152,kind:'guarded-beach',equipment:{type:'armor',id:'heavy'}},
+ {id:'bayfront',name:'Bayfront Park',area:5,x:104,y:45,kind:'bayfront',equipment:{type:'armor',id:'polar'}},
+ {id:'fountain',name:'Bayfront Park fountain',area:5,x:102,y:47,kind:'fountain',equipment:{type:'gadget',id:'vacuum'}},
+ {id:'bayside',name:'Bayside Marketplace',area:5,x:103,y:39,kind:'bayside',equipment:{type:'wheels',id:'treads'}},
+ {id:'miamarina',name:'Miamarina · Bayside waterfront',area:5,x:106,y:37,kind:'bayside-marina',equipment:{type:'wheels',id:'rover'}},
+ {id:'skyviews',name:'Bayside observation wheel',area:5,x:107,y:42,kind:'wheel',equipment:{type:'gadget',id:'aegis'}},
  {id:'arena',name:'Downtown arena',area:5,x:101,y:29,kind:'arena'},
- {id:'museum-park',name:'Museum Park',area:6,x:105,y:23,kind:'sculpture-park',stamp:true,equipment:{type:'gadget',id:'capacitor'}},
+ {id:'museum-park',name:'Museum Park',area:6,x:105,y:23,kind:'sculpture-park',equipment:{type:'gadget',id:'capacitor'}},
  {id:'art-museum',name:'Art museum · Museum Park',area:6,x:106,y:14,kind:'art-museum'},
- {id:'bayfront-play',name:'Bayfront Park playground',area:5,x:104,y:51,kind:'pirate-playground',mapName:'Bayfront playground',stamp:true},
- {id:'frost',name:'Frost Science',area:6,x:100,y:12,kind:'museum',stamp:true},
+ {id:'bayfront-play',name:'Bayfront Park playground',area:5,x:104,y:51,kind:'pirate-playground',mapName:'Bayfront playground',equipment:{type:'gadget',id:'buddy'}},
+ {id:'frost',name:'Frost Science',area:6,x:100,y:12,kind:'museum',equipment:{type:'wheels',id:'hover'}},
  {id:'south-of-fifth',name:'South of Fifth',area:7,x:171,y:55,kind:'art-deco'},
- {id:'south-pointe',name:'South Pointe Park playground',area:7,x:177,y:65,kind:'splash-park',stamp:true},
+ {id:'south-pointe',name:'South Pointe Park playground',area:7,x:177,y:65,kind:'splash-park',equipment:{type:'armor',id:'star'}},
  {id:'south-pier',name:'South Pointe Pier',area:7,x:185,y:63,kind:'pier'},
  {id:'south-beach',name:'Miami Beach',area:7,x:188,y:48,kind:'beach'}
 ];
@@ -97,7 +97,16 @@ export const WEAPONS=[
 ];
 WEAPONS.push(...ADVENTURE_EQUIPMENT.weapon.map(w=>({...w,art:w.id,color:'#a9efd0'})));
 export const COLORS=ADVENTURE_COLORS;
-export const EQUIPMENT={...ADVENTURE_EQUIPMENT,weapon:WEAPONS};
+export const EQUIPMENT={...ADVENTURE_EQUIPMENT,weapon:WEAPONS,
+ armor:[...ADVENTURE_EQUIPMENT.armor,{id:'grove-shell',name:'Leaf Armor',desc:'Leaf-shaped plates add a little extra protection.',hp:135,defense:1,cost:0,gears:0}],
+ wheels:[...ADVENTURE_EQUIPMENT.wheels,
+  {id:'boardwalk',name:'Boardwalk Wheels',desc:'Pink and mint rollers. A little faster, with a little extra health.',speed:2.85,hp:5,cost:0,gears:0},
+  {id:'balloon',name:'Beach Balloon Tires',desc:'Big soft tires. Steady rolling and extra health for beach exploring.',speed:3.1,hp:25,cost:0,gears:0}],
+ gadget:[...ADVENTURE_EQUIPMENT.gadget.map(p=>p.id==='capacitor'?{...p,powerCooldown:18,powerDuration:8}:p.id==='buddy'?{...p,helperDamage:45,helperRate:1}:p),
+  {id:'spark-cell',name:'Spark Battery',desc:'Power is ready sooner: every 24 seconds instead of 28.',powerCooldown:24,powerDuration:6,cost:0,gears:0},
+  {id:'quick-coil',name:'Quick Coil',desc:'Longer Power boosts, ready again every 21 seconds.',powerCooldown:21,powerDuration:7,cost:0,gears:0},
+  {id:'scout',name:'Beach Scout',desc:'A little propeller friend helps with gentle blaster shots.',helperDamage:12,helperRate:1.5,cost:0,gears:0}]
+};
 export const STARTERS={weapon:'bumper',armor:'light',wheels:'basic',gadget:'none'};
 export const weaponFor=id=>WEAPONS.find(w=>w.id===id)||WEAPONS.find(w=>w.id==='bumper');
 export const item=(type,id)=>EQUIPMENT[type]?.find(p=>p.id===id)||EQUIPMENT[type]?.[0];
@@ -107,19 +116,21 @@ export const nextChapter=save=>AREAS.find(a=>a.id&&!save.cleared.includes(`boss-
 export const visibleChapters=save=>visibleAreas(save).filter(a=>a.id);
 export const chapterForRegion=r=>r===0?1:r;
 export function equipmentStats(save){const armor=item('armor',save.build?.armor||['light','steel','heavy'][save.armor||0]),wheels=item('wheels',save.build?.wheels||['basic','grip','speed'][save.wheels||0]);return {hp:armor.hp+(wheels.hp||0),defense:armor.defense,reflect:!!armor.reflect,speed:wheels.speed,weapon:weaponFor(save.weapon)};}
+export function powerStats(save){const g=item('gadget',save.build?.gadget);return {cooldown:g.powerCooldown||28,duration:g.powerDuration||6};}
+export const equipmentClaimed=(save,l)=>save.equipmentClaims?.includes(l.id)===true;
 export const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 export function inside(p,poly){let hit=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if((a[1]>p.y)!==(b[1]>p.y)&&p.x<(b[0]-a[0])*(p.y-a[1])/(b[1]-a[1])+a[0])hit=!hit;}return hit;}
 export function segmentDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));return dist(p,{x:a.x+t*dx,y:a.y+t*dy});}
 export const onLine=(p,points,width)=>points.slice(1).some((b,i)=>segmentDistance(p,points[i],b)<width/2);
 export function regionAt(p){const b=BRIDGES.find(b=>onLine(p,b.points,b.width));if(b)return b.area;return AREAS.findLast(a=>a.polys.some(poly=>inside(p,poly)))?.id??-1;}
-export function freshSave(){return {schema:1,equipmentVersion:1,progressionVersion:2,mapLayout:MAP_LAYOUT,discoveries:[],unlocked:1,cleared:[],camps:[],defeated:[],owned:Object.values(STARTERS),build:{...STARTERS},weapon:'bumper',armor:0,wheels:0,color:COLORS[0],scrap:0,gears:0,drops:[],cycle:1,champion:false,queen:false,king:false,position:{...HOME},hp:70,sound:false,gentle:true,details:false};}
+export function freshSave(){return {schema:1,equipmentVersion:1,progressionVersion:2,mapLayout:MAP_LAYOUT,discoveries:[],equipmentClaims:[],unlocked:1,cleared:[],camps:[],defeated:[],owned:Object.values(STARTERS),build:{...STARTERS},weapon:'bumper',armor:0,wheels:0,color:COLORS[0],scrap:0,gears:0,drops:[],cycle:1,champion:false,queen:false,king:false,position:{...HOME},hp:70,sound:false,gentle:true,details:false};}
 export function readSave(raw){
  const s=freshSave();if(!raw||raw.schema!==1)return s;
  for(const key of ['unlocked','armor','wheels','scrap','cycle'])if(Number.isFinite(raw[key]))s[key]=Math.floor(Math.max(key==='cycle'?1:0,Math.min(key==='scrap'?999999:key==='cycle'?9999:key==='unlocked'?FINAL_AREA:2,raw[key])));
- for(const key of ['cleared','camps','defeated','discoveries'])s[key]=Array.isArray(raw[key])?[...new Set(raw[key].filter(v=>typeof v==='string'&&/^[a-z0-9-]{1,45}$/.test(v)))]:[];
+ for(const key of ['cleared','camps','defeated','discoveries','equipmentClaims'])s[key]=Array.isArray(raw[key])?[...new Set(raw[key].filter(v=>typeof v==='string'&&/^[a-z0-9-]{1,45}$/.test(v)))]:[];
  s.owned=[...new Set([...Object.values(STARTERS),...(Array.isArray(raw.owned)?raw.owned:[]).filter(v=>Object.values(EQUIPMENT).some(parts=>parts.some(p=>p.id===v)))])];
+ s.equipmentClaims=s.equipmentClaims.filter(id=>LANDMARKS.some(l=>l.id===id&&l.equipment&&s.owned.includes(l.equipment.id)));
  if(s.owned.includes('starter')&&s.owned.includes('bumper'))s.owned=s.owned.filter(id=>id!==(raw.weapon==='bumper'?'starter':'bumper'));
- for(const l of LANDMARKS)if(l.equipment&&s.discoveries.includes(l.id)&&!s.owned.includes(l.equipment.id))s.owned.push(l.equipment.id);
  s.weapon=s.owned.includes(raw.weapon)&&WEAPONS.some(w=>w.id===raw.weapon)?raw.weapon:s.owned.includes(STARTERS.weapon)?STARTERS.weapon:s.owned.find(id=>WEAPONS.some(w=>w.id===id))||STARTERS.weapon;
  s.build.weapon=s.weapon;
  if(raw.equipmentVersion===1){for(const type of ['armor','wheels','gadget'])if(s.owned.includes(raw.build?.[type])&&EQUIPMENT[type].some(p=>p.id===raw.build[type]))s.build[type]=raw.build[type];}

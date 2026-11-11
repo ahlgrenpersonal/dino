@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {AREAS,HOME,BRIDGES,WEAPONS,freshSave,readSave,regionAt,canWalk,pathfind,visibleAreas,dist,FINAL_AREA,chapterForRegion,weaponFor} from '../world.js?v=world17';
-import {MiamiAdventure} from '../engine.js?v=world17';
+import {AREAS,HOME,BRIDGES,WEAPONS,freshSave,readSave,regionAt,canWalk,pathfind,visibleAreas,dist,FINAL_AREA,chapterForRegion,weaponFor} from '../world.js?v=world18';
+import {MiamiAdventure} from '../engine.js?v=world18';
 
 test('all missions are reachable as each district unlocks, future land stays locked',()=>{
  const s=freshSave();assert.deepEqual(visibleAreas(s).map(a=>a.id),[0,1]);

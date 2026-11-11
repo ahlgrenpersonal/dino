@@ -1,5 +1,5 @@
-import {COLORS,EQUIPMENT,visibleEquipment,equipmentStats,weaponFor} from './world.js?v=world17';
-import {equipmentIcon,categoryIcon,bot,rounded} from './bot-art.js?v=world17';
+import {COLORS,EQUIPMENT,visibleEquipment,equipmentStats,weaponFor} from './world.js?v=world18';
+import {equipmentIcon,categoryIcon,bot,rounded} from './bot-art.js?v=world18';
 
 // Standard Adventure workshop: same tabs, vertical item rows and separate actions.
 export function workshopHTML(save,tab,details,head){

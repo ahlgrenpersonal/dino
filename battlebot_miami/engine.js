@@ -1,4 +1,4 @@
-import {AREAS,HOME,weaponFor,dist,regionAt,canWalk,pathfind,visibleAreas,FINAL_AREA,allBossesCleared,isPrivate,safeAt,visibleLandmarks,EQUIPMENT,item,available,equipmentStats,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter} from './world.js?v=world17';
+import {AREAS,HOME,weaponFor,dist,regionAt,canWalk,pathfind,visibleAreas,FINAL_AREA,allBossesCleared,isPrivate,safeAt,visibleLandmarks,EQUIPMENT,item,available,equipmentStats,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter,powerStats,equipmentClaimed} from './world.js?v=world18';
 export const AUTO_DAMAGE=.6,TAP_DAMAGE=2,TAP_COOLDOWN=1.5;
 export class MiamiAdventure{
  constructor(save){this.save=save;this.player={...save.position,hp:save.hp,angle:0,cd:0,hit:0,swing:0,invincible:2};this.time=0;this.paused=false;this.route=[];this.effects=[];this.projectiles=[];this.enemies=[];this.target=null;this.powerCd=0;this.powerTime=0;this.tapCd=0;this.shieldCd=0;this.buddyCd=0;this.powerTarget=null;this.drops=save.drops||[];this.onEvent=()=>{};this.populate();}
@@ -30,14 +30,23 @@ export class MiamiAdventure{
  awake(e){return visibleAreas(this.save).some(a=>a.id===(e.chapter??e.area))&&(!e.boss||(this.campsIn(e.area)===3&&(!e.king||allBossesCleared(this.save))));}
  clearShot(from,to){const n=Math.max(1,Math.ceil(dist(from,to)*5));for(let i=0;i<=n;i++)if(isPrivate({x:from.x+(to.x-from.x)*i/n,y:from.y+(to.y-from.y)*i/n}))return false;return true;}
  isSafe(p){return safeAt(this.save,p);}
- awardEquipment(type,id){if(!EQUIPMENT[type]?.some(p=>p.id===id)||type==='weapon'||this.save.owned.includes(id))return false;this.save.owned.push(id);const previous=item(type,this.save.build[type]),found=item(type,id);if(type==='armor'?found.hp>previous.hp:type==='wheels'?found.speed>previous.speed||((found.hp||0)>(previous.hp||0)&&found.speed>=previous.speed):this.save.build.gadget==='none')this.save.build[type]=id;this.player.hp=this.maxHp();return true;}
- visitPlaces(){for(const l of visibleLandmarks(this.save)){if(dist(this.player,l)>1.8||this.save.discoveries.includes(l.id))continue;this.save.discoveries.push(l.id);if(l.equipment){if(this.awardEquipment(l.equipment.type,l.equipment.id))this.emit('findEquipment',{id:l.equipment.id,kind:l.equipment.type,place:l.name});}else if(l.stamp){this.save.scrap+=8;this.player.hp=Math.min(this.maxHp(),this.player.hp+20);this.emit('visit',{place:l.name});}}}
+ awardEquipment(type,id){
+  if(!EQUIPMENT[type]?.some(p=>p.id===id)||type==='weapon'||this.save.owned.includes(id))return false;
+  const oldPower=powerStats(this.save);this.save.owned.push(id);const previous=item(type,this.save.build[type]),found=item(type,id);
+  const better=type==='armor'?found.hp>previous.hp:type==='wheels'?found.speed>=previous.speed&&(found.hp||0)>=(previous.hp||0)&&(found.speed>previous.speed||(found.hp||0)>(previous.hp||0)):!(found.powerCooldown&&previous.powerCooldown&&found.powerCooldown>previous.powerCooldown)&&!(found.helperDamage&&previous.helperDamage&&found.helperDamage<previous.helperDamage)&&!(id==='shield'&&previous.id==='aegis')&&!(id==='magnet'&&previous.id==='vacuum');
+  if(better){this.save.build[type]=id;this.powerCd=Math.min(this.powerCd,this.powerCd*powerStats(this.save).cooldown/oldPower.cooldown);if(type==='gadget'){this.shieldCd=0;this.buddyCd=0;}}
+  this.player.hp=this.maxHp();return true;
+ }
+ visitPlaces(){for(const l of visibleLandmarks(this.save)){
+  if(dist(this.player,l)>1.8)continue;if(!this.save.discoveries.includes(l.id))this.save.discoveries.push(l.id);
+  if(l.equipment&&!equipmentClaimed(this.save,l)){this.save.equipmentClaims.push(l.id);const fresh=this.awardEquipment(l.equipment.type,l.equipment.id);this.emit('findEquipment',{id:l.equipment.id,kind:l.equipment.type,place:l.name,fresh,equipped:this.save.build[l.equipment.type]===l.equipment.id});return;}
+ }}
  moveTo(p){this.target=null;this.powerTarget=null;this.headingHome=false;this.charging=null;this.route=pathfind(this.save,this.player,p);return this.route.length>0;}
  goArea(r){if(!visibleAreas(this.save).some(a=>a.id===r))return;this.moveTo(r===0?HOME:AREAS[r].entry);}
  goNext(){const a=nextChapter(this.save);if(!a)return;const c=a.camps.find((_,i)=>!this.save.camps.includes(`camp-${a.id}-${i}`));if(c){this.moveTo(c);return;}const boss=this.enemies.find(e=>e.id===`boss-${a.id}`&&e.hp>0);if(boss)this.tap(boss);else this.moveTo(a.arena);}
  goHome(){this.moveTo(HOME);this.headingHome=true;if(this.isHome()){this.repair();this.headingHome=false;this.emit('home');}return true;}
  rescueHome(){this.route=[];this.target=null;this.powerTarget=null;this.headingHome=false;this.charging=null;this.projectiles=[];Object.assign(this.player,HOME,{hp:this.maxHp(),invincible:3});this.emit('home');}
- power(){if(this.paused||this.powerCd>0)return false;const capacitor=this.save.build.gadget==='capacitor';this.powerCd=capacitor?18:28;this.powerTime=capacitor?8:6;this.player.invincible=1;this.player.cd=0;this.emit('power');return true;}
+ power(){if(this.paused||this.powerCd>0)return false;const stats=powerStats(this.save);this.powerCd=stats.cooldown;this.powerTime=stats.duration;this.player.invincible=1;this.player.cd=0;this.emit('power');return true;}
  tap(p,screenScale=0){if(this.paused)return;if(!Number.isFinite(p?.x)||!Number.isFinite(p?.y)||!canWalk(this.save,p)){this.moveTo(p);return;}this.headingHome=false;const e=this.enemies.filter(e=>e.hp>0&&this.awake(e)&&(screenScale<=0||this.inView(e))&&dist(p,{x:e.x,y:e.y-(screenScale>0?(e.boss?(e.king?1.9:1.7):.72)*.15:0)})<(screenScale>0?Math.max(.4,(e.boss?(e.king?1.9:1.7):.72)*.5)+22/screenScale:1.5)).sort((a,b)=>dist(a,p)-dist(b,p))[0];if(e){this.target=e;this.route=pathfind(this.save,this.player,e);this.powerTarget=e.id;this.tryPowerAttack();}else this.moveTo(p);}
  tryPowerAttack(){const e=this.enemies.find(e=>e.id===this.powerTarget&&e.hp>0&&this.awake(e));if(!e){this.powerTarget=null;return false;}if(this.tapCd>0||this.isSafe(this.player)||!this.inView(e)||!this.clearShot(this.player,e)||dist(this.player,e)>=weaponFor(this.save.weapon).range)return false;this.powerTarget=null;this.tapCd=TAP_COOLDOWN;this.attack(e,true);return true;}
  hit(e,damage,activity={}){if(e.hp<=0||!this.awake(e))return;if(e.boss&&e.area>=6&&!e.guardBroken){if(activity.targeted&&activity.powered){e.guardBroken=true;this.effects.push({type:'burst',x:e.x,y:e.y,life:.6,max:.6,color:'#b9f8ff'});this.emit('guardBreak');}else damage=Math.min(damage,Math.max(0,e.hp-e.maxHp*.25));}e.hp-=damage;e.hit=.18;if(e.hp<=0)this.defeat(e);}
@@ -72,7 +81,7 @@ export class MiamiAdventure{
   if(dx||dy)this.charging=null;
   const length=Math.hypot(dx,dy)||1,speed=Math.min(equipmentStats(this.save).speed*dt,routeDistance);dx=dx/length*speed;dy=dy/length*speed;p.moving=!!(dx||dy);
   if(canWalk(this.save,{x:p.x+dx,y:p.y}))p.x+=dx;if(canWalk(this.save,{x:p.x,y:p.y+dy}))p.y+=dy;
-  this.visitPlaces();
+  this.visitPlaces();if(this.paused)return;
   if(this.headingHome&&this.isHome()){this.headingHome=false;this.route=[];this.repair();this.emit('home');}
   const pickupRange=this.save.build.gadget==='vacuum'?5.5:this.save.build.gadget==='magnet'?3.2:1.45;for(const drop of this.drops)if(!drop.collected&&dist(p,drop)<pickupRange&&this.clearShot(p,drop)){drop.collected=true;this.save.scrap+=drop.scrap;this.save.gears+=drop.gears;this.emit('pickup');}this.drops=this.drops.filter(d=>!d.collected);
   const current=regionAt(p);if(current!==this.region){this.region=current;this.emit('region',{area:current});}
@@ -81,7 +90,7 @@ export class MiamiAdventure{
   const weapon=weaponFor(this.save.weapon),candidates=this.enemies.filter(e=>e.hp>0&&this.awake(e)&&this.inView(e)&&dist(e,p)<weapon.range&&this.clearShot(p,e)).sort((a,b)=>dist(a,p)-dist(b,p));
   const target=this.target?.hp>0&&this.inView(this.target)&&dist(this.target,p)<weapon.range&&this.clearShot(p,this.target)?this.target:candidates[0];
   if(target&&p.cd<=0&&!this.isSafe(p)){if(this.target===target)this.route=[];this.attack(target);}
-  if(this.save.build.gadget==='buddy'&&this.buddyCd<=0&&candidates.length&&!this.isSafe(p)){this.buddyCd=1;this.shoot(p,candidates[0],'drone',false,45*AUTO_DAMAGE);this.projectiles.at(-1).homing=true;}
+  const helper=item('gadget',this.save.build.gadget);if(helper.helperDamage&&this.buddyCd<=0&&candidates.length&&!this.isSafe(p)){this.buddyCd=helper.helperRate;this.shoot(p,candidates[0],'drone',false,helper.helperDamage*AUTO_DAMAGE);this.projectiles.at(-1).homing=true;}
   for(const e of this.enemies){
    if(e.hp<=0||!this.awake(e))continue;e.cd-=dt;e.hit=Math.max(0,e.hit-dt);e.swing=Math.max(0,e.swing-dt);e.frozen=Math.max(0,(e.frozen||0)-dt);if(e.frozen>0)continue;
    const d=dist(e,p);e.angle=Math.atan2(p.y-e.y,p.x-e.x);

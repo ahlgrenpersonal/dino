@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {freshSave,readSave,visibleEquipment,visibleChapters,nextChapter,EQUIPMENT,AREAS,LANDMARKS,HOME,HOME_SAFE_RADIUS,dist,canWalk} from '../world.js?v=world17';
-import {MiamiAdventure} from '../engine.js?v=world17';
-import {workshopHTML} from '../workshop.js?v=world17';
+import {freshSave,readSave,visibleEquipment,visibleChapters,nextChapter,EQUIPMENT,AREAS,LANDMARKS,HOME,HOME_SAFE_RADIUS,dist,canWalk} from '../world.js?v=world18';
+import {MiamiAdventure} from '../engine.js?v=world18';
+import {workshopHTML} from '../workshop.js?v=world18';
 
 test('new games have exactly one weapon, no weapon shop, and no unaffordable choices',()=>{
  const s=freshSave(),g=new MiamiAdventure(s);assert.deepEqual(visibleEquipment(s,'weapon').map(p=>p.id),['bumper']);
@@ -24,14 +24,14 @@ test('each boss grants exactly its own weapon and no future weapons appear',()=>
 
 test('old free starter alternatives collapse to one while earned weapons and landmark finds survive',()=>{
  const raw={...freshSave(),progressionVersion:undefined,owned:['starter','bumper','neon','blaster'],weapon:'starter',discoveries:['city-centre'],cleared:['boss-1'],unlocked:2};
- const s=readSave(raw);assert(s.owned.includes('starter'));assert(!s.owned.includes('bumper'));assert(s.owned.includes('neon'));assert(s.owned.includes('blaster'));assert(s.owned.includes('grip'));assert.equal(s.weapon,'starter');assert.equal(s.progressionVersion,2);assert.deepEqual(readSave(s).owned,s.owned);
+ const s=readSave(raw);assert(s.owned.includes('starter'));assert(!s.owned.includes('bumper'));assert(s.owned.includes('neon'));assert(s.owned.includes('blaster'));assert(!s.owned.includes('grip'));assert.equal(s.weapon,'starter');assert.equal(s.progressionVersion,2);assert.deepEqual(readSave(s).owned,s.owned);
  for(const weapon of [undefined,'invalid']){const partial=readSave({schema:1,owned:['starter'],weapon});assert(partial.owned.includes(partial.weapon));assert(visibleEquipment(partial,'weapon').some(p=>p.id===partial.weapon));}
 });
 
 test('landmark equipment is permanent, never awards a weapon, and never downgrades a better shell',()=>{
  const g=new MiamiAdventure(freshSave());g.save.unlocked=7;g.enemies=[];const initialWeapons=visibleEquipment(g.save,'weapon').map(p=>p.id);
  for(const l of LANDMARKS.filter(l=>l.equipment)){Object.assign(g.player,l);g.update(.05);assert(g.save.owned.includes(l.equipment.id));assert.equal(g.save.weapon,'bumper');}
- assert.deepEqual(visibleEquipment(g.save,'weapon').map(p=>p.id),initialWeapons);assert.equal(g.save.build.armor,'heavy');
+ assert.deepEqual(visibleEquipment(g.save,'weapon').map(p=>p.id),initialWeapons);assert.equal(g.save.build.armor,'star');
  const before=[...g.save.owned];g.save.king=true;g.replay();assert.deepEqual(g.save.owned,before);
 });
 

@@ -1,7 +1,7 @@
-import {AREAS,BRIDGES,ROADS,LANDMARKS,HOME,KEY_LOOP,PRIVATE_ZONES,isPrivate,visibleAreas,weaponFor,regionAt,inside,onLine,dist,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter,canWalk} from './world.js?v=world17';
-import {bot,rounded,atlasBot,equipmentIcon} from './bot-art.js?v=world17';
-import {peacock} from './wildlife-art.js?v=world17';
-import {drawLandmark} from './landmark-art.js?v=world17';
+import {AREAS,BRIDGES,ROADS,LANDMARKS,HOME,KEY_LOOP,PRIVATE_ZONES,isPrivate,visibleAreas,weaponFor,regionAt,inside,onLine,dist,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter,canWalk,equipmentClaimed} from './world.js?v=world18';
+import {bot,rounded,atlasBot,equipmentIcon} from './bot-art.js?v=world18';
+import {peacock} from './wildlife-art.js?v=world18';
+import {drawLandmark} from './landmark-art.js?v=world18';
 const ink='#244647';
 // A wider world with the previous build’s player size preserved in screen pixels.
 export const adventureZoom=width=>(width<600?Math.max(55,Math.min(76,width/6.3)):85)*.648;
@@ -39,7 +39,7 @@ export class MiamiPainter{
   for(const l of LANDMARKS.filter(l=>ids.has(l.area)&&l.x>b.left-6&&l.x<b.right+6&&l.y>b.top&&l.y<b.bottom+8))this.landmark(c,l,t,save);
   for(const s of CHARGING_STATIONS.filter(s=>ids.has(s.area))){oval(c,s.x,s.y+.1,.9,.5,'#94e5b133');c.beginPath();c.ellipse(s.x,s.y+.1,.9,.5,0,0,Math.PI*2);c.strokeStyle='#a9efd0';c.lineWidth=.06;c.stroke();label(c,'＋',s.x+.65,s.y-.3,.42,'#e5ffdb');}
  }
- landmark(c,l,t,save={discoveries:[]}){const drawn=drawLandmark(c,l,{seen:save.discoveries?.includes(l.id)});if(l.equipment&&!save.discoveries?.includes(l.id)){c.save();c.translate(l.x,l.y+1.3);oval(c,0,0,.85,.7,'#fff1b3');c.scale(.021,.021);c.translate(-34,-34);equipmentIcon(c,l.equipment.type,l.equipment.id);c.restore();}if(drawn)return;c.save();c.translate(l.x,l.y);
+ landmark(c,l,t,save={discoveries:[]}){const drawn=drawLandmark(c,l,{seen:save.discoveries?.includes(l.id)});if(l.equipment&&!equipmentClaimed(save,l)){c.save();c.translate(l.x,l.y+1.3);oval(c,0,0,.85,.7,'#fff1b3');c.scale(.021,.021);c.translate(-34,-34);equipmentIcon(c,l.equipment.type,l.equipment.id);c.restore();}if(drawn)return;c.save();c.translate(l.x,l.y);
   if(l.kind==='museum'){
    rounded(c,-3,-1.1,6,1.3,.12,'#e9f2e5',ink,.05);oval(c,-1,-1.3,1.3,1,'#8ec3d0');poly(c,[[-2.3,-1.3],[-2.3,-.9],[.3,-.9],[.3,-1.3]],'#8ec3d0',null);rounded(c,.7,-2,2.1,1.6,.12,'#e9f2e5',ink,.05);for(let i=0;i<4;i++)line(c,[{x:1+i*.45,y:-1.8},{x:1+i*.45,y:-.65}],'#87bac4',.1);label(c,'FROST SCIENCE',0,-2.8,.48);
   }else if(l.kind==='beach'){
@@ -81,13 +81,13 @@ export class MiamiPainter{
   for(const q of g.projectiles){const w=weaponFor(q.weapon);c.save();c.translate(q.x,q.y);c.rotate(q.angle);if(q.weapon==='firejet'){poly(c,[[-.55,-.15],[-1.3,0],[-.55,.15]],'#ffd275',null);rounded(c,-.5,-.13,.6,.26,.05,'#6fe1ed',ink,.025);poly(c,[[0,-.23],[.5,0],[0,.23]],'#ff7148',ink,.035);poly(c,[[-.4,-.13],[-.6,-.37],[-.15,-.13],[-.15,.13],[-.6,.37],[-.4,.13]],'#f8e4b0',ink,.025);oval(c,-.5,0,.12,.1,'#fffbd1');}else if(q.weapon==='bubble'){oval(c,0,0,.28,.28,'#c4faffb0');c.beginPath();c.arc(0,0,.29,0,Math.PI*2);c.strokeStyle='#efffff';c.lineWidth=.045;c.stroke();oval(c,-.08,-.08,.07,.07,'#fff');}else if(q.weapon==='tide'){c.rotate(g.time*22);poly(c,[[-.4,-.2],[0,0],[.4,-.2],[.15,.2]],w.color,ink,.04);}else{line(c,[{x:-.55,y:0},{x:.1,y:0}],q.enemy?'#ff8a79':w.color,.17);oval(c,0,0,.16,.16,'#fffcdd');}c.restore();}
   for(const f of g.effects){const alpha=Math.max(0,f.life/f.max);c.globalAlpha=alpha;if(f.type==='beam')line(c,[{x:f.x,y:f.y},{x:f.tx,y:f.ty}],f.color,.15);else{c.beginPath();c.arc(f.x,f.y,(1-alpha)*2+.3,0,Math.PI*2);c.strokeStyle=f.color;c.lineWidth=f.type==='warning'?.08:.2;c.stroke();}}c.globalAlpha=1;c.restore();
  }
- mapPlace(c,l,x,y){c.save();c.translate(x,y);rounded(c,-29,-30,58,58,10,'#e8eed8ee','#d2e5d7',1);const scale=l.kind==='home'||l.kind==='lighthouse'?4:7;c.scale(scale,scale);c.translate(-l.x,-l.y+(l.kind==='home'?3.5:l.kind==='lighthouse'?2:0));this.landmark(c,l,0,{discoveries:[]});c.restore();}
+ mapPlace(c,l,x,y,save={equipmentClaims:[]}){c.save();c.translate(x,y);rounded(c,-29,-30,58,58,10,'#e8eed8ee','#d2e5d7',1);const scale=l.kind==='home'||l.kind==='lighthouse'?4:7;c.scale(scale,scale);c.translate(-l.x,-l.y+(l.kind==='home'?3.5:l.kind==='lighthouse'?2:0));this.landmark(c,l,0,save);c.restore();}
  map(canvas,g,{showPlayer=true}={}){this.mapTargets=[];const c=canvas.getContext('2d'),visible=visibleAreas(g.save),points=visible.flatMap(a=>a.polys.flat()),minX=Math.min(...points.map(p=>p[0]))-6,maxX=Math.max(...points.map(p=>p[0]))+6,minY=Math.min(...points.map(p=>p[1]))-8,maxY=Math.max(...points.map(p=>p[1]))+8;canvas.width=600;canvas.height=760;const s=Math.min(550/(maxX-minX),700/(maxY-minY)),ox=(600-(maxX+minX)*s)/2,oy=(760-(maxY+minY)*s)/2;
   c.showLabels=false;c.fillStyle='#235767';c.fillRect(0,0,600,760);c.save();c.translate(ox,oy);c.scale(s,s);this.terrain(c,g.save,0,true);const next=nextChapter(g.save);if(next)for(const a of visible.filter(a=>a.id===next.id||next.id===1&&a.id===0))for(const points of a.polys)poly(c,points,'#ffd35c99','#ffe17b',2.5/s);
-  for(const a of visible){const p=a.id?a.entry:HOME;oval(c,p.x,p.y,1.5,1.5,a.id===next?.id?'#ffd47b':'#e9f2d6');if(a.id)label(c,g.save.cleared.includes(`boss-${a.id}`)?'✓':'★',p.x,p.y+.45,1.2);}
+  for(const a of visible){const p=a.id?a.entry:HOME;oval(c,p.x,p.y,1.5,1.5,a.id===next?.id?'#ffd47b':'#e9f2d6');if(a.id)label(c,g.save.cleared.includes(`boss-${a.id}`)?'✓':'⚑',p.x,p.y+.45,1.2);}
   c.restore();
-  for(const l of LANDMARKS.filter(l=>visible.some(a=>a.id===l.area))){const x=l.x*s+ox,y=l.y*s+oy;this.mapTargets.push({x:x-10,y:y-10,width:20,height:20,destination:{x:l.x,y:l.y}});oval(c,x,y,4.5,4.5,l.equipment&&!g.save.discoveries.includes(l.id)?'#ffd46f':['playground','pirate-playground','splash-park'].includes(l.kind)?'#f1a7ab':'#80b9b1');}
-  for(const a of visible){const l=LANDMARKS.find(l=>l.id===['panorama','key-park','domino','park-grove','cape-florida','skyviews','frost','south-of-fifth'][a.id])||LANDMARKS.find(l=>l.area===a.id);if(!l)continue;const x=l.x*s+ox,y=l.y*s+oy;this.mapPlace(c,l,x,y);this.mapTargets.push({x:x-29,y:y-30,width:58,height:58,destination:{x:l.x,y:l.y}});}
+  for(const l of LANDMARKS.filter(l=>visible.some(a=>a.id===l.area))){const x=l.x*s+ox,y=l.y*s+oy;this.mapTargets.push({x:x-10,y:y-10,width:20,height:20,destination:{x:l.x,y:l.y}});oval(c,x,y,4.5,4.5,l.equipment&&!equipmentClaimed(g.save,l)?'#ffd46f':['playground','pirate-playground','splash-park'].includes(l.kind)?'#f1a7ab':'#80b9b1');}
+  for(const a of visible){const l=LANDMARKS.find(l=>l.id===['panorama','key-park','domino','park-grove','cape-florida','skyviews','frost','south-of-fifth'][a.id])||LANDMARKS.find(l=>l.area===a.id);if(!l)continue;const x=l.x*s+ox,y=l.y*s+oy;this.mapPlace(c,l,x,y,g.save);this.mapTargets.push({x:x-29,y:y-30,width:58,height:58,destination:{x:l.x,y:l.y}});}
   if(next){const p=next.camps.find((_,i)=>!g.save.camps.includes(`camp-${next.id}-${i}`))||next.arena;this.mapTargets.push({x:ox+p.x*s-13,y:oy+p.y*s-13,width:26,height:26,destination:{x:p.x,y:p.y}});oval(c,ox+p.x*s,oy+p.y*s,13,13,'#ffe17b');label(c,'➜',ox+p.x*s,oy+p.y*s+6,22);}
   if(showPlayer)atlasBot(c,ox+g.player.x*s,oy+g.player.y*s,g.save,weaponFor(g.save.weapon).art);
   c.textAlign='start';c.fillStyle='#d7f7e9';c.font='800 28px system-ui';c.fillText('↑',550,40);this.mapTransform={s,ox,oy};

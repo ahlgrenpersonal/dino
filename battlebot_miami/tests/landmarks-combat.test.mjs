@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {AREAS,FINAL_AREA,HOME,KEY_LOOP,LANDMARKS,PRIVATE_ZONES,freshSave,readSave,canWalk,isPrivate,pathfind,dist,visibleLandmarks} from '../world.js?v=world17';
-import {MiamiAdventure} from '../engine.js?v=world17';
+import {AREAS,FINAL_AREA,HOME,KEY_LOOP,LANDMARKS,PRIVATE_ZONES,freshSave,readSave,canWalk,isPrivate,pathfind,dist,visibleLandmarks} from '../world.js?v=world18';
+import {MiamiAdventure} from '../engine.js?v=world18';
 import {readFile} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 
@@ -52,8 +52,9 @@ test('City Centre gives wheels once, keeps the weapon and preserves its find acr
  const loaded=new MiamiAdventure(readSave(JSON.parse(JSON.stringify(g.snapshot()))));assert.equal(loaded.save.build.wheels,'grip');loaded.save.king=true;loaded.replay();assert(loaded.save.owned.includes('grip'));assert(loaded.save.discoveries.includes('city-centre'));
 });
 
-test('park stamps award scrap once without becoming mandatory campaign gates',()=>{
- const g=new MiamiAdventure(freshSave()),park=LANDMARKS.find(l=>l.id==='hammock');Object.assign(g.player,park);g.update(.016);assert.equal(g.save.scrap,8);assert(g.save.discoveries.includes(park.id));g.goHome();Object.assign(g.player,park);g.update(.016);assert.equal(g.save.scrap,8);assert.equal(g.save.unlocked,1);assert.deepEqual(g.save.camps,[]);
+test('playgrounds give an immediate usable item once, without a currency or collection requirement',()=>{
+ const g=new MiamiAdventure(freshSave()),park=LANDMARKS.find(l=>l.id==='hammock'),events=[];g.onEvent=e=>events.push(e);Object.assign(g.player,park);g.update(.016);assert.equal(g.save.scrap,0);assert(g.save.owned.includes('spark-cell'));assert.equal(g.save.build.gadget,'spark-cell');assert(g.save.equipmentClaims.includes(park.id));assert.equal(events.filter(e=>e.type==='findEquipment').length,1);g.power();assert.equal(g.powerCd,24);
+ g.goHome();Object.assign(g.player,park);g.update(.016);assert.equal(events.filter(e=>e.type==='findEquipment').length,1);assert.equal(g.save.unlocked,1);assert.deepEqual(g.save.camps,[]);
 });
 
 test('playgrounds remain safe from both melee bumps and projectiles',()=>{
