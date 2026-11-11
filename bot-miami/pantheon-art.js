@@ -1,6 +1,6 @@
-import {robotCostume} from './halloween-art.js?v=world94';
-import {halloweenTheme} from './halloween.js?v=world94';
-import {PANTHEON,COURT,COLUMNS,STAIRWAY,TERRACE} from './pantheon.js?v=world94';
+import {robotCostume} from './halloween-art.js?v=world96';
+import {halloweenTheme} from './halloween.js?v=world96';
+import {PANTHEON,COURT,COLUMNS,STAIRWAY,TERRACE} from './pantheon.js?v=world96';
 const INK='#304955',GOLD='#e4bf67',LIGHT='#fff1bd';
 function shape(c,points,fill,stroke=INK,width=.045){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke();}}
 function oval(c,x,y,rx,ry,fill,stroke=null,width=.04){c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke();}}
@@ -9,7 +9,7 @@ function box(c,x,y,w,h,fill,stroke=INK,width=.04){c.fillStyle=fill;c.fillRect(x,
 function laurel(c,x,y,size){for(const side of [-1,1])for(let i=0;i<7;i++){const a=-1.25+i*.36;const px=x+side*Math.cos(a)*size,py=y+Math.sin(a)*size;c.save();c.translate(px,py);c.rotate(side*(a+.6));oval(c,0,0,size*.2,size*.075,GOLD);c.restore();}}
 function crown(c,x,y,s,queen=false){c.save();c.translate(x,y);c.scale(s,s);shape(c,[[-.45,.1],[-.53,-.38],[-.23,-.2],[0,-.65],[.23,-.2],[.53,-.38],[.45,.1]],GOLD);box(c,-.43,.02,.86,.17,'#b88743');for(const dx of [-.28,0,.28])oval(c,dx,.07,.055,.06,queen?'#83efda':'#ff8f62');line(c,-.4,.2,.4,.2,LIGHT,.045);c.restore();}
 function column(c,p){c.save();c.translate(p.x,p.y);oval(c,.35,.3,.95,.35,'#30495530');box(c,-.75,-.16,1.5,.36,'#859e9c');box(c,-.64,-.38,1.28,.23,'#e2e6d1');box(c,-.42,-3.95,.84,3.6,'#ccd5c6');box(c,.13,-3.95,.29,3.6,'#96afa9',null);for(const x of [-.26,-.04,.18])line(c,x,-3.7,x,-.55,x<0?'#f5f0d9':'#728f91',.055);box(c,-.68,-4.15,1.36,.27,'#e2e6d1');box(c,-.77,-4.35,1.54,.2,'#9eb8af');for(const side of [-1,1])oval(c,side*.47,-4.08,.2,.16,'#d6decc',INK,.035);line(c,-.35,-2.9,-.14,-2.75,'#738e8e',.025);line(c,-.14,-2.75,-.2,-2.36,'#738e8e',.025);
-  if(p.y!==236.5){line(c,-.49,-4.25,-.45,-2.1,'#476c63',.06);for(let i=0;i<7;i++){c.save();c.translate(-.45+(i%2?.12:-.09),-4+i*.29);c.rotate(i%2?-.65:.65);oval(c,0,0,.16,.07,i%2?'#7da681':'#527d6b');c.restore();}}
+  if(p.y!==194.5){line(c,-.49,-4.25,-.45,-2.1,'#476c63',.06);for(let i=0;i<7;i++){c.save();c.translate(-.45+(i%2?.12:-.09),-4+i*.29);c.rotate(i%2?-.65:.65);oval(c,0,0,.16,.07,i%2?'#7da681':'#527d6b');c.restore();}}
   c.restore();}
 
 export function templeGround(c,x,y){
@@ -17,10 +17,10 @@ export function templeGround(c,x,y){
   box(c,x,y,1.01,1.01,n>.5?'#91a9a6':'#95ada8',null);
   line(c,x,y+1,x+1,y+1,'#789691',.015);
   line(c,x+1,y,x+1,y+1,'#789691',.015);
-  if(x<147||x>176||y>258||y<225&&(x<148||x>151)){box(c,x,y,1.01,1.01,'#526c76',null);if((x+y)%5===0)line(c,x+.2,y+.3,x+.7,y+.5,'#779198',.05);}
+  if(x<517||x>546||y>216||y<183&&(x<518||x>521)){box(c,x,y,1.01,1.01,'#526c76',null);if((x+y)%5===0)line(c,x+.2,y+.3,x+.7,y+.5,'#779198',.05);}
 }
 export function templeFloor(c,t){
-  c.save();c.translate(162.5,237);c.scale(.78,1);
+  c.save();c.translate(532.5,195);c.scale(.78,1);
   // Broad worn marble steps and a mosaic rotunda, open at the front.
   for(let i=3;i>=0;i--)box(c,-12-i*.34,-7-i*.15,24+i*.68,16+i*.65,['#758e92','#9cb2ab','#c2cebd','#e1e1c9'][i],INK,.06);
   box(c,-10.5,-5.9,21,13.5,'#536f77');
@@ -31,29 +31,29 @@ export function templeFloor(c,t){
   // Weathering is architectural, never a barrier across the walk.
   for(const [x,y] of [[-9,6],[8,-4],[-7,-4],[9,5]]){line(c,x,y,x+.7,y+.2,'#3d6372',.045);line(c,x+.7,y+.2,x+.5,y+.7,'#3d6372',.035);}
   c.scale(1/.78,1);
-  for(const royal of COURT){const x=royal.x-162.5,y=royal.y-237,s=royal.role==='guard'?1:2.05;oval(c,x+.16,y+.34,s*1.1,.5,'#203e5355');oval(c,x,y+.26,s,.47,'#6e8b91','#b7c5b4',.08);oval(c,x,y+.1,s,.4,'#b3c4b4','#e4e4c9',.055);}
+  for(const royal of COURT){const x=royal.x-532.5,y=royal.y-195,s=royal.role==='guard'?1:2.05;oval(c,x+.16,y+.34,s*1.1,.5,'#203e5355');oval(c,x,y+.26,s,.47,'#6e8b91','#b7c5b4',.08);oval(c,x,y+.1,s,.4,'#b3c4b4','#e4e4c9',.055);}
   for(let i=0;i<7;i++){const f=(t*.04+i*.173)%1;c.globalAlpha=Math.sin(f*Math.PI)*.3;oval(c,Math.sin(i*19)*9,-4+f*10,.035,.07,'#d8fff1');}c.globalAlpha=1;
   // The only ascent is the long central flight; the terrace has sheer retaining walls.
-  c.save();c.translate(-162.5,-237);
+  c.save();c.translate(-532.5,-195);
   for(const [x,width] of [[TERRACE.left,STAIRWAY.left-TERRACE.left],[STAIRWAY.right,TERRACE.right-STAIRWAY.right]]){
-    box(c,x,244.8,width,2.2,'#566f7a',INK,.07);box(c,x,244.75,width,.32,'#d4dac5');
-    for(let y=245.3;y<247;y+=.55){line(c,x,y,x+width,y,'#8da69f',.04);for(let bx=x+1+(Math.round(y*2)%2);bx<x+width;bx+=1.8)line(c,bx,y,bx,y+.5,'#304b5d',.035);}
+    box(c,x,202.8,width,2.2,'#566f7a',INK,.07);box(c,x,202.75,width,.32,'#d4dac5');
+    for(let y=203.3;y<205;y+=.55){line(c,x,y,x+width,y,'#8da69f',.04);for(let bx=x+1+(Math.round(y*2)%2);bx<x+width;bx+=1.8)line(c,bx,y,bx,y+.5,'#304b5d',.035);}
   }
   for(const side of [-1,1]){
     const x=side<0?TERRACE.left:TERRACE.right;
-    box(c,x-.22,229,.44,15.8,'#d3d9c2',INK,.07);box(c,x-.13,229,.1,15.8,'#f0eed4',null);
+    box(c,x-.22,187,.44,15.8,'#d3d9c2',INK,.07);box(c,x-.13,187,.1,15.8,'#f0eed4',null);
   }
   const top=STAIRWAY.top-.6,bottom=STAIRWAY.bottom;
-  shape(c,[[159.7,top],[165.3,top],[166.1,bottom+.25],[158.9,bottom+.25]],'#456372',INK,.08);
+  shape(c,[[529.7,top],[535.3,top],[536.1,bottom+.25],[528.9,bottom+.25]],'#456372',INK,.08);
   for(let i=0;i<12;i++){
     const y=top+(bottom-top)*i/12,next=top+(bottom-top)*(i+1)/12,half=2.5+i*.055;
-    box(c,162.5-half,y,half*2,next-y,'#c4cebb','#849b98',.025);
-    box(c,162.5-half,next-.18,half*2,.18,'#617e87',null);
-    line(c,162.5-half,y+.025,162.5+half,y+.025,'#f7f0d7',.07);
+    box(c,532.5-half,y,half*2,next-y,'#c4cebb','#849b98',.025);
+    box(c,532.5-half,next-.18,half*2,.18,'#617e87',null);
+    line(c,532.5-half,y+.025,532.5+half,y+.025,'#f7f0d7',.07);
   }
-  for(const side of [-1,1])shape(c,[[162.5+side*2.55,top],[162.5+side*2.95,top],[162.5+side*3.7,bottom+.3],[162.5+side*3.25,bottom+.3]],'#adbfb0',INK,.07);
-  box(c,160.15,bottom+.35,4.7,258-bottom,'#bdc8b5','#657e81',.04);
-  for(let y=bottom+1;y<258.5;y++)line(c,160.2,y,164.8,y,'#8eaa9f',.025);
+  for(const side of [-1,1])shape(c,[[532.5+side*2.55,top],[532.5+side*2.95,top],[532.5+side*3.7,bottom+.3],[532.5+side*3.25,bottom+.3]],'#adbfb0',INK,.07);
+  box(c,530.15,bottom+.35,4.7,216-bottom,'#bdc8b5','#657e81',.04);
+  for(let y=bottom+1;y<216.5;y++)line(c,530.2,y,534.8,y,'#8eaa9f',.025);
   c.restore();
   for(const side of [-1,1]){
     const x=side*7.2,y=10.1;
@@ -65,7 +65,7 @@ export function templeFloor(c,t){
   c.restore();
 }
 export function templeArchitecture(c){
-  c.save();c.translate(162.5,228.5);c.scale(.78,1);
+  c.save();c.translate(532.5,186.5);c.scale(.78,1);
   oval(c,.5,.3,13,2,'#233c5438');
   // Solid aged masonry, not a transparent latitude/longitude grid.
   const dome=c.createLinearGradient(-9,-8,9,-1);dome.addColorStop(0,'#d1d6c3');dome.addColorStop(.42,'#a5b8ad');dome.addColorStop(.8,'#728e90');dome.addColorStop(1,'#4b6b78');
@@ -167,8 +167,8 @@ export function sleepingRoyal(c,p,t,options={}){
 }
 export function templeColumns(c){for(const p of COLUMNS)column(c,p);}
 export function templeSeal(c,t,state={}){
-  if(state.phase&&state.phase!=='sleeping'&&state.opening>1.4){if(state.phase==='victory')crown(c,162.5,240,2.4);return;}
-  c.save();c.translate(162.5,246.65);
+  if(state.phase&&state.phase!=='sleeping'&&state.opening>1.4){if(state.phase==='victory')crown(c,532.5,198,2.4);return;}
+  c.save();c.translate(532.5,204.65);
   if(state.phase&&state.phase!=='sleeping')c.globalAlpha=Math.max(0,1-state.opening/1.4);
   const field=c.createLinearGradient(0,-2.4,0,0);field.addColorStop(0,'#b8f4e71c');field.addColorStop(.6,'#b8f4e755');field.addColorStop(1,'#c8fff180');
   box(c,-2.55,-2.4,5.1,2.4,field,null);

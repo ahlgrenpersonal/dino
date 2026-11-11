@@ -3,7 +3,7 @@
   "name": "Bot Miami",
   "short_name": "Bot Miami",
   "description": "Build a little bot. Find a big adventure.",
-  "start_url": "./index.html?v=world94",
+  "start_url": "./index.html?v=world96",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",

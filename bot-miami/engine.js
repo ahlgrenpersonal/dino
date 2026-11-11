@@ -1,13 +1,13 @@
-import {currentMission} from './data.js?v=world94';
-import { HOME, WORKSHOPS, RETURNS, ENCOUNTERS, returnActive, REGIONS, EQUIPMENT, STARTERS, makeWorld, freshSave, stats, item, cellsIn, unlockedRegion, regionAt, relayFor, pathfind, canWalk, available, requiredCells, migrateSiteProgress, migrateWorldLayout, PANTHEON, areaUnlocked, pantheonUnlocked } from './data.js?v=world94';
-import { bossProfile } from './content.js?v=world94';
-import {replayTitle} from './replay-variants.js?v=world94';
-import { ReturningPatrols } from './patrols.js?v=world94';
-import {inRoyalChamber} from './pantheon.js?v=world94';
-import {RoyalCourt} from './royal-court.js?v=world94';
-import {nearestWalkable} from './data.js?v=world94';
-import {Boats} from './boats.js?v=world94';
-import {initializeReplay,beginReplay,completeReplay} from './replay.js?v=world94';
+import {currentMission} from './data.js?v=world96';
+import { HOME, WORKSHOPS, RETURNS, ENCOUNTERS, returnActive, REGIONS, EQUIPMENT, STARTERS, makeWorld, freshSave, stats, item, cellsIn, unlockedRegion, regionAt, relayFor, pathfind, canWalk, available, requiredCells, migrateSiteProgress, migrateWorldLayout, PANTHEON, areaUnlocked, pantheonUnlocked } from './data.js?v=world96';
+import { bossProfile } from './content.js?v=world96';
+import {replayTitle} from './replay-variants.js?v=world96';
+import { ReturningPatrols } from './patrols.js?v=world96';
+import {inRoyalChamber} from './pantheon.js?v=world96';
+import {RoyalCourt} from './royal-court.js?v=world96';
+import {nearestWalkable} from './data.js?v=world96';
+import {Boats} from './boats.js?v=world96';
+import {initializeReplay,beginReplay,completeReplay} from './replay.js?v=world96';
 
 export const distance = (a,b) => Math.hypot(a.x-b.x,a.y-b.y);
 export const TAP_COOLDOWN=1.5;

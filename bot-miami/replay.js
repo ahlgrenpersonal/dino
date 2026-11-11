@@ -1,7 +1,7 @@
-import {halloweenActive,shuffled,newHalloweenThemes,halloweenTheme} from './halloween.js?v=world94';
-import {RETURNS,HALLOWEEN_MISSIONS,makeWorld} from './data.js?v=world94';
-import {chooseReplayBoss} from './replay-variants.js?v=world94';
-import {chooseReplayPalette,ensureReplayPalette} from './replay-colors.js?v=world94';
+import {halloweenActive,shuffled,newHalloweenThemes,halloweenTheme} from './halloween.js?v=world96';
+import {RETURNS,HALLOWEEN_MISSIONS,makeWorld} from './data.js?v=world96';
+import {chooseReplayBoss} from './replay-variants.js?v=world96';
+import {chooseReplayPalette,ensureReplayPalette} from './replay-colors.js?v=world96';
 
 const missions=RETURNS.filter(m=>m.postRoyal&&!m.halloween);
 const ids=missions.map(m=>m.id);

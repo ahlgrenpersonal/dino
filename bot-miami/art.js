@@ -1,15 +1,16 @@
-import {robotCostume,halloweenProp} from './halloween-art.js?v=world94';
-import {mausoleum} from './mausoleum-art.js?v=world94';
-import {regionHalloween,halloweenTheme,halloweenActive} from './halloween.js?v=world94';
-import { REGIONS, WORLD_W, WORLD_H, HOME, hash, regionAt, cellsIn, unlockedRegion, REGION_W, REGION_H, REGION_TILES, regionOrigin, relayFor, atlasLayout, isRoad, requiredCells, GATES } from './data.js?v=world94';
-import {atlasProgress,regionEdges} from './atlas-progress.js?v=world94';
-import {atlasSiteVisible} from './quiet-ui.js?v=world94';
-import {boatArt,dockArt} from './boat-art.js?v=world94';
-import {PANTHEON,areaInfo,pantheonUnlocked} from './data.js?v=world94';
-import {COURT} from './pantheon.js?v=world94';
-import {templeGround,templeFloor,templeArchitecture,templeColumns,templeSeal,sleepingRoyal,pantheonMarker} from './pantheon-art.js?v=world94';
-import * as worldData from './data.js?v=world94';
-import {replayPalette} from './replay-colors.js?v=world94';
+import {miamiGround,environmentObjects,drawLandmark,miamiMapBase} from './miami-environment.js?v=world96';
+import {robotCostume,halloweenProp} from './halloween-art.js?v=world96';
+import {mausoleum} from './mausoleum-art.js?v=world96';
+import {regionHalloween,halloweenTheme,halloweenActive} from './halloween.js?v=world96';
+import { REGIONS, WORLD_W, WORLD_H, HOME, hash, regionAt, cellsIn, unlockedRegion, REGION_W, REGION_H, REGION_TILES, regionOrigin, relayFor, atlasLayout, isRoad, requiredCells, GATES } from './data.js?v=world96';
+import {atlasProgress,regionEdges} from './atlas-progress.js?v=world96';
+import {atlasSiteVisible} from './quiet-ui.js?v=world96';
+import {boatArt,dockArt} from './boat-art.js?v=world96';
+import {PANTHEON,areaInfo,pantheonUnlocked} from './data.js?v=world96';
+import {COURT} from './pantheon.js?v=world96';
+import {templeGround,templeFloor,templeArchitecture,templeColumns,templeSeal,sleepingRoyal,pantheonMarker} from './pantheon-art.js?v=world96';
+import * as worldData from './data.js?v=world96';
+import {replayPalette} from './replay-colors.js?v=world96';
 
 export function rounded(c,x,y,w,h,r,fill,stroke,line=2) {
   c.beginPath();c.roundRect(x,y,w,h,r);if(fill){c.fillStyle=fill;c.fill();}if(stroke){c.strokeStyle=stroke;c.lineWidth=line;c.stroke();}
@@ -498,9 +499,9 @@ export class Painter {
       const left=Math.min(g.player.x-1.5,...royal.map(e=>e.x-e.size*.8)),right=Math.max(g.player.x+1.5,...royal.map(e=>e.x+e.size*.8));
       const top=Math.min(g.player.y-1.5,...royal.map(e=>e.y-e.size)),bottom=Math.max(g.player.y+1.6,...royal.map(e=>e.y+e.size*.6));
       zoom=Math.min(this.baseTile,(this.w-28)/(right-left),(this.h-65)/(bottom-top));target={x:(left+right)/2,y:(top+bottom)/2};
-    }else if(regionAt(g.player.x,g.player.y)===PANTHEON.r&&g.player.y>225&&g.player.y<260){
-      const top=219,bottom=Math.max(251,g.player.y+1.8);
-      zoom=Math.min(this.baseTile,(this.w-16)/23,(this.h-36)/(bottom-top));target={x:162.5,y:(top+bottom)/2};
+    }else if(regionAt(g.player.x,g.player.y)===PANTHEON.r&&g.player.y>183&&g.player.y<218){
+      const top=177,bottom=Math.max(209,g.player.y+1.8);
+      zoom=Math.min(this.baseTile,(this.w-16)/23,(this.h-36)/(bottom-top));target={x:532.5,y:(top+bottom)/2};
     }else if(bosses.length){
       const left=Math.min(g.player.x-1.2,...bosses.map(e=>e.x-1.9)),right=Math.max(g.player.x+1.2,...bosses.map(e=>e.x+1.9));
       const top=Math.min(g.player.y-1.1,...bosses.map(e=>e.y-1.8)),bottom=Math.max(g.player.y+.8,...bosses.map(e=>e.y+1.1));
@@ -525,7 +526,7 @@ export class Painter {
     const x0=Math.max(0,Math.floor(this.camera.x-w/s/2)-2),x1=Math.min(WORLD_W,Math.ceil(this.camera.x+w/s/2)+2),y0=Math.max(0,Math.floor(this.camera.y-h/s*.51)-2),y1=Math.min(WORLD_H,Math.ceil(this.camera.y+h/s*.49)+2);
     for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++)this.ground(x,y,t,g);
     if(halloweenActive(g.save)){c.fillStyle='#6e477a14';c.fillRect(x0,y0,x1-x0,y1-y0);}
-    const courtVisible=x1>147&&x0<178&&y1>218&&y0<258;
+    const courtVisible=x1>517&&x0<548&&y1>176&&y0<216;
     if(courtVisible){templeFloor(c,t);if(halloweenActive(g.save))mausoleum(c,t,{phase:g.royals.phase,opening:g.time-g.royals.openedAt});else templeArchitecture(c);if(!pantheonUnlocked(g.save)){c.save();c.translate(PANTHEON.entry.x,PANTHEON.entry.y);c.rotate(Math.PI/2);this.gate(0,0,t);c.restore();}}
     for(const arena of g.world.arenas||[]){
       const radius=arena.radius||3.8;
@@ -548,11 +549,11 @@ export class Painter {
     if(courtVisible)for(const p of g.royals.figures())objects.push({...p,kind:'royal'});
     for(const shop of workshops())if(shop.r<=unlockedRegion(g.save)&&shop.x>x0-4&&shop.x<x1+4&&shop.y>y0-4&&shop.y<y1+4)objects.push({...shop,y:shop.y-.6,kind:'home'});
     for(const e of g.enemies)if(!e.royal&&returnVisible(g.save,e)&&e.hp>0&&!e.dormant&&e.x>x0-2&&e.x<x1+2&&e.y>y0-2&&e.y<y1+2)objects.push({...e,kind:'enemy'});
-    objects.push({...g.player,kind:'player'});objects.sort((a,b)=>a.y-b.y);
+    objects.push(...environmentObjects(x0,y0,x1,y1,unlockedRegion(g.save)));objects.push({...g.player,kind:'player'});objects.sort((a,b)=>a.y-b.y);
     const units=objects.filter(obj=>obj.kind==='player'||obj.kind==='enemy');
     for(const obj of objects){
       if(obj.kind==='prop'){
-        const tall=['tree','landmark','mountain'].includes(obj.type),height=obj.type==='landmark'?2.7:obj.type==='mountain'?3:1.6,width=obj.type==='landmark'?1.2:obj.type==='mountain'?1.1:.85;
+        const miami=obj.type==='miami-landmark',tall=miami||['tree','landmark','mountain'].includes(obj.type),height=miami?9:obj.type==='landmark'?2.7:obj.type==='mountain'?3:1.6,width=miami?3:obj.type==='landmark'?1.2:obj.type==='mountain'?1.1:.85;
         // Keep faces readable behind tall foreground scenery without changing collision geometry.
         const covering=tall?units.filter(unit=>obj.y>=unit.y-.1&&obj.y-unit.y<height&&Math.abs(obj.x-unit.x)<width):[];
         c.save();
@@ -647,51 +648,9 @@ export class Painter {
     }
     c.restore();
   }
-  ground(x,y,t,g){const c=this.c,r=regionAt(x,y),base=REGIONS[r]||REGIONS[4],festival=regionHalloween(g.save,r),reg=festival?{...base,ground:festival.ground,path:festival.path}:base,n=hash(x,y);if(r===PANTHEON.r){templeGround(c,x,y);return;}const road=isRoad(x+.5,y+.5);
-    if(g.world.water.has(`${x},${y}`)){
-      c.fillStyle=reg.water;c.fillRect(x,y,1.02,1.02);
-      if(r>=5){themeGround(c,x,y,reg,n,false,t,true);return;}
-      if(r>=3){
-        if(r===3){line(c,x+.15,y+.25,x+.85,y+.25,'#ffba6570',.08);line(c,x+.15,y+.7,x+.85,y+.7,'#ffe2a160',.035);}
-        else if(n>.45){ellipse(c,x+.25,y+.3,.018,.018,'#ceeaff');ellipse(c,x+.74,y+.7,.012,.012,'#9daedd');}
-        return;
-      }
-      for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]])if(!g.world.water.has(`${x+dx},${y+dy}`)){
-        const ex=x+.5+dx*.48,ey=y+.5+dy*.48;
-        line(c,ex+(dy?.5:0),ey+(dx?.5:0),ex-(dy?.5:0),ey-(dx?.5:0),'#d7dfae',.13);
-        line(c,ex+(dy?.48:0)-dx*.13,ey+(dx?.48:0)-dy*.13,ex-(dy?.48:0)-dx*.13,ey-(dx?.48:0)-dy*.13,'#e3f3d693',.045);
-      }
-      line(c,x+.1,y+.35+Math.sin(t*1.8+x)*.025,x+.48,y+.35+Math.sin(t*1.8+x)*.025,'#d9f7df65',.025);
-      line(c,x+.6,y+.7,x+.8,y+.7,'#d9f7df40',.02);
-      if(n>.75){ellipse(c,x+.5,y+.55,.14,.065,'#71a87d');ellipse(c,x+.49,y+.54,.08,.04,'#b5d792');}return;
-    }
-    c.fillStyle=road?reg.path:reg.ground;c.fillRect(x,y,1.015,1.015);
-    c.fillStyle=n>.5?'#ffffff08':'#203e3706';c.fillRect(x+.02,y+.02,.96,.96);
-    if(r>=5){themeGround(c,x,y,reg,n,road,t);if(!g.save.visited.includes(r)&&r>unlockedRegion(g.save)){c.fillStyle='#192f3b55';c.fillRect(x,y,1.02,1.02);}return;}
-    if(r>=3){
-      rounded(c,x+.05,y+.05,.9,.9,.035,null,road?'#8297a044':'#48616d50',.018);
-      if(r===3){
-        line(c,x+.15,y+.87,x+.47,y+.87,'#f9cf8455',.03);if(n>.7){for(let i=0;i<3;i++)line(c,x+.22+i*.18,y+.24,x+.31+i*.18,y+.37,'#586d7770',.035);}
-      }else{
-        c.save();c.translate(x+.5,y+.5);c.rotate(Math.floor(n*4)*Math.PI/2);line(c,-.4,-.22,-.1,-.22,'#d5fbff66',.025);line(c,-.1,-.22,-.1,.1,'#d5fbff66',.025);ellipse(c,-.1,.12,.035,.035,'#e4ffff');c.restore();
-        if(n>.7)line(c,x+.74,y+.12,x+.74,y+.8,'#7086b26b',.045);
-      }
-      if(!g.save.visited.includes(r)&&r>unlockedRegion(g.save)){c.fillStyle='#192f3b55';c.fillRect(x,y,1.02,1.02);}
-      return;
-    }
-    if(!road&&r===1){
-      for(let j=0;j<4;j++){const px=x+hash(x+j*11,y)*.9,py=y+hash(x,y+j*7)*.9;ellipse(c,px,py,.035,.015,j%2?'#e1b16e80':'#31594955');}
-      line(c,x+.15,y+.75,x+.36,y+.69,'#3c655970',.025);
-    }else if(!road&&r===2){
-      line(c,x+.13,y+.7,x+.43,y+.63,'#6d8a9d44',.025);line(c,x+.5,y+.3,x+.77,y+.3,'#f0faf9aa',.04);
-      if(n>.6){ellipse(c,x+.3,y+.4,.03,.02,'#f5ffffb0');ellipse(c,x+.8,y+.8,.025,.02,'#5b7e8b60');}
-    }else if(!road){for(let j=0;j<6;j++){const px=x+hash(x+j*13,y,4)*.9,py=y+hash(x,y+j*7,5)*.9;const wind=Math.sin(t*1.3+x+y)*.014;line(c,px,py,px+.025+wind,py-.065,reg.dark+'66',.015);line(c,px,py,px+.06+wind,py-.035,reg.dark+'66',.015);}
-      if(n>.8){ellipse(c,x+.35,y+.57,.07,.02,'#ffffff25');ellipse(c,x+.65,y+.3,.025,.025,'#fff0be70');}
-    }else{for(let j=0;j<3;j++)ellipse(c,x+hash(x+j,y,7),y+hash(x,y+j,8),.025,.018,'#61795930');}
-    if(x===0||y===0||x===WORLD_W-1||y===WORLD_H-1){c.fillStyle=reg.water;c.fillRect(x,y,1.01,1.01);line(c,x+.1,y+.4+Math.sin(t+x)*.02,x+.6,y+.4+Math.sin(t+x)*.02,'#c1e9dc60',.025);}
-    if(!g.save.visited.includes(r)&&r>unlockedRegion(g.save)){c.fillStyle='#192f3b55';c.fillRect(x,y,1.02,1.02);}
-  }
-  prop(p,t){const c=this.c,reg=REGIONS[p.r];c.save();c.translate(p.x,p.y);
+  ground(x,y,t,g){if(regionAt(x,y)===PANTHEON.r){templeGround(this.c,x,y);return;}miamiGround(this.c,x,y,t,g);}
+
+  prop(p,t){if(p.type==='miami-landmark'){drawLandmark(this.c,p,t);return;}const c=this.c,reg=REGIONS[p.r];c.save();c.translate(p.x,p.y);
     if(p.r>=5&&reg?.theme){themeProp(c,p,reg,t);c.restore();return;}
     if(p.type==='landmark'){
       ellipse(c,.2,.2,.9,.3,'#294b4833');rounded(c,-.4,-.4,.8,.65,.07,'#78958a','#456c65',.04);
@@ -873,16 +832,7 @@ export class Painter {
     }c.restore();
   }
   map(canvas,g,{showPlayer=true,detail=false}={}){const c=canvas.getContext('2d'),w=600,h=760;canvas.width=w*2;canvas.height=h*2;c.scale(2,2);c.fillStyle='#19393c';c.fillRect(0,0,w,h);const progress=atlasProgress(g.save),{scale:s,ox,oy,visible,active,newArea}=progress,markerScale=.8,goal=g.nextObjective?.();
-    for(let y=0;y<WORLD_H;y++)for(let x=0;x<WORLD_W;x++){const r=regionAt(x,y);if(!visible.has(r))continue;c.fillStyle=g.world.water.has(`${x},${y}`)?(REGIONS[r]?.water||'#64a8b5'):(regionHalloween(g.save,r)?.ground||areaInfo(r).ground);c.fillRect(ox+x*s,oy+y*s,s+.1,s+.1);if(r>=0&&r<REGIONS.length&&isRoad(x+.5,y+.5)){c.fillStyle=regionHalloween(g.save,r)?.path||REGIONS[r].path;c.fillRect(ox+x*s,oy+y*s,s+.1,s+.1);}}
-    for(const p of g.world.props)if(visible.has(regionAt(p.x,p.y))&&p.type==='mountain'&&(p.r===2||hash(Math.floor(p.x),Math.floor(p.y))<.04)){
-      const x=ox+p.x*s,y=oy+p.y*s;c.beginPath();c.moveTo(x-4,y+2);c.lineTo(x,y-5);c.lineTo(x+4,y+2);c.closePath();c.fillStyle='#607e91';c.fill();c.beginPath();c.moveTo(x-1.7,y-2);c.lineTo(x,y-5);c.lineTo(x+1.7,y-2);c.closePath();c.fillStyle='#f0ffff';c.fill();
-    }
-    for(const p of g.world.props)if(visible.has(regionAt(p.x,p.y))&&p.r===1&&p.type==='tree'&&hash(Math.floor(p.x),Math.floor(p.y),9)<.09){text(c,'▲',ox+p.x*s,oy+p.y*s,8,p.seed<.085?'#dbac76':'#345e52');}
-    for(const r of visible){
-      const tiles=r===PANTHEON.r?[[PANTHEON.x/REGION_W,PANTHEON.y/REGION_H]]:REGION_TILES[r];
-      if(r===active){c.fillStyle=newArea?'#ffd35b44':'#ffe69a26';for(const [x,y] of tiles)c.fillRect(ox+x*REGION_W*s,oy+y*REGION_H*s,REGION_W*s,REGION_H*s);}
-      c.save();c.beginPath();for(const [x,y,ex,ey] of regionEdges(tiles)){c.moveTo(ox+x*REGION_W*s,oy+y*REGION_H*s);c.lineTo(ox+ex*REGION_W*s,oy+ey*REGION_H*s);}c.strokeStyle=r===active?'#ffe17b':'#d4ecdd70';c.lineWidth=r===active?3:1;if(r===active){c.shadowColor='#ffdc68';c.shadowBlur=newArea?14:5;}c.stroke();c.restore();
-    }
+    miamiMapBase(c,g,progress,detail);
     const route=g.guideRoute();
     if(route.length){
       c.save();c.lineJoin='round';c.lineCap='round';c.beginPath();
@@ -891,14 +841,6 @@ export class Painter {
       c.setLineDash([5*markerScale,5*markerScale]);c.strokeStyle='#d9ffe3';c.lineWidth=2.5*markerScale;c.stroke();c.setLineDash([]);
       for(let i=12;i<route.length;i+=24){const p=route[i],before=route[i-1];c.save();c.translate(ox+p.x*s,oy+p.y*s);c.rotate(Math.atan2(p.y-before.y,p.x-before.x));polygon(c,[[-3,-3],[2,0],[-3,3]],'#ffe28c','#173d68',1.2);c.restore();}
       const goal=route.at(-1);ring(c,ox+goal.x*s,oy+goal.y*s,10*markerScale,'#173d68',4*markerScale);ring(c,ox+goal.x*s,oy+goal.y*s,10*markerScale,'#ffe28c',2*markerScale);c.restore();
-    }
-    for(let r=0;r<REGIONS.length;r++){
-      if(!visible.has(r))continue;
-      const tiles=REGION_TILES[r],x=tiles.reduce((sum,p)=>sum+p[0]+.5,0)/tiles.length*REGION_W,y=Math.min(...tiles.map(p=>p[1]))*REGION_H;
-      c.save();c.font='800 10.5px system-ui';c.textAlign='center';c.lineJoin='round';c.lineWidth=1.8;
-      c.strokeStyle='#dceccadd';c.fillStyle='#244f49';
-      REGIONS[r].name.split(' ').forEach((word,i)=>{c.strokeText(word,ox+x*s,oy+y*s+12+i*11);c.fillText(word,ox+x*s,oy+y*s+12+i*11);});c.restore();
-      if(r===active){const cx=ox+x*s,cy=oy+y*s+REGIONS[r].name.split(' ').length*11+25;ellipse(c,cx,cy,11,11,'#173d48');text(c,newArea?'★':'⚑',cx,cy+5,17,'#ffe17b');}
     }
     const returning=new Set(g.enemies.filter(e=>e.patrolSite&&e.hp>0).map(e=>e.patrolSite));
     for(const site of g.world.sites){if(site.r>unlockedRegion(g.save)||!returnVisible(g.save,site)||!atlasSiteVisible(site,{detail,goal}))continue;const done=g.save.cleared.includes(site.id),patrol=detail&&returning.has(site.id),x=ox+site.x*s,y=oy+site.y*s;ellipse(c,x,y,(patrol?5.2:3.8)*markerScale,(patrol?5.2:3.8)*markerScale,patrol?'#ed917b':done?'#d8f0b5':site.returnId?'#e8d3ff':'#ffdc7d');c.strokeStyle=site.returnId?'#8550c2':'#203b38';c.lineWidth=(site.returnId?2.5:1.5)*markerScale;c.stroke();if(patrol)for(const dx of [-1.7,1.7])ellipse(c,x+dx*markerScale,y-.7*markerScale,.8*markerScale,.8*markerScale,'#203b38');}

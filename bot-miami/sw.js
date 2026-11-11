@@ -1,16 +1,5 @@
-const CACHE_NAME='bot-miami-world94';
-const ASSETS=['./','./index.html','./styles.css?v=world94','./layout.css?v=world94','./app.js?v=world94','./data.js?v=world94','./topology.js?v=world94','./content.js?v=world94','./engine.js?v=world94','./patrols.js?v=world94','./art.js?v=world94','./atlas.js?v=world94','./manifest.webmanifest','./version.json','./assets/icon.svg','./assets/icon-192.png','./assets/icon-512.png','./refresh.html'];
-ASSETS.push('./pantheon.js?v=world94','./pantheon-art.js?v=world94','./royal-court.js?v=world94');
-ASSETS.push('./adventure-saves.js?v=world94','./hold-confirm.js?v=world94');
-ASSETS.push('./power-control.js?v=world94');
-ASSETS.push('./atlas-progress.js?v=world94');
-ASSETS.push('./quiet-ui.js?v=world94');
-ASSETS.push('./replay.js?v=world94');
-ASSETS.push('./replay-variants.js?v=world94');
-ASSETS.push('./replay-colors.js?v=world94');
-ASSETS.push('./boats.js?v=world94','./boat-art.js?v=world94');
-ASSETS.push('./halloween.js?v=world94','./halloween-art.js?v=world94','./mausoleum-art.js?v=world94');
-ASSETS.push('./assets/adventure-theme.mp3');
+const CACHE_NAME='bot-miami-world96';
+const ASSETS=["./","./index.html","./styles.css?v=world96","./layout.css?v=world96","./adventure-data.js?v=world96","./adventure-pantheon.js?v=world96","./adventure-saves.js?v=world96","./app.js?v=world96","./art.js?v=world96","./atlas-progress.js?v=world96","./atlas.js?v=world96","./boat-art.js?v=world96","./boats.js?v=world96","./content.js?v=world96","./data.js?v=world96","./engine.js?v=world96","./halloween-art.js?v=world96","./halloween.js?v=world96","./hold-confirm.js?v=world96","./mausoleum-art.js?v=world96","./miami-environment.js?v=world96","./miami-geography.js?v=world96","./miami-landmarks.js?v=world96","./miami-layout.js?v=world96","./pantheon-art.js?v=world96","./pantheon.js?v=world96","./patrols.js?v=world96","./power-control.js?v=world96","./quiet-ui.js?v=world96","./replay-colors.js?v=world96","./replay-variants.js?v=world96","./replay.js?v=world96","./royal-court.js?v=world96","./topology.js?v=world96","./manifest.webmanifest","./version.json","./refresh.html","./assets/adventure-theme.mp3","./assets/icon-192.png","./assets/icon-512.png","./assets/icon.svg","./assets/pantheon-preview.jpg","./assets/pantheon-staircase.jpg"];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('bot-miami-')&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{

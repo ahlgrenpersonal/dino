@@ -4,7 +4,7 @@ function oval(c,x,y,rx,ry,fill,stroke=EDGE,width=.08){c.beginPath();c.ellipse(x,
 function box(c,x,y,w,h,fill){c.fillStyle=fill;c.fillRect(x,y,w,h);}
 function line(c,x,y,xx,yy,color,width=.06){c.beginPath();c.moveTo(x,y);c.lineTo(xx,yy);c.strokeStyle=color;c.lineWidth=width;c.stroke();}
 export function mausoleum(c,t,state={}){
-  c.save();c.translate(162.5,244.1);
+  c.save();c.translate(532.5,202.1);
   const open=state.phase==='sleeping'?0:Math.min(1,Math.max(0,state.opening??3)/2.5);
   oval(c,.5,.5,10.8,2.1,'#26383d44',null);
   // Broad concentric stone courses and a circular podium.

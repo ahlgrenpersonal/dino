@@ -1,18 +1,18 @@
-import {halloweenActive,regionHalloween} from './halloween.js?v=world94';
-import {currentMission} from './data.js?v=world94';
-import { BUILD, HOME, COLORS, EQUIPMENT, REGIONS, WORKSHOPS, RETURNS, returnActive, freshSave, item, stats, available, visibleEquipment, cellsIn, unlockedRegion, regionAt, nearestWalkable, WORLD_W, WORLD_H, relayFor, regionOrigin, atlasLayout, requiredCells, migrateWorldLayout } from './data.js?v=world94';
-import { Adventure, distance } from './engine.js?v=world94';
-import { Painter, bot, weapon, rounded, categoryIcon, equipmentIcon,atlasBot } from './art.js?v=world94';
-import { mountAtlas } from './atlas.js?v=world94';
-import {PANTHEON,areaInfo,areaUnlocked,pantheonUnlocked} from './data.js?v=world94';
-import {AdventureSaves} from './adventure-saves.js?v=world94';
-import {bindHoldConfirmation} from './hold-confirm.js?v=world94';
-import {bindPowerControl,updatePowerControl} from './power-control.js?v=world94';
-import {atlasProgress} from './atlas-progress.js?v=world94';
-import {localProgress} from './quiet-ui.js?v=world94';
-import {replayTitle} from './replay-variants.js?v=world94';
+import {halloweenActive,regionHalloween} from './halloween.js?v=world96';
+import {currentMission} from './data.js?v=world96';
+import { BUILD, HOME, COLORS, EQUIPMENT, REGIONS, WORKSHOPS, RETURNS, returnActive, freshSave, item, stats, available, visibleEquipment, cellsIn, unlockedRegion, regionAt, nearestWalkable, WORLD_W, WORLD_H, relayFor, regionOrigin, atlasLayout, requiredCells, migrateWorldLayout } from './data.js?v=world96';
+import { Adventure, distance } from './engine.js?v=world96';
+import { Painter, bot, weapon, rounded, categoryIcon, equipmentIcon,atlasBot } from './art.js?v=world96';
+import { mountAtlas } from './atlas.js?v=world96';
+import {PANTHEON,areaInfo,areaUnlocked,pantheonUnlocked} from './data.js?v=world96';
+import {AdventureSaves} from './adventure-saves.js?v=world96';
+import {bindHoldConfirmation} from './hold-confirm.js?v=world96';
+import {bindPowerControl,updatePowerControl} from './power-control.js?v=world96';
+import {atlasProgress} from './atlas-progress.js?v=world96';
+import {localProgress} from './quiet-ui.js?v=world96';
+import {replayTitle} from './replay-variants.js?v=world96';
 
-const buildVersion = 'world94';
+const buildVersion = 'world96';
 const SAVE_KEY='bot-miami-save-v1';
 const adventureSaves=new AdventureSaves({storage:()=>localStorage,key:SAVE_KEY});
 const $=id=>document.getElementById(id);
@@ -133,7 +133,7 @@ function adventureMap(){
     const home=game.homes().find(h=>distance(h,{x,y})<3),mission=RETURNS.find(m=>returnActive(s,m)&&distance(m,{x,y})<3);
     closePanel();if(mission)goReturn(mission);else game.moveTo(home||{x,y});
   }});
-  if(pantheonUnlocked(s))panel.querySelector('.region-list').insertAdjacentHTML('afterbegin',`<button class="region-row ${progress.active===PANTHEON.r?'active-region':''}" data-action="pantheon"><span>♛</span><div><b>Crown Pantheon</b><small>${halloweenActive(s)?s.replay.phase==='region'?`Restore ${15-s.replay.conquered.length} more regions to awaken the Halloween court`:'Halloween finale · Zombie King and Mummy Queen':game.royals.phase==='victory'?'Royal Champion · the court is restored':'Royal finale · four sentinels, then king and queen'}</small></div><em>Go ↗</em></button>`);
+  if(pantheonUnlocked(s))panel.querySelector('.region-list').insertAdjacentHTML('afterbegin',`<button class="region-row ${progress.active===PANTHEON.r?'active-region':''}" data-action="pantheon"><span>♛</span><div><b>South Pointe Royal Court</b><small>${halloweenActive(s)?s.replay.phase==='region'?`Restore ${15-s.replay.conquered.length} more regions to awaken the Halloween court`:'Halloween finale · Zombie King and Mummy Queen':game.royals.phase==='victory'?'Royal Champion · the court is restored':'Royal finale · four sentinels, then king and queen'}</small></div><em>Go ↗</em></button>`);
   const list=panel.querySelector('.region-list'),mission=currentMission(s);
   const current=mission?list.querySelector(`[data-return="${mission.id}"]`):progress.active===PANTHEON.r?list.querySelector('[data-action="pantheon"]'):list.querySelector(`[data-region="${progress.active}"]`);
   if(current){current.classList.add('current-destination','active-region');current.querySelector('small')?.remove();current.querySelector('em').textContent='➜';stage.before(current);$('mapGo')?.remove();}
@@ -201,7 +201,7 @@ function showReturnComplete(id){
 function showGuardian(r){
   const pair=Object.entries(EQUIPMENT).flatMap(([type,parts])=>parts.filter(p=>p.unlock===r).map(p=>({type,p}))).find(({p})=>p.id===REGIONS[r].reward)||Object.entries(EQUIPMENT).flatMap(([type,parts])=>parts.filter(p=>p.unlock===r).map(p=>({type,p})))[0];
   const discovery=pair?`<canvas id="rewardWeapon" class="celebration" width="700" height="280" data-reward="${pair.p.id}" data-type="${pair.type}"></canvas><h2 style="font-size:21px;margin:8px 0">${pair.p.name} blueprint</h2><p class="dialog-copy">${pair.p.desc} Your new blueprint is waiting at the workshop.</p>`:'<canvas class="celebration" id="rewardBot" width="700" height="280"></canvas>';
-  if(r===REGIONS.length-1){openPanel('victory',`${head('All fifteen relays restored!','One final royal challenge awaits.','THE ANCIENT PATH OPENS')}<div class="panel-body">${discovery}<div class="completed-stats"><div><b>${game.save.totalBots}</b><span>bots defeated</span></div><div><b>${game.save.cleared.length}</b><span>cells discovered</span></div><div><b>${game.save.owned.length}</b><span>parts built</span></div></div><p class="dialog-copy">Beyond Starfall, the Crown Pantheon waits. Watch the sleeping court at the seal, then choose when to open it. Four sentinels defend the royal pair. Bring your strongest equipment; the king and queen slowly repair themselves.</p><div class="pause-actions"><button class="primary pictorial-action" data-action="pantheon" aria-label="Visit the royal court"><span>♛</span><small>Discover</small></button><button class="secondary pictorial-action" data-action="home" aria-label="Build at the nearest workshop"><span>⚙</span><small>Build</small></button></div></div>`);return;}
+  if(r===REGIONS.length-1){openPanel('victory',`${head('All fifteen relays restored!','One final royal challenge awaits.','THE ANCIENT PATH OPENS')}<div class="panel-body">${discovery}<div class="completed-stats"><div><b>${game.save.totalBots}</b><span>bots defeated</span></div><div><b>${game.save.cleared.length}</b><span>cells discovered</span></div><div><b>${game.save.owned.length}</b><span>parts built</span></div></div><p class="dialog-copy">Beyond South of Fifth, the South Pointe Royal Court waits. Watch the sleeping court at the seal, then choose when to open it. Four sentinels defend the royal pair. Bring your strongest equipment; the king and queen slowly repair themselves.</p><div class="pause-actions"><button class="primary pictorial-action" data-action="pantheon" aria-label="Visit the royal court"><span>♛</span><small>Discover</small></button><button class="secondary pictorial-action" data-action="home" aria-label="Build at the nearest workshop"><span>⚙</span><small>Build</small></button></div></div>`);return;}
   const mission=currentMission(game.save),next=mission?`${replayTitle(game.save,mission)} has appeared in ${REGIONS[mission.r].name}`:`${REGIONS[r+1].name} is now open`;
   openPanel('guardian',`${head('A relay comes to life!',next,'BIG DISCOVERY')}<div class="panel-body">${discovery}<div class="pause-actions"><button class="primary pictorial-action" data-action="home" aria-label="Build at the nearest workshop"><span>⚙</span><small>Build</small></button><button class="secondary pictorial-action" data-action="next" aria-label="Explore the next trail"><span>${mission?'⚑':'▶'}</span><small>Explore</small></button></div></div>`);
   tone(500,.5,'triangle',.04,1500);
@@ -254,7 +254,7 @@ let pressed=false,pressPoint;
 $('world').addEventListener('pointerdown',e=>{if(game.paused)return;pressPoint={x:e.clientX,y:e.clientY};const rect=$('world').getBoundingClientRect(),pos=painter.screenToWorld(e.clientX-rect.left,e.clientY-rect.top),boat=game.boats.at(pos),enemy=game.enemyAt(pos,painter.tile),station=game.world.stations.find(s=>s.r<=unlockedRegion(game.save)&&distance(s,pos)<1.8);pressed=!enemy&&!boat;if(boat){if(game.boats.riding)game.moveTo(boat);else game.boats.board(boat);}else if(enemy)game.tapEnemy(enemy);else if(station)game.moveTo(station);else game.moveTo(pos);$('world').setPointerCapture(e.pointerId);});
 $('world').addEventListener('pointermove',e=>{if(!pressed||game.paused||Math.hypot(e.clientX-pressPoint.x,e.clientY-pressPoint.y)<20)return;const rect=$('world').getBoundingClientRect();game.moveTo(painter.screenToWorld(e.clientX-rect.left,e.clientY-rect.top));pressPoint={x:e.clientX,y:e.clientY};});
 for(const event of ['pointerup','pointercancel'])$('world').addEventListener(event,()=>pressed=false);
-$('world').addEventListener('pointerdown',e=>{if(game.paused||!game.royals.ready)return;const r=$('world').getBoundingClientRect(),p=painter.screenToWorld(e.clientX-r.left,e.clientY-r.top);if(distance(p,{x:162.5,y:245.5})<1.5){e.preventDefault();e.stopImmediatePropagation();game.royals.start();persist();}},true);
+$('world').addEventListener('pointerdown',e=>{if(game.paused||!game.royals.ready)return;const r=$('world').getBoundingClientRect(),p=painter.screenToWorld(e.clientX-r.left,e.clientY-r.top);if(distance(p,{x:532.5,y:203.5})<1.5){e.preventDefault();e.stopImmediatePropagation();game.royals.start();persist();}},true);
 window.addEventListener('keydown',e=>{if(panel.open)return;const directions={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]};if(directions[e.key]){e.preventDefault();const [dx,dy]=directions[e.key];game.moveTo({x:Math.floor(game.player.x)+dx+.5,y:Math.floor(game.player.y)+dy+.5});}if(e.code==='Space'){e.preventDefault();game.boost();}if(e.key==='Escape')pauseMenu();});
 window.addEventListener('resize',()=>painter.resize());
 document.addEventListener('visibilitychange',()=>{syncMusic();if(document.hidden){wasPaused=game.paused;game.paused=true;persist();}else{game.paused=panel.open||wasPaused;last=performance.now();painter.resize();}});
