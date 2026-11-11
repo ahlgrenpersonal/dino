@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import vm from 'node:vm';
-import {freshSave,readSave,EQUIPMENT,STARTERS,COLORS,equipmentStats,visibleEquipment,HOME} from '../world.js?v=world24';
-import {MiamiAdventure} from '../engine.js?v=world24';
-import {MiamiPainter,adventureZoom,playerPixelSize} from '../painter.js?v=world24';
-import {workshopHTML,drawWorkshop} from '../workshop.js?v=world24';
-import {adventureAudio} from '../audio.js?v=world24';
-import {bindPowerControl} from '../power-control.js?v=world24';
+import {freshSave,readSave,EQUIPMENT,STARTERS,COLORS,equipmentStats,visibleEquipment,HOME} from '../world.js?v=world25';
+import {MiamiAdventure} from '../engine.js?v=world25';
+import {MiamiPainter,adventureZoom,playerPixelSize} from '../painter.js?v=world25';
+import {workshopHTML,drawWorkshop} from '../workshop.js?v=world25';
+import {adventureAudio} from '../audio.js?v=world25';
+import {bindPowerControl} from '../power-control.js?v=world25';
 import {createPreviewServer} from '../tools/serve.mjs';
 const read=f=>readFile(new URL('../'+f,import.meta.url),'utf8');
 

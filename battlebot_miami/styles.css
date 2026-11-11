@@ -33,3 +33,6 @@ dialog[data-mode="equipment"] .adult-copy{display:block!important}dialog[data-mo
 @media(max-width:420px){.equipment-reveal{gap:6px}.equipment-reveal>canvas:first-child{width:44px;height:36px}.equipment-reveal .equipment-prize{width:190px}.equipment-reveal>span,.equipment-reveal>b{font-size:23px}}
 
 .map-icon{display:inline-block;width:34px;height:30px;vertical-align:middle;object-fit:contain;pointer-events:none}.other-destinations .map-icon{width:27px;height:24px}
+
+/* Short labels make the pause choices readable while retaining their pictures. */
+dialog[data-mode="pause"] .pause-actions .adult-copy,dialog[data-mode="pause"] .settings-row .adult-copy{display:block!important;font-size:13px;font-weight:500;line-height:1.3;letter-spacing:0}

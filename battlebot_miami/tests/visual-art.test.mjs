@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {EQUIPMENT,WEAPONS,freshSave} from '../world.js?v=world24';
-import {equipmentIcon} from '../bot-art.js?v=world24';
-import {drawProjectile,drawAttackEffect} from '../combat-art.js?v=world24';
-import {MiamiAdventure} from '../engine.js?v=world24';
-import {MiamiPainter} from '../painter.js?v=world24';
+import {EQUIPMENT,WEAPONS,freshSave} from '../world.js?v=world25';
+import {equipmentIcon} from '../bot-art.js?v=world25';
+import {drawProjectile,drawAttackEffect} from '../combat-art.js?v=world25';
+import {MiamiAdventure} from '../engine.js?v=world25';
+import {MiamiPainter} from '../painter.js?v=world25';
 
 function context(){
  let depth=0;const words=[],target={showLabels:false,globalAlpha:1,save(){depth++;},restore(){assert(depth>0,'balanced canvas stack');depth--;},fillText:s=>words.push(s),strokeText(){},createLinearGradient:(...args)=>{assert(args.every(Number.isFinite));return {addColorStop(offset){assert(offset>=0&&offset<=1);}};},measureText:s=>({width:String(s).length*10})};
@@ -32,5 +32,5 @@ test('the locked royal boss displays its lock before the Power-and-tap guard cue
 });
 
 test('both new artwork modules are included in the offline app shell',async()=>{
- const sw=await readFile(new URL('../sw.js',import.meta.url),'utf8');for(const name of ['equipment-art.js','combat-art.js'])assert(sw.includes(`'${name}?v=world24'`),name);
+ const sw=await readFile(new URL('../sw.js',import.meta.url),'utf8');for(const name of ['equipment-art.js','combat-art.js'])assert(sw.includes(`'${name}?v=world25'`),name);
 });
