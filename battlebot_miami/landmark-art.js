@@ -1,5 +1,5 @@
 // Original game illustrations, drawn from public building and park references.
-import {rounded} from './bot-art.js?v=world16';
+import {rounded} from './bot-art.js?v=world17';
 const ink='#345f68';
 function line(c,x,y,xx,yy,color,width=.07){c.beginPath();c.moveTo(x,y);c.lineTo(xx,yy);c.strokeStyle=color;c.lineWidth=width;c.stroke();}
 function oval(c,x,y,rx,ry,color){c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fillStyle=color;c.fill();}

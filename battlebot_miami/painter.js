@@ -1,10 +1,10 @@
-import {AREAS,BRIDGES,ROADS,LANDMARKS,HOME,KEY_LOOP,PRIVATE_ZONES,isPrivate,visibleAreas,weaponFor,regionAt,inside,onLine,dist,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter} from './world.js?v=world16';
-import {bot,rounded,atlasBot,equipmentIcon} from './bot-art.js?v=world16';
-import {peacock} from './wildlife-art.js?v=world16';
-import {drawLandmark} from './landmark-art.js?v=world16';
+import {AREAS,BRIDGES,ROADS,LANDMARKS,HOME,KEY_LOOP,PRIVATE_ZONES,isPrivate,visibleAreas,weaponFor,regionAt,inside,onLine,dist,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter,canWalk} from './world.js?v=world17';
+import {bot,rounded,atlasBot,equipmentIcon} from './bot-art.js?v=world17';
+import {peacock} from './wildlife-art.js?v=world17';
+import {drawLandmark} from './landmark-art.js?v=world17';
 const ink='#244647';
-// The standard Adventure camera, paired with its 1.17-unit player artwork.
-export const adventureZoom=width=>(width<600?Math.max(55,Math.min(76,width/6.3)):85)*.81;
+// A wider world with the previous build’s player size preserved in screen pixels.
+export const adventureZoom=width=>(width<600?Math.max(55,Math.min(76,width/6.3)):85)*.648;
 function line(c,points,color,width){c.beginPath();points.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.strokeStyle=color;c.lineWidth=width;c.lineJoin='round';c.lineCap='round';c.stroke();}
 function poly(c,points,fill,stroke,width=.1){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke();}}
 function oval(c,x,y,rx,ry,fill){c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fillStyle=fill;c.fill();}
@@ -15,6 +15,7 @@ function building(c,x,y,h,color){poly(c,[[x-.6,y],[x+.6,y],[x+.8,y-.22],[x+.8,y-
 export class MiamiPainter{
  constructor(canvas){this.canvas=canvas;this.c=canvas.getContext('2d');this.camera={...HOME};this.scale=76.5;this.baseScale=76.5;this.width=0;this.height=0;}
  resize(){const b=this.canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),previous=this.baseScale,first=!this.width;if(this.canvas.width!==Math.round(b.width*d)||this.canvas.height!==Math.round(b.height*d)){this.canvas.width=Math.round(b.width*d);this.canvas.height=Math.round(b.height*d);}if(b.width!==this.width){this.baseScale=adventureZoom(Math.max(1,b.width));this.scale=first?this.baseScale:this.scale*this.baseScale/previous;}this.width=b.width;this.height=b.height;this.dpr=d;}
+ playerRenderSize(){return 1.17*this.baseScale/(.8*this.scale);}
  worldPoint(x,y){return {x:(x-this.width/2)/this.scale+this.camera.x,y:(y-this.height*.51)/this.scale+this.camera.y};}
  follow(g,dt){const p=g.player,bosses=g.enemies.filter(e=>e.boss&&e.hp>0&&g.awake(e)&&dist(e,p)<8);let target={x:p.x,y:p.y},zoom=this.baseScale;if(bosses.length){const left=Math.min(p.x-1.2,...bosses.map(e=>e.x-1.9)),right=Math.max(p.x+1.2,...bosses.map(e=>e.x+1.9)),top=Math.min(p.y-1.1,...bosses.map(e=>e.y-1.8)),bottom=Math.max(p.y+.8,...bosses.map(e=>e.y+1.1));zoom=Math.max(this.baseScale*.55,Math.min(this.baseScale,(this.width-32)/(right-left),(this.height-110)/(bottom-top)));target={x:(left+right)/2,y:(top+bottom)/2-30/zoom};}const smooth=1-Math.exp(-Math.max(0,dt)*5);this.scale+=(zoom-this.scale)*smooth;this.camera.x+=(target.x-this.camera.x)*smooth;this.camera.y+=(target.y-this.camera.y)*smooth;g.viewBounds={left:this.camera.x-this.width/this.scale/2,right:this.camera.x+this.width/this.scale/2,top:this.camera.y-this.height/this.scale*.51,bottom:this.camera.y+this.height/this.scale*.49};}
  terrain(c,save,t=0,map=false){
@@ -75,20 +76,27 @@ export class MiamiPainter{
   for(const d of g.drops){oval(c,d.x,d.y,.15,.1,'#264c4938');label(c,d.gears?'⚙':'◆',d.x,d.y,.27,d.gears?'#cce7dc':'#ffd35c');}
   if(g.route.length){c.setLineDash([.2,.35]);line(c,[p,...g.route],'#fffbe5',.12);c.setLineDash([]);const end=g.route.at(-1);oval(c,end.x,end.y,.25,.25,'#ffb37e');}
   const actors=g.enemies.filter(e=>e.hp>0&&Math.abs(e.x-this.camera.x)<this.width/this.scale&&Math.abs(e.y-this.camera.y)<this.height/this.scale).map(e=>({y:e.y,draw:()=>{this.actor(c,e,g.time);if(e.boss&&!g.awake(e))label(c,'🔒',e.x,e.y+1.5,.6);}}));
-  actors.push({y:p.y,draw:()=>{bot(c,p.x,p.y,1.17,{color:g.save.color,gun:weaponFor(g.save.weapon).art,armor:g.save.build.armor,wheels:g.save.build.wheels,gadget:g.save.build.gadget,angle:p.angle,hit:p.hit,swing:p.swing,moving:p.moving,health:p.hp/g.maxHp(),shield:p.invincible>0||g.powerTime>0||(['shield','aegis'].includes(g.save.build.gadget)&&g.shieldCd===0),reducedMotion:this.reducedMotion},g.time);}});
+  actors.push({y:p.y,draw:()=>{bot(c,p.x,p.y,this.playerRenderSize(),{color:g.save.color,gun:weaponFor(g.save.weapon).art,armor:g.save.build.armor,wheels:g.save.build.wheels,gadget:g.save.build.gadget,angle:p.angle,hit:p.hit,swing:p.swing,moving:p.moving,health:p.hp/g.maxHp(),shield:p.invincible>0||g.powerTime>0||(['shield','aegis'].includes(g.save.build.gadget)&&g.shieldCd===0),reducedMotion:this.reducedMotion},g.time);}});
   actors.sort((a,b)=>a.y-b.y).forEach(e=>e.draw());
   for(const q of g.projectiles){const w=weaponFor(q.weapon);c.save();c.translate(q.x,q.y);c.rotate(q.angle);if(q.weapon==='firejet'){poly(c,[[-.55,-.15],[-1.3,0],[-.55,.15]],'#ffd275',null);rounded(c,-.5,-.13,.6,.26,.05,'#6fe1ed',ink,.025);poly(c,[[0,-.23],[.5,0],[0,.23]],'#ff7148',ink,.035);poly(c,[[-.4,-.13],[-.6,-.37],[-.15,-.13],[-.15,.13],[-.6,.37],[-.4,.13]],'#f8e4b0',ink,.025);oval(c,-.5,0,.12,.1,'#fffbd1');}else if(q.weapon==='bubble'){oval(c,0,0,.28,.28,'#c4faffb0');c.beginPath();c.arc(0,0,.29,0,Math.PI*2);c.strokeStyle='#efffff';c.lineWidth=.045;c.stroke();oval(c,-.08,-.08,.07,.07,'#fff');}else if(q.weapon==='tide'){c.rotate(g.time*22);poly(c,[[-.4,-.2],[0,0],[.4,-.2],[.15,.2]],w.color,ink,.04);}else{line(c,[{x:-.55,y:0},{x:.1,y:0}],q.enemy?'#ff8a79':w.color,.17);oval(c,0,0,.16,.16,'#fffcdd');}c.restore();}
   for(const f of g.effects){const alpha=Math.max(0,f.life/f.max);c.globalAlpha=alpha;if(f.type==='beam')line(c,[{x:f.x,y:f.y},{x:f.tx,y:f.ty}],f.color,.15);else{c.beginPath();c.arc(f.x,f.y,(1-alpha)*2+.3,0,Math.PI*2);c.strokeStyle=f.color;c.lineWidth=f.type==='warning'?.08:.2;c.stroke();}}c.globalAlpha=1;c.restore();
  }
  mapPlace(c,l,x,y){c.save();c.translate(x,y);rounded(c,-29,-30,58,58,10,'#e8eed8ee','#d2e5d7',1);const scale=l.kind==='home'||l.kind==='lighthouse'?4:7;c.scale(scale,scale);c.translate(-l.x,-l.y+(l.kind==='home'?3.5:l.kind==='lighthouse'?2:0));this.landmark(c,l,0,{discoveries:[]});c.restore();}
- map(canvas,g,{showPlayer=true}={}){const c=canvas.getContext('2d'),visible=visibleAreas(g.save),points=visible.flatMap(a=>a.polys.flat()),minX=Math.min(...points.map(p=>p[0]))-6,maxX=Math.max(...points.map(p=>p[0]))+6,minY=Math.min(...points.map(p=>p[1]))-8,maxY=Math.max(...points.map(p=>p[1]))+8;canvas.width=600;canvas.height=760;const s=Math.min(550/(maxX-minX),700/(maxY-minY)),ox=(600-(maxX+minX)*s)/2,oy=(760-(maxY+minY)*s)/2;
+ map(canvas,g,{showPlayer=true}={}){this.mapTargets=[];const c=canvas.getContext('2d'),visible=visibleAreas(g.save),points=visible.flatMap(a=>a.polys.flat()),minX=Math.min(...points.map(p=>p[0]))-6,maxX=Math.max(...points.map(p=>p[0]))+6,minY=Math.min(...points.map(p=>p[1]))-8,maxY=Math.max(...points.map(p=>p[1]))+8;canvas.width=600;canvas.height=760;const s=Math.min(550/(maxX-minX),700/(maxY-minY)),ox=(600-(maxX+minX)*s)/2,oy=(760-(maxY+minY)*s)/2;
   c.showLabels=false;c.fillStyle='#235767';c.fillRect(0,0,600,760);c.save();c.translate(ox,oy);c.scale(s,s);this.terrain(c,g.save,0,true);const next=nextChapter(g.save);if(next)for(const a of visible.filter(a=>a.id===next.id||next.id===1&&a.id===0))for(const points of a.polys)poly(c,points,'#ffd35c99','#ffe17b',2.5/s);
   for(const a of visible){const p=a.id?a.entry:HOME;oval(c,p.x,p.y,1.5,1.5,a.id===next?.id?'#ffd47b':'#e9f2d6');if(a.id)label(c,g.save.cleared.includes(`boss-${a.id}`)?'✓':'★',p.x,p.y+.45,1.2);}
   c.restore();
-  for(const l of LANDMARKS.filter(l=>visible.some(a=>a.id===l.area))){const x=l.x*s+ox,y=l.y*s+oy;oval(c,x,y,4.5,4.5,l.equipment&&!g.save.discoveries.includes(l.id)?'#ffd46f':['playground','pirate-playground','splash-park'].includes(l.kind)?'#f1a7ab':'#80b9b1');}
-  for(const a of visible){const l=LANDMARKS.find(l=>l.id===['panorama','key-park','domino','park-grove','cape-florida','skyviews','frost','south-of-fifth'][a.id])||LANDMARKS.find(l=>l.area===a.id);if(!l)continue;const x=l.x*s+ox,y=l.y*s+oy;this.mapPlace(c,l,x,y);}
-  if(next){const p=next.camps.find((_,i)=>!g.save.camps.includes(`camp-${next.id}-${i}`))||next.arena;oval(c,ox+p.x*s,oy+p.y*s,13,13,'#ffe17b');label(c,'➜',ox+p.x*s,oy+p.y*s+6,22);}
+  for(const l of LANDMARKS.filter(l=>visible.some(a=>a.id===l.area))){const x=l.x*s+ox,y=l.y*s+oy;this.mapTargets.push({x:x-10,y:y-10,width:20,height:20,destination:{x:l.x,y:l.y}});oval(c,x,y,4.5,4.5,l.equipment&&!g.save.discoveries.includes(l.id)?'#ffd46f':['playground','pirate-playground','splash-park'].includes(l.kind)?'#f1a7ab':'#80b9b1');}
+  for(const a of visible){const l=LANDMARKS.find(l=>l.id===['panorama','key-park','domino','park-grove','cape-florida','skyviews','frost','south-of-fifth'][a.id])||LANDMARKS.find(l=>l.area===a.id);if(!l)continue;const x=l.x*s+ox,y=l.y*s+oy;this.mapPlace(c,l,x,y);this.mapTargets.push({x:x-29,y:y-30,width:58,height:58,destination:{x:l.x,y:l.y}});}
+  if(next){const p=next.camps.find((_,i)=>!g.save.camps.includes(`camp-${next.id}-${i}`))||next.arena;this.mapTargets.push({x:ox+p.x*s-13,y:oy+p.y*s-13,width:26,height:26,destination:{x:p.x,y:p.y}});oval(c,ox+p.x*s,oy+p.y*s,13,13,'#ffe17b');label(c,'➜',ox+p.x*s,oy+p.y*s+6,22);}
   if(showPlayer)atlasBot(c,ox+g.player.x*s,oy+g.player.y*s,g.save,weaponFor(g.save.weapon).art);
   c.textAlign='start';c.fillStyle='#d7f7e9';c.font='800 28px system-ui';c.fillText('↑',550,40);this.mapTransform={s,ox,oy};
  }
+ mapDestination(p,save){
+  if(!Number.isFinite(p?.x)||!Number.isFinite(p?.y)||!this.mapTransform)return null;
+  const target=this.mapTargets?.findLast(t=>p.x>=t.x&&p.x<=t.x+t.width&&p.y>=t.y&&p.y<=t.y+t.height&&canWalk(save,t.destination));
+  if(target)return {...target.destination};
+  const {s,ox,oy}=this.mapTransform,world={x:(p.x-ox)/s,y:(p.y-oy)/s};return canWalk(save,world)?world:null;
+ }
+
 }

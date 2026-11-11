@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile,readdir} from 'node:fs/promises';
 import vm from 'node:vm';
-import {BUILD,freshSave} from '../world.js?v=world16';
-import {MiamiPainter} from '../painter.js?v=world16';
-import {MiamiAdventure} from '../engine.js?v=world16';
+import {BUILD,freshSave} from '../world.js?v=world17';
+import {MiamiPainter} from '../painter.js?v=world17';
+import {MiamiAdventure} from '../engine.js?v=world17';
 const read=name=>readFile(new URL('../'+name,import.meta.url),'utf8');
 
 test('build references, install icons, local module files and save namespaces agree',async()=>{

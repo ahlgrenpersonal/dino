@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {freshSave,readSave,visibleEquipment,visibleChapters,nextChapter,EQUIPMENT,AREAS,LANDMARKS,HOME,HOME_SAFE_RADIUS,dist,canWalk} from '../world.js?v=world16';
-import {MiamiAdventure} from '../engine.js?v=world16';
-import {workshopHTML} from '../workshop.js?v=world16';
+import {freshSave,readSave,visibleEquipment,visibleChapters,nextChapter,EQUIPMENT,AREAS,LANDMARKS,HOME,HOME_SAFE_RADIUS,dist,canWalk} from '../world.js?v=world17';
+import {MiamiAdventure} from '../engine.js?v=world17';
+import {workshopHTML} from '../workshop.js?v=world17';
 
 test('new games have exactly one weapon, no weapon shop, and no unaffordable choices',()=>{
  const s=freshSave(),g=new MiamiAdventure(s);assert.deepEqual(visibleEquipment(s,'weapon').map(p=>p.id),['bumper']);

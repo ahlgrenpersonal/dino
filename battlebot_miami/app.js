@@ -1,13 +1,14 @@
-import {BUILD,AREAS,HOME,weaponFor,readSave,visibleLandmarks,FINAL_AREA,dist,canWalk,item,visibleChapters,nextChapter} from './world.js?v=world16';
-import {MiamiAdventure} from './engine.js?v=world16';
-import {MiamiPainter} from './painter.js?v=world16';
-import {paintPictures,areaPicture,enemyPicture,weaponPicture,robotPicture} from './ui-art.js?v=world16';
-import {workshopHTML,drawWorkshop} from './workshop.js?v=world16';
-import {adventureAudio} from './audio.js?v=world16';
-import {bindPowerControl,updatePowerControl} from './power-control.js?v=world16';
-import {atlasBot} from './bot-art.js?v=world16';
-import {mountAtlas} from './atlas.js?v=world16';
-const buildVersion='world16';
+import {BUILD,AREAS,HOME,weaponFor,readSave,visibleLandmarks,FINAL_AREA,dist,item,visibleChapters,nextChapter} from './world.js?v=world17';
+import {MiamiAdventure} from './engine.js?v=world17';
+import {MiamiPainter} from './painter.js?v=world17';
+import {paintPictures,areaPicture,enemyPicture,weaponPicture,robotPicture} from './ui-art.js?v=world17';
+import {workshopHTML,drawWorkshop} from './workshop.js?v=world17';
+import {adventureAudio} from './audio.js?v=world17';
+import {bindPowerControl,updatePowerControl} from './power-control.js?v=world17';
+import {atlasBot} from './bot-art.js?v=world17';
+import {bindWorldNavigation} from './world-input.js?v=world17';
+import {mountAtlas} from './atlas.js?v=world17';
+const buildVersion='world17';
 const SAVE_KEY='battlebot-miami-save-v1';
 const $=id=>document.getElementById(id);
 let stored;try{stored=JSON.parse(localStorage.getItem(SAVE_KEY));}catch{}
@@ -31,7 +32,7 @@ function pause(){open('pause',`${head('Take a breather','Your adventure is saved
 function placeCard(l){return `<button class="place picture-place" data-landmark="${l.id}" aria-label="Walk to ${esc(l.name)}"><canvas width="220" height="150" data-place="${l.id}" aria-hidden="true"></canvas><span class="place-mark" aria-hidden="true">${game.save.discoveries.includes(l.id)?'✓':l.equipment?'ϟ':'➜'}</span><b class="adult-copy">${esc(l.name)}</b></button>`;}
 function showMap(){const visible=visibleChapters(game.save),next=nextArea();open('map',`${head('Miami adventure map','New areas appear one at a time.')}<div class="panel-body"><button class="region-row current-destination" data-action="trail" aria-label="Follow highlighted trail"><canvas width="88" height="72" data-area="${next.id}" aria-hidden="true"></canvas><div><b class="adult-copy">${next.name}</b><span aria-hidden="true">${game.save.king?'♛ ✓':'ϟ '.repeat(game.campsIn(next.id))}</span></div><em>➜</em></button><div class="atlas-stage"><div class="atlas-tools" role="group" aria-label="Map zoom"><output id="mapZoom" class="atlas-zoom" aria-label="Map zoom level">100%</output><button id="mapZoomOut" aria-label="Zoom out">−</button><button id="mapZoomIn" aria-label="Zoom in">+</button><button id="mapFit" aria-label="Show whole map">⛶</button><button id="mapGo" class="atlas-go" aria-label="Follow highlighted trail">➜</button></div><canvas id="atlas" class="map-canvas" aria-label="Unlocked Miami map. Pinch to zoom. Tap public land to walk there."></canvas></div><details class="other-destinations"><summary aria-label="Other destinations"><span aria-hidden="true">◇ ⌖</span><b class="adult-copy">Other destinations</b></summary><div class="region-list">${visible.map(a=>`<button class="region-row ${a.id===next.id?'active-region':''}" data-area="${a.id}" aria-label="Walk to ${a.name}"><canvas width="88" height="72" data-area="${a.id}" aria-hidden="true"></canvas><div><b class="adult-copy">${a.name}</b></div><em>${a.id===0?'⌂':game.save.cleared.includes(`boss-${a.id}`)?'✓':'➜'}</em></button>`).join('')}</div></details><details class="places-list"><summary aria-label="Parks and places"><span aria-hidden="true">♧ ⌖</span><b class="adult-copy">Parks and places</b></summary><div class="region-list">${visibleLandmarks(game.save).map(placeCard).join('')}</div></details></div>`);
  const source=document.createElement('canvas');painter.map(source,game,{showPlayer:false});const transform={...painter.mapTransform};
- atlasController=mountAtlas($('atlas'),{source,initialZoom:1,maxZoom:10,onOverlay:(c,zoom)=>{c.save();c.translate(transform.ox+game.player.x*transform.s,transform.oy+game.player.y*transform.s);c.scale(1/zoom,1/zoom);atlasBot(c,0,0,game.save,weaponFor(game.save.weapon).art);c.restore();},onChange:zoom=>{$('mapZoom').value=`${Math.round(zoom*100)}%`;$('mapZoomOut').disabled=zoom<=1;$('mapZoomIn').disabled=zoom>=10;},onSelect:p=>{const point={x:(p.x-transform.ox)/transform.s,y:(p.y-transform.oy)/transform.s};if(canWalk(game.save,point)){close();game.moveTo(point);}}});
+ atlasController=mountAtlas($('atlas'),{source,initialZoom:1,maxZoom:10,onOverlay:(c,zoom)=>{c.save();c.translate(transform.ox+game.player.x*transform.s,transform.oy+game.player.y*transform.s);c.scale(1/zoom,1/zoom);atlasBot(c,0,0,game.save,weaponFor(game.save.weapon).art);c.restore();},onChange:zoom=>{$('mapZoom').value=`${Math.round(zoom*100)}%`;$('mapZoomOut').disabled=zoom<=1;$('mapZoomIn').disabled=zoom>=10;},onSelect:p=>{const point=painter.mapDestination(p,game.save);if(point){close();workshopRequested=false;game.moveTo(point);}}});
  $('mapZoomIn').onclick=()=>atlasController.zoomBy(1.35);$('mapZoomOut').onclick=()=>atlasController.zoomBy(1/1.35);$('mapFit').onclick=()=>atlasController.reset();$('mapGo').onclick=trail;
 }
 function workshop(){if(!game.isHome()){close();workshopRequested=true;game.goHome();toast('Heading to the workshop.','⌂ ➜');return;}workshopRequested=false;game.repair();persist();open('workshop',workshopHTML(game.save,workTab,workshopDetails,head));panel.dataset.details=String(workshopDetails);panel.querySelector('.close').insertAdjacentHTML('beforebegin',`<button class="icon-button workshop-info" data-action="equipment-details" aria-label="Equipment details" aria-pressed="${workshopDetails}">ⓘ</button>`);drawWorkshop(panel,game.save,workTab);workshopObserver=new ResizeObserver(()=>drawWorkshop(panel,game.save,workTab));workshopObserver.observe($('botPreview'));}
@@ -70,7 +71,7 @@ panel.addEventListener('cancel',e=>{e.preventDefault();close();});
 $('pause').onclick=pause;$('map').onclick=showMap;$('home').onclick=()=>{game.goHome();toast('Fully repaired.','⌂ ♥');};$('build').onclick=workshop;bindPowerControl($('power'),()=>game.power());
 $('interact').onclick=()=>game.repair();
 $('sound').onclick=()=>{game.save.sound=!game.save.sound;sound.syncMusic();tone(600,.15);persist();};
-$('world').addEventListener('pointerdown',e=>{if(game.paused)return;e.preventDefault();$('world').focus({preventScroll:true});workshopRequested=false;const b=e.currentTarget.getBoundingClientRect();game.tap(painter.worldPoint(e.clientX-b.left,e.clientY-b.top));$('moveHint').hidden=true;});
+bindWorldNavigation($('world'),{paused:()=>game.paused,point:e=>{const b=$('world').getBoundingClientRect();return painter.worldPoint(e.clientX-b.left,e.clientY-b.top);},tap:p=>{workshopRequested=false;game.tap(p,painter.scale);$('moveHint').hidden=true;return !game.target;},move:p=>{workshopRequested=false;game.moveTo(p);}});
 window.addEventListener('keydown',e=>{if(!game.paused&&['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();if(e.repeat)return;const k=e.key.toLowerCase();if(k==='escape'||k==='p'){panel.open?close():pause();return;}if(game.paused)return;if(k==='m'){showMap();return;}if(k===' ')game.power();keys.add(k);});
 window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>{keys.clear();persist();if(!panel.open)pause();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){keys.clear();persist();if(!panel.open)pause();sound.syncMusic();}});window.addEventListener('pagehide',persist);
