@@ -1,6 +1,6 @@
 // A compact, north-up Miami play map. Distances and streets are simplified.
-import {ADVENTURE_EQUIPMENT,ADVENTURE_COLORS} from './equipment.js?v=world14';
-export const BUILD='world14';
+import {ADVENTURE_EQUIPMENT,ADVENTURE_COLORS} from './equipment.js?v=world15';
+export const BUILD='world15';
 export const HOME={x:94,y:81};
 export const W=204,H=196;
 export const FINAL_AREA=7;
@@ -85,13 +85,13 @@ export const safeAt=(save,p)=>visibleLandmarks(save).some(l=>['home','playground
 export const allBossesCleared=save=>AREAS.slice(1,FINAL_AREA).every(a=>save.cleared.includes(`boss-${a.id}`));
 export const WEAPONS=[
  {id:'starter',name:'Bumper Blaster',art:'blaster',damage:9,range:4.8,rate:.64,color:'#a6ffdf',desc:'Your trusty starting blaster. Aim by moving near a monster.'},
- {id:'bubble',name:'Ribbon Bubbler',art:'bubble',damage:10,range:5.2,rate:.64,color:'#b5f4ff',desc:'A free bubble blaster from Brickell City Centre’s ribbon roof.'},
- {id:'neon',name:'Neon Fang',art:'neon',damage:15,range:5.6,rate:.48,color:'#ff9dda',desc:'Count Neon’s bright pink energy bolts.'},
- {id:'drum',name:'Rumba Hammer',art:'hammer',damage:38,range:2.7,rate:.85,color:'#ffd276',desc:'A musical shockwave that bumps every nearby monster.'},
- {id:'vine',name:'Mangrove Spark',art:'lightning',damage:24,range:5.6,rate:.62,color:'#c9a4ff',desc:'Witchy lightning jumps between three monsters.'},
- {id:'tide',name:'Tidal Spinner',art:'boomerang',damage:23,range:6,rate:.5,color:'#89ffff',desc:'A sea-blue spinning blade. It cuts through a whole row.'},
- {id:'metro',name:'Bass Rocket',art:'rocket',damage:50,range:6.5,rate:.85,color:'#ffbe72',desc:'DJ Zombox’s rockets make a splash of bass.'},
- {id:'prism',name:'Queen’s Prism',art:'crystalbeam',damage:46,range:7,rate:.5,color:'#dcceff',desc:'The Frost Queen’s long rainbow beam.'},
+ {id:'bubble',name:'Ribbon Bubbler',art:'miami-bubble',damage:10,range:5.2,rate:.64,color:'#b5f4ff',desc:'A free bubble blaster from Brickell City Centre’s ribbon roof.'},
+ {id:'neon',name:'Neon Fang',art:'miami-neon',damage:15,range:5.6,rate:.48,color:'#ff9dda',desc:'Count Neon’s bright pink energy bolts.'},
+ {id:'drum',name:'Rumba Hammer',art:'miami-rumba',damage:38,range:2.7,rate:.85,color:'#ffd276',desc:'A musical shockwave that bumps every nearby monster.'},
+ {id:'vine',name:'Mangrove Spark',art:'miami-mangrove',damage:24,range:5.6,rate:.62,color:'#c9a4ff',desc:'Witchy lightning jumps between three monsters.'},
+ {id:'tide',name:'Tidal Spinner',art:'miami-tidal',damage:23,range:6,rate:.5,color:'#89ffff',desc:'A sea-blue spinning blade. It cuts through a whole row.'},
+ {id:'metro',name:'Bass Rocket',art:'miami-bass',damage:50,range:6.5,rate:.85,color:'#ffbe72',desc:'DJ Zombox’s rockets make a splash of bass.'},
+ {id:'prism',name:'Queen’s Prism',art:'miami-prism',damage:46,range:7,rate:.5,color:'#dcceff',desc:'The Frost Queen’s long rainbow beam.'},
  {id:'firejet',name:'Fire-Jet Launcher',art:'firejet',damage:85,range:8,rate:.68,color:'#ff9354',desc:'The King’s flaming arrow, with fins and a glowing jet engine!'}
 ];
 WEAPONS.push(...ADVENTURE_EQUIPMENT.weapon.map(w=>({...w,art:w.id,color:'#a9efd0'})));

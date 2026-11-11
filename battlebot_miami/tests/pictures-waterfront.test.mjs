@@ -1,16 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {AREAS,LANDMARKS,HOME,MAP_LAYOUT,BRIDGES,freshSave,readSave,canWalk,pathfind,dist,walkSegment} from '../world.js?v=world14';
-import {MiamiAdventure} from '../engine.js?v=world14';
-import {MiamiPainter} from '../painter.js?v=world14';
-import {placePicture,areaPicture,enemyPicture,weaponPicture} from '../ui-art.js?v=world14';
+import {AREAS,LANDMARKS,HOME,MAP_LAYOUT,BRIDGES,WEAPONS,freshSave,readSave,canWalk,pathfind,dist,walkSegment} from '../world.js?v=world15';
+import {MiamiAdventure} from '../engine.js?v=world15';
+import {MiamiPainter} from '../painter.js?v=world15';
+import {placePicture,areaPicture,enemyPicture,weaponPicture,paintPictures} from '../ui-art.js?v=world15';
 
 function canvas(){const words=[],ops=[];const target={showLabels:false,createLinearGradient:()=>({addColorStop(){}}),measureText:s=>({width:s.length*10}),fillText:s=>words.push(String(s)),strokeText:s=>words.push(String(s))};const c=new Proxy(target,{get:(o,k)=>k in o?o[k]:(...args)=>ops.push([k,...args])});return {width:420,height:500,words,ops,getContext:()=>c,getBoundingClientRect:()=>({width:420,height:500})};}
 
-test('all eight areas and the full map render without words in the default picture mode',()=>{
+test('all eight areas and the full map stay word-free, including older saves with adult details on',()=>{
  globalThis.devicePixelRatio=1;globalThis.matchMedia=()=>({matches:false});const el=canvas(),p=new MiamiPainter(el),save=freshSave();save.unlocked=7;const g=new MiamiAdventure(save);
- for(const a of AREAS){Object.assign(g.player,a.id?a.entry:HOME);p.camera={...g.player};p.draw(g,.016);}p.map(el,g);assert(!el.words.some(s=>/[A-Za-z0-9]/.test(s)),el.words.filter(s=>/[A-Za-z0-9]/.test(s)).join(', '));
+ for(const details of [false,true]){save.details=details;g.save.details=details;for(const a of AREAS){Object.assign(g.player,a.id?a.entry:HOME);p.camera={...g.player};p.draw(g,.016);}p.map(el,g);}assert(!el.words.some(s=>/[A-Za-z0-9]/.test(s)),el.words.filter(s=>/[A-Za-z0-9]/.test(s)).join(', '));
 });
 
 test('every landmark, boss and regional picture can render without requiring captions',()=>{
@@ -19,9 +19,21 @@ test('every landmark, boss and regional picture can render without requiring cap
  const el=canvas();enemyPicture(el,3,{peacock:true});weaponPicture(el,'bubble');assert(el.ops.length>100,'real artwork is drawn');
 });
 
-test('adult names are optional and persist independently of campaign progress',()=>{
+test('Miami weapon rewards have different silhouettes and draw without text',()=>{
+ const signatures=[];
+ for(const w of WEAPONS.slice(0,9)){const el=canvas();weaponPicture(el,w.id);assert(el.ops.length>15,w.name);assert.equal(el.words.length,0,w.name);signatures.push(JSON.stringify(el.ops));}
+ assert.equal(new Set(signatures).size,9,'each reward needs its own recognizable drawing');
+});
+
+test('opening a workshop can paint every equipment category before its detailed redraw',()=>{
+ const els=['weapon','armor','wheels','gadget'].map(category=>Object.assign(canvas(),{dataset:{category}}));
+ const root={querySelectorAll:selector=>selector==='canvas[data-category]'?els:[]};
+ assert.doesNotThrow(()=>paintPictures(root,freshSave()));
+});
+
+test('legacy detail settings preserve campaign progress without restoring place names',()=>{
  const s=freshSave();assert.equal(s.details,false);s.details=true;s.camps=['camp-1-0'];const loaded=readSave(s);assert(loaded.details);assert.deepEqual(loaded.camps,s.camps);
- globalThis.devicePixelRatio=1;globalThis.matchMedia=()=>({matches:false});const el=canvas(),p=new MiamiPainter(el),g=new MiamiAdventure(loaded);p.draw(g,.016);assert(el.words.some(s=>s.includes('PANORAMA')));
+ globalThis.devicePixelRatio=1;globalThis.matchMedia=()=>({matches:false});const el=canvas(),p=new MiamiPainter(el),g=new MiamiAdventure(loaded);p.draw(g,.016);assert(!el.words.some(s=>/[A-Za-z0-9]/.test(s)));
 });
 
 test('robotic peacocks are fightable Grove enemies and return after world respawn',()=>{
@@ -47,5 +59,5 @@ test('map expansion preserves completed rounds and owned weapons from world7 sav
 });
 
 test('every essential play control has an accessible name despite hidden word labels',async()=>{
- const html=await readFile(new URL('../index.html',import.meta.url),'utf8');for(const name of ['Home','Map','Power','Build','Pause'])assert(html.includes(`aria-label="${name}"`));assert(html.includes('id="missionArt"'));assert(html.includes('id="missionPips"'));assert(html.includes('data-details="false"'));
+ const html=await readFile(new URL('../index.html',import.meta.url),'utf8');for(const name of ['Home','Map','Power','Build','Pause'])assert(html.includes(`aria-label="${name}"`));assert(!html.includes('id="mission"'));assert(!html.includes('id="locationText"'));assert(html.includes('data-details="false"'));
 });

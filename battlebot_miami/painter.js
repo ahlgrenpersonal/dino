@@ -1,7 +1,7 @@
-import {AREAS,BRIDGES,ROADS,LANDMARKS,HOME,KEY_LOOP,PRIVATE_ZONES,isPrivate,visibleAreas,weaponFor,regionAt,inside,onLine,dist,CHARGING_STATIONS} from './world.js?v=world14';
-import {bot,rounded} from './bot-art.js?v=world14';
-import {peacock} from './wildlife-art.js?v=world14';
-import {drawLandmark} from './landmark-art.js?v=world14';
+import {AREAS,BRIDGES,ROADS,LANDMARKS,HOME,KEY_LOOP,PRIVATE_ZONES,isPrivate,visibleAreas,weaponFor,regionAt,inside,onLine,dist,CHARGING_STATIONS} from './world.js?v=world15';
+import {bot,rounded,atlasBot} from './bot-art.js?v=world15';
+import {peacock} from './wildlife-art.js?v=world15';
+import {drawLandmark} from './landmark-art.js?v=world15';
 const ink='#244647';
 // The standard Adventure camera, paired with its 1.17-unit player artwork.
 export const adventureZoom=width=>(width<600?Math.max(55,Math.min(76,width/6.3)):85)*.9;
@@ -64,7 +64,7 @@ export class MiamiPainter{
   }
   if(e.hp<e.maxHp){rounded(c,e.x-.65,e.y-1.35,1.3,.1,.05,'#264e58');rounded(c,e.x-.65,e.y-1.35,1.3*Math.max(0,e.hp/e.maxHp),.1,.05,'#f18a7c');}
  }
- draw(g,dt){this.resize();this.c.showLabels=g.save.details===true;if(this.width<=0||this.height<=0)return;this.reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;const c=this.c,p=g.player;
+ draw(g,dt){this.resize();this.c.showLabels=false;if(this.width<=0||this.height<=0)return;this.reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;const c=this.c,p=g.player;
   this.follow(g,dt);
   c.setTransform(this.dpr,0,0,this.dpr,0,0);c.fillStyle='#5ba8b1';c.fillRect(0,0,this.width,this.height);
   c.save();c.translate(this.width/2,this.height*.51);c.scale(this.scale,this.scale);c.translate(-this.camera.x,-this.camera.y);
@@ -72,22 +72,20 @@ export class MiamiPainter{
   this.terrain(c,g.save,g.time);
   for(const d of g.drops){oval(c,d.x,d.y,.15,.1,'#264c4938');label(c,d.gears?'⚙':'◆',d.x,d.y,.27,d.gears?'#cce7dc':'#ffd35c');}
   if(g.route.length){c.setLineDash([.2,.35]);line(c,[p,...g.route],'#fffbe5',.12);c.setLineDash([]);const end=g.route.at(-1);oval(c,end.x,end.y,.25,.25,'#ffb37e');}
-  const actors=g.enemies.filter(e=>e.hp>0&&Math.abs(e.x-this.camera.x)<this.width/this.scale&&Math.abs(e.y-this.camera.y)<this.height/this.scale).map(e=>({y:e.y,draw:()=>{this.actor(c,e,g.time);if(e.boss&&!g.awake(e))label(c,g.save.details?(e.king&&g.campsIn(e.area)===3?'CLEAR ALL OTHER BOSSES':'3 BATTERIES FIRST'):'🔒',e.x,e.y+1.5,.6);}}));
-  actors.push({y:p.y,draw:()=>{bot(c,p.x,p.y,1.17,{color:g.save.color,gun:weaponFor(g.save.weapon).art,armor:g.save.build.armor,wheels:g.save.build.wheels,gadget:g.save.build.gadget,angle:p.angle,hit:p.hit,swing:p.swing,moving:p.moving,health:p.hp/g.maxHp(),shield:p.invincible>0||g.powerTime>0||(['shield','aegis'].includes(g.save.build.gadget)&&g.shieldCd===0),reducedMotion:this.reducedMotion},g.time);label(c,'YOU',p.x,p.y+.85,.22,'#203a45');}});
+  const actors=g.enemies.filter(e=>e.hp>0&&Math.abs(e.x-this.camera.x)<this.width/this.scale&&Math.abs(e.y-this.camera.y)<this.height/this.scale).map(e=>({y:e.y,draw:()=>{this.actor(c,e,g.time);if(e.boss&&!g.awake(e))label(c,'🔒',e.x,e.y+1.5,.6);}}));
+  actors.push({y:p.y,draw:()=>{bot(c,p.x,p.y,1.17,{color:g.save.color,gun:weaponFor(g.save.weapon).art,armor:g.save.build.armor,wheels:g.save.build.wheels,gadget:g.save.build.gadget,angle:p.angle,hit:p.hit,swing:p.swing,moving:p.moving,health:p.hp/g.maxHp(),shield:p.invincible>0||g.powerTime>0||(['shield','aegis'].includes(g.save.build.gadget)&&g.shieldCd===0),reducedMotion:this.reducedMotion},g.time);}});
   actors.sort((a,b)=>a.y-b.y).forEach(e=>e.draw());
   for(const q of g.projectiles){const w=weaponFor(q.weapon);c.save();c.translate(q.x,q.y);c.rotate(q.angle);if(q.weapon==='firejet'){poly(c,[[-.55,-.15],[-1.3,0],[-.55,.15]],'#ffd275',null);rounded(c,-.5,-.13,.6,.26,.05,'#6fe1ed',ink,.025);poly(c,[[0,-.23],[.5,0],[0,.23]],'#ff7148',ink,.035);poly(c,[[-.4,-.13],[-.6,-.37],[-.15,-.13],[-.15,.13],[-.6,.37],[-.4,.13]],'#f8e4b0',ink,.025);oval(c,-.5,0,.12,.1,'#fffbd1');}else if(q.weapon==='bubble'){oval(c,0,0,.28,.28,'#c4faffb0');c.beginPath();c.arc(0,0,.29,0,Math.PI*2);c.strokeStyle='#efffff';c.lineWidth=.045;c.stroke();oval(c,-.08,-.08,.07,.07,'#fff');}else if(q.weapon==='tide'){c.rotate(g.time*22);poly(c,[[-.4,-.2],[0,0],[.4,-.2],[.15,.2]],w.color,ink,.04);}else{line(c,[{x:-.55,y:0},{x:.1,y:0}],q.enemy?'#ff8a79':w.color,.17);oval(c,0,0,.16,.16,'#fffcdd');}c.restore();}
   for(const f of g.effects){const alpha=Math.max(0,f.life/f.max);c.globalAlpha=alpha;if(f.type==='beam')line(c,[{x:f.x,y:f.y},{x:f.tx,y:f.ty}],f.color,.15);else{c.beginPath();c.arc(f.x,f.y,(1-alpha)*2+.3,0,Math.PI*2);c.strokeStyle=f.color;c.lineWidth=f.type==='warning'?.08:.2;c.stroke();}}c.globalAlpha=1;c.restore();
  }
  mapPlace(c,l,x,y){c.save();c.translate(x,y);rounded(c,-29,-30,58,58,10,'#e8eed8ee','#d2e5d7',1);const scale=l.kind==='home'||l.kind==='lighthouse'?4:7;c.scale(scale,scale);c.translate(-l.x,-l.y+(l.kind==='home'?3.5:l.kind==='lighthouse'?2:0));this.landmark(c,l,0,{discoveries:[]});c.restore();}
- map(canvas,g){const c=canvas.getContext('2d'),visible=visibleAreas(g.save),points=visible.flatMap(a=>a.polys.flat()),minX=Math.min(...points.map(p=>p[0]))-6,maxX=Math.max(...points.map(p=>p[0]))+6,minY=Math.min(...points.map(p=>p[1]))-8,maxY=Math.max(...points.map(p=>p[1]))+8;canvas.width=600;canvas.height=760;const s=Math.min(550/(maxX-minX),700/(maxY-minY)),ox=(600-(maxX+minX)*s)/2,oy=(760-(maxY+minY)*s)/2;
-  c.showLabels=g.save.details===true;c.fillStyle='#235767';c.fillRect(0,0,600,760);c.save();c.translate(ox,oy);c.scale(s,s);this.terrain(c,g.save,0,true);
+ map(canvas,g,{showPlayer=true}={}){const c=canvas.getContext('2d'),visible=visibleAreas(g.save),points=visible.flatMap(a=>a.polys.flat()),minX=Math.min(...points.map(p=>p[0]))-6,maxX=Math.max(...points.map(p=>p[0]))+6,minY=Math.min(...points.map(p=>p[1]))-8,maxY=Math.max(...points.map(p=>p[1]))+8;canvas.width=600;canvas.height=760;const s=Math.min(550/(maxX-minX),700/(maxY-minY)),ox=(600-(maxX+minX)*s)/2,oy=(760-(maxY+minY)*s)/2;
+  c.showLabels=false;c.fillStyle='#235767';c.fillRect(0,0,600,760);c.save();c.translate(ox,oy);c.scale(s,s);this.terrain(c,g.save,0,true);
   for(const a of visible){const p=a.id?a.entry:HOME;oval(c,p.x,p.y,1.5,1.5,a.id===g.save.unlocked?'#ffd47b':'#e9f2d6');if(a.id)label(c,g.save.cleared.includes(`boss-${a.id}`)?'✓':'★',p.x,p.y+.45,1.2);}
-  bot(c,g.player.x,g.player.y,3,{color:g.save.color,gun:weaponFor(g.save.weapon).art},0);c.restore();
-  const callout=(text,p,dx,dy,sub='')=>{const px=p.x*s+ox,py=p.y*s+oy;c.font='800 20px system-ui';const bw=Math.max(c.measureText(text).width+24,sub?c.measureText(sub).width*.8+24:0),bh=sub?68:43,cx=Math.max(bw/2+12,Math.min(588-bw/2,px+dx)),cy=Math.max(bh/2+14,Math.min(700-bh/2,py+dy));line(c,[{x:px,y:py},{x:cx,y:cy}],'#d2edcf',2);rounded(c,cx-bw/2,cy-bh/2,bw,bh,7,'#edf3dcee','#7fa99c',1);c.fillStyle='#264b52';c.textAlign='center';c.fillText(text,cx,cy+(sub?-6:8));if(sub){c.font='15px system-ui';c.fillText(sub,cx,cy+20);}};
-  if(g.save.details)for(const a of visible){if(a.id===4)continue;const offsets=[[-120,-5],[100,-28],[-125,-65],[-170,75],[],[120,-20],[125,-22],[95,-55]][a.id];callout(a.short,a.id?a.entry:HOME,...offsets,a.id===0?'Panorama Tower':'');}
-  if(g.save.details&&visible.some(a=>a.id===4)){callout('Hobie Beach',{x:116,y:110},-40,-28);callout('Virginia Key',{x:130,y:116},125,32);callout('Crandon Beach',{x:142,y:151},110,30,'Key Biscayne');}
+  c.restore();
   for(const l of LANDMARKS.filter(l=>visible.some(a=>a.id===l.area))){const x=l.x*s+ox,y=l.y*s+oy;oval(c,x,y,4.5,4.5,l.reward?'#ffd46f':['playground','pirate-playground','splash-park'].includes(l.kind)?'#f1a7ab':'#80b9b1');}
-  if(!g.save.details)for(const a of visible){const l=LANDMARKS.find(l=>l.id===['panorama','key-park','domino','park-grove','cape-florida','skyviews','frost','south-of-fifth'][a.id])||LANDMARKS.find(l=>l.area===a.id);if(!l)continue;const x=l.x*s+ox,y=l.y*s+oy;this.mapPlace(c,l,x,y);}
-  c.textAlign='start';c.fillStyle='#d7f7e9';c.font='800 28px system-ui';c.fillText(g.save.details?'N ↑':'↑',550,40);if(g.save.details){c.font='23px system-ui';c.fillText('Game geography · north up',22,735);}this.mapTransform={s,ox,oy};
+  for(const a of visible){const l=LANDMARKS.find(l=>l.id===['panorama','key-park','domino','park-grove','cape-florida','skyviews','frost','south-of-fifth'][a.id])||LANDMARKS.find(l=>l.area===a.id);if(!l)continue;const x=l.x*s+ox,y=l.y*s+oy;this.mapPlace(c,l,x,y);}
+  if(showPlayer)atlasBot(c,ox+g.player.x*s,oy+g.player.y*s,g.save,weaponFor(g.save.weapon).art);
+  c.textAlign='start';c.fillStyle='#d7f7e9';c.font='800 28px system-ui';c.fillText('↑',550,40);this.mapTransform={s,ox,oy};
  }
 }

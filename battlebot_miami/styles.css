@@ -16,3 +16,12 @@ dialog[data-mode="workshop"][data-details="false"] .adult-copy{display:none!impo
 .reward-sequence{display:flex;align-items:center;justify-content:center;gap:10px}.reward-sequence canvas:first-child{width:90px;height:90px}.reward-sequence canvas:last-child{width:min(55%,260px);height:auto}.reward-sequence>span{font-size:23px;color:var(--gold)}.reward-next{text-align:center;margin-bottom:15px}.reward-next canvas{width:150px;height:102px}.victory-crown{font-size:64px;color:var(--gold)}
 @media(max-width:380px){.mission{left:8px}.panel-head{gap:8px}.inventory-line{padding-inline:16px}.reward-sequence{gap:5px}.reward-sequence canvas:first-child{width:70px;height:70px}}
 @media(max-height:480px) and (orientation:landscape){.topbar{padding-top:calc(4px + env(safe-area-inset-top));padding-bottom:1px}.brand-bot{width:30px;height:30px}.topbar .wallet,.topbar .icon-button{min-height:34px;height:34px}.console{padding-block:3px}.health-row{min-height:22px;margin-bottom:0}.tools button{min-height:36px}.tools .boost{min-height:40px}.tools button>span{font-size:24px}.mission{top:7px;min-height:46px}.mission #missionArt{width:42px;height:34px}.boss-hud{top:7px;right:45px}.toast{top:70px}}
+
+/* Reading belongs in equipment menus; the world and atlas stay pictorial. */
+#game .adult-copy{display:none!important}
+.boss-hud{top:12px}
+.item{grid-template-columns:96px minmax(0,1fr) 44px;gap:10px;min-height:110px}
+.item canvas{width:96px;height:96px;background:#142b2d;border-radius:8px}
+.item.locked canvas,.item.unaffordable:not(.equipped) canvas{filter:none;opacity:.85}
+dialog[data-mode="workshop"] .item h3.adult-copy,dialog[data-mode="workshop"] .item p.adult-copy{display:block!important}
+@media(max-width:380px){.item{grid-template-columns:82px minmax(0,1fr) 44px;gap:7px;padding:7px}.item canvas{width:82px;height:82px}.item h3{font-size:13px}.item p{font-size:11px}}

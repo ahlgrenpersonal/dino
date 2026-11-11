@@ -1,5 +1,6 @@
 // Shared Adventure robot and equipment artwork.
-import {robotCostume} from './costumes.js?v=world14';
+import {miamiWeapon} from './miami-weapon-art.js?v=world15';
+import {robotCostume} from './costumes.js?v=world15';
 export function rounded(c,x,y,w,h,r,fill,stroke,line=2) {
   c.beginPath();c.roundRect(x,y,w,h,r);if(fill){c.fillStyle=fill;c.fill();}if(stroke){c.strokeStyle=stroke;c.lineWidth=line;c.stroke();}
 }
@@ -42,7 +43,7 @@ function gadgetArt(c,id,t=0){
   else{rounded(c,-12,-9,24,20,3,'#456779');line(c,-9,-5,9,-5,'#dff5db',3);}
 }
 export function categoryIcon(c,type,t=0){c.save();c.translate(22,18);const scale=type==='armor'?.58:.6;c.scale(scale,scale);if(type==='weapon'){c.translate(-31,-4);weapon(c,'blaster',t);}else if(type==='armor')armorArt(c,'steel');else if(type==='wheels')wheelArt(c,'rover');else{for(const [x,y,r] of [[-12,4,18],[16,-10,13]]){c.save();c.translate(x,y);polygon(c,Array.from({length:32},(_,i)=>{const a=i*Math.PI/16,s=i%4<2?r:r*.76;return [Math.cos(a)*s,Math.sin(a)*s];}),'#efd075');ellipse(c,0,0,r*.35,r*.35,'#345465');c.restore();}}c.restore();}
-export function equipmentIcon(c,type,id,t=0){c.save();c.translate(34,34);if(type==='weapon'){c.scale(.75,.75);c.translate(-29,0);weapon(c,id,t);}else{c.scale(.8,.8);if(type==='armor')armorArt(c,id);else if(type==='wheels')wheelArt(c,id,t);else gadgetArt(c,id,t);}c.restore();}
+export function equipmentIcon(c,type,id,t=0){c.save();c.translate(34,34);if(type==='weapon'){c.scale(.9,.9);c.translate(-34,0);weapon(c,id,t);}else{c.scale(.8,.8);if(type==='armor')armorArt(c,id);else if(type==='wheels')wheelArt(c,id,t);else gadgetArt(c,id,t);}c.restore();}
 function encounterRole(enemy){
   return enemy.replayVariant||enemy.encounterId==='harbor-duo'||enemy.encounterId==='scrap-split'?enemy.encounterRole||'':'';
 }
@@ -128,6 +129,7 @@ function bossOutline(c,theme){
   }
 }
 export function weapon(c,id,t=0,action=0) {
+  if(miamiWeapon(c,id,t,action))return;
   const ink='#20363a';c.save();c.lineJoin='round';c.lineCap='round';
   if(['sunbeam','swarm','supernova'].includes(id))c.translate(-Math.sin(action*Math.PI)*2.5,0);
   if(id==='bumper') {
@@ -315,3 +317,8 @@ export function bot(c,x,y,size,options={},t=0) {
   c.restore();
 }
 
+
+export function atlasBot(c,x,y,save,gun=save.build.weapon){
+ ellipse(c,x,y,33,33,'#173d68');ring(c,x,y,33,'#ffe17b',3);
+ bot(c,x,y+2,56,{color:save.color,armor:save.build.armor,wheels:save.build.wheels,gun,gadget:save.build.gadget,angle:0,reducedMotion:true});
+}
