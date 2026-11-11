@@ -1,6 +1,6 @@
-import {halloweenActive,halloweenHealth,royalHalloween} from './halloween.js?v=world96';
-import {PANTHEON,COURT,ROYAL_SPECS,inRoyalChamber} from './pantheon.js?v=world96';
-import {pantheonUnlocked,canWalk,pathfind,regionAt,EQUIPMENT} from './data.js?v=world96';
+import {halloweenActive,halloweenHealth,royalHalloween} from './halloween.js?v=world97';
+import {PANTHEON,COURT,ROYAL_SPECS,inRoyalChamber} from './pantheon.js?v=world97';
+import {pantheonUnlocked,canWalk,pathfind,regionAt,EQUIPMENT} from './data.js?v=world97';
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const inside=p=>regionAt(p.x,p.y)===PANTHEON.r&&p.y>=187&&p.y<217;
 const finite=(v,fallback)=>Number.isFinite(v)?v:fallback;

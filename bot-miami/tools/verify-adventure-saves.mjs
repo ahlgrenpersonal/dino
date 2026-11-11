@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {AdventureSaves,adventureSummary,validAdventure} from '../adventure-saves.js?v=world96';
-import {freshSave,REGIONS,RETURNS,EQUIPMENT,PANTHEON} from '../data.js?v=world96';
+import {AdventureSaves,adventureSummary,validAdventure} from '../adventure-saves.js?v=world97';
+import {freshSave,REGIONS,RETURNS,EQUIPMENT,PANTHEON} from '../data.js?v=world97';
 const key='test-adventure',date=new Date(0).toISOString();
 class Storage {
   constructor(){this.map=new Map();this.writes=[];}

@@ -1,16 +1,16 @@
-import {miamiGround,environmentObjects,drawLandmark,miamiMapBase} from './miami-environment.js?v=world96';
-import {robotCostume,halloweenProp} from './halloween-art.js?v=world96';
-import {mausoleum} from './mausoleum-art.js?v=world96';
-import {regionHalloween,halloweenTheme,halloweenActive} from './halloween.js?v=world96';
-import { REGIONS, WORLD_W, WORLD_H, HOME, hash, regionAt, cellsIn, unlockedRegion, REGION_W, REGION_H, REGION_TILES, regionOrigin, relayFor, atlasLayout, isRoad, requiredCells, GATES } from './data.js?v=world96';
-import {atlasProgress,regionEdges} from './atlas-progress.js?v=world96';
-import {atlasSiteVisible} from './quiet-ui.js?v=world96';
-import {boatArt,dockArt} from './boat-art.js?v=world96';
-import {PANTHEON,areaInfo,pantheonUnlocked} from './data.js?v=world96';
-import {COURT} from './pantheon.js?v=world96';
-import {templeGround,templeFloor,templeArchitecture,templeColumns,templeSeal,sleepingRoyal,pantheonMarker} from './pantheon-art.js?v=world96';
-import * as worldData from './data.js?v=world96';
-import {replayPalette} from './replay-colors.js?v=world96';
+import {miamiGround,environmentObjects,drawLandmark,miamiMapBase} from './miami-environment.js?v=world97';
+import {robotCostume,halloweenProp} from './halloween-art.js?v=world97';
+import {mausoleum} from './mausoleum-art.js?v=world97';
+import {regionHalloween,halloweenTheme,halloweenActive} from './halloween.js?v=world97';
+import { REGIONS, WORLD_W, WORLD_H, HOME, hash, regionAt, cellsIn, unlockedRegion, REGION_W, REGION_H, REGION_TILES, regionOrigin, relayFor, atlasLayout, isRoad, requiredCells, GATES } from './data.js?v=world97';
+import {atlasProgress,regionEdges} from './atlas-progress.js?v=world97';
+import {atlasSiteVisible} from './quiet-ui.js?v=world97';
+import {boatArt,dockArt} from './boat-art.js?v=world97';
+import {PANTHEON,areaInfo,pantheonUnlocked} from './data.js?v=world97';
+import {COURT} from './pantheon.js?v=world97';
+import {templeGround,templeFloor,templeArchitecture,templeColumns,templeSeal,sleepingRoyal,pantheonMarker} from './pantheon-art.js?v=world97';
+import * as worldData from './data.js?v=world97';
+import {replayPalette} from './replay-colors.js?v=world97';
 
 export function rounded(c,x,y,w,h,r,fill,stroke,line=2) {
   c.beginPath();c.roundRect(x,y,w,h,r);if(fill){c.fillStyle=fill;c.fill();}if(stroke){c.strokeStyle=stroke;c.lineWidth=line;c.stroke();}

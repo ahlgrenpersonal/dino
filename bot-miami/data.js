@@ -1,9 +1,9 @@
 // Adventure supplies all combat, equipment and progression rules.
 // This adapter relocates its content into the Miami play geography.
-import * as original from './adventure-data.js?v=world96';
-import * as geo from './miami-layout.js?v=world96';
-import {PANTHEON,buildPantheon} from './pantheon.js?v=world96';
-export * from './adventure-data.js?v=world96';
+import * as original from './adventure-data.js?v=world97';
+import * as geo from './miami-layout.js?v=world97';
+import {PANTHEON,buildPantheon} from './pantheon.js?v=world97';
+export * from './adventure-data.js?v=world97';
 export {PANTHEON};
 export const WORLD_W=geo.WORLD_W,WORLD_H=geo.WORLD_H,HOME=geo.HOME,MAIN_Y=HOME.y;
 export const REGIONS=original.REGIONS.map((reg,r)=>({...reg,name:geo.names[r],subtitle:'A Miami adventure',ground:geo.coastColor(r),path:'#e3d5b0',water:'#66b8c6'}));

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Adventure} from '../engine.js?v=world96';
-import {freshSave,REGIONS,RETURNS,PANTHEON,EQUIPMENT,canWalk,pathfind} from '../data.js?v=world96';
+import {Adventure} from '../engine.js?v=world97';
+import {freshSave,REGIONS,RETURNS,PANTHEON,EQUIPMENT,canWalk,pathfind} from '../data.js?v=world97';
 const advance=(g,s)=>{for(let t=0;t<s;t+=.05)g.tick(.05);};
 function fixture(){const s=freshSave();Object.assign(s,{bosses:REGIONS.map((_,r)=>r),returns:RETURNS.filter(m=>!m.postRoyal).map(m=>m.id),position:{...PANTHEON.stairTop},intro:true});s.owned=Object.values(EQUIPMENT).flat().map(p=>p.id);s.build={weapon:'supernova',armor:'star',wheels:'hover',gadget:'aegis'};s.hp=715;const g=new Adventure(s);g.player.cd=1e6;return g;}
 function start(){const g=fixture();advance(g,5.1);assert.ok(g.royals.start());return g;}

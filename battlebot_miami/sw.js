@@ -1,22 +1,26 @@
-const CACHE_NAME='battlebot-miami-world26';
-const ROOT=new URL('./',self.location.href);
-const ASSETS=['./','index.html','styles.css?v=world26','adventure.css?v=world26','adventure-layout.css?v=world26','app.js?v=world26','world.js?v=world26','engine.js?v=world26','painter.js?v=world26','bot-art.js?v=world26','equipment-art.js?v=world26','combat-art.js?v=world26','miami-weapon-art.js?v=world26','costumes.js?v=world26','landmark-art.js?v=world26','ui-art.js?v=world26','wildlife-art.js?v=world26','equipment.js?v=world26','workshop.js?v=world26','reward-view.js?v=world26','audio.js?v=world26','power-control.js?v=world26','atlas.js?v=world26','world-input.js?v=world26','assets/map.svg','assets/miami-theme.mp3','icon.svg','icon-192.png','icon-512.png','manifest.webmanifest','version.json'];
-const PUBLIC_ASSETS=new Set(ASSETS.map(asset=>new URL(asset,ROOT).href));
-const NAVIGATIONS=new Set([ROOT.pathname,new URL('index.html',ROOT).pathname]);
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));});
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('battlebot-miami-')&&k!==CACHE_NAME).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
-self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(u.origin!==ROOT.origin||!u.pathname.startsWith(ROOT.pathname))return;if(u.pathname.endsWith('/local-landmarks.json'))return;if(u.pathname.endsWith('/version.json')){e.respondWith(fetch(e.request,{cache:'no-store'}));return;}
- if(u.href===new URL('assets/miami-theme.mp3',ROOT).href&&e.request.headers?.get('range')){e.respondWith(audioRange(e.request));return;}
- if(e.request.mode==='navigate'&&NAVIGATIONS.has(u.pathname)){e.respondWith(fetch(e.request).then(async r=>{if(r.ok){const c=await caches.open(CACHE_NAME);await c.put(new URL('index.html',ROOT),r.clone());}return r;}).catch(async()=>{const c=await caches.open(CACHE_NAME);return c.match(new URL('index.html',ROOT));}));return;}
- if(!PUBLIC_ASSETS.has(u.href))return;
- e.respondWith(caches.open(CACHE_NAME).then(async cache=>(await cache.match(e.request))||fetch(e.request).then(async r=>{if(r.ok)await cache.put(e.request,r.clone());return r;})));
+// Compatibility entry for existing Home Screen installs. Saves stay in browser storage.
+const CACHE_NAME='miami-legacy-world97';
+const ASSETS=["./","./index.html","../bot-miami/styles.css?v=world97","../bot-miami/layout.css?v=world97","../bot-miami/adventure-data.js?v=world97","../bot-miami/adventure-pantheon.js?v=world97","../bot-miami/adventure-saves.js?v=world97","../bot-miami/app.js?v=world97","../bot-miami/art.js?v=world97","../bot-miami/atlas-progress.js?v=world97","../bot-miami/atlas.js?v=world97","../bot-miami/boat-art.js?v=world97","../bot-miami/boats.js?v=world97","../bot-miami/content.js?v=world97","../bot-miami/data.js?v=world97","../bot-miami/engine.js?v=world97","../bot-miami/halloween-art.js?v=world97","../bot-miami/halloween.js?v=world97","../bot-miami/hold-confirm.js?v=world97","../bot-miami/mausoleum-art.js?v=world97","../bot-miami/miami-environment.js?v=world97","../bot-miami/miami-geography.js?v=world97","../bot-miami/miami-landmarks.js?v=world97","../bot-miami/miami-layout.js?v=world97","../bot-miami/pantheon-art.js?v=world97","../bot-miami/pantheon.js?v=world97","../bot-miami/patrols.js?v=world97","../bot-miami/power-control.js?v=world97","../bot-miami/quiet-ui.js?v=world97","../bot-miami/replay-colors.js?v=world97","../bot-miami/replay-variants.js?v=world97","../bot-miami/replay.js?v=world97","../bot-miami/royal-court.js?v=world97","../bot-miami/topology.js?v=world97","./manifest.webmanifest","./version.json","./refresh.html","../bot-miami/assets/adventure-theme.mp3","../bot-miami/assets/icon-192.png","../bot-miami/assets/icon-512.png","../bot-miami/assets/icon.svg","../bot-miami/assets/pantheon-preview.jpg","../bot-miami/assets/pantheon-staircase.jpg"];
+self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
+self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>(key.startsWith('miami-legacy-')||key.startsWith('battlebot-miami-'))&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',event=>{
+  const url=new URL(event.request.url);
+  if(event.request.method!=='GET'||url.origin!==self.location.origin||(!url.pathname.startsWith(new URL('./',self.location.href).pathname)&&!ASSETS.some(asset=>new URL(asset,self.location.href).href===url.href)))return;
+  if(url.pathname===new URL('../bot-miami/assets/adventure-theme.mp3',self.location.href).pathname&&event.request.headers?.get('range')){event.respondWith(audioRange(event.request));return;}
+  if(url.pathname.endsWith('/version.json')){event.respondWith(fetch(event.request,{cache:'no-store'}));return;}
+  if(event.request.mode==='navigate'){
+    const base=new URL('./',self.location.href),isShell=url.pathname===base.pathname||url.pathname===new URL('./index.html',base).pathname;
+    event.respondWith(fetch(event.request).then(async response=>{if(response.ok){const cache=await caches.open(CACHE_NAME);await cache.put(isShell?'./index.html':event.request,response.clone());}return response;}).catch(()=>caches.match(isShell?'./index.html':event.request)));return;
+  }
+  event.respondWith(caches.match(event.request).then(cached=>cached||fetch(event.request).then(async response=>{if(response.ok){const cache=await caches.open(CACHE_NAME);cache.put(event.request,response.clone());}return response;})));
 });
-// Standard Adventure byte-range playback, restricted to this game's own cache.
 async function audioRange(request){
- const cache=await caches.open(CACHE_NAME),cached=await cache.match(request.url);if(!cached)return fetch(request);
- const bytes=await cached.arrayBuffer(),length=bytes.byteLength,match=/^bytes=(\d*)-(\d*)$/.exec(request.headers.get('range'));
- if(!match||(!match[1]&&!match[2]))return fetch(request);
- const start=match[1]?Number(match[1]):Math.max(0,length-Number(match[2])),end=match[1]&&match[2]?Math.min(length-1,Number(match[2])):length-1;
- if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start>end||start>=length)return new Response(null,{status:416,headers:{'Content-Range':`bytes */${length}`}});
- return new Response(bytes.slice(start,end+1),{status:206,headers:{'Content-Type':'audio/mpeg','Accept-Ranges':'bytes','Content-Range':`bytes ${start}-${end}/${length}`,'Content-Length':String(end-start+1)}});
+  const cached=await caches.match(request.url);if(!cached)return fetch(request);
+  const bytes=await cached.arrayBuffer(),length=bytes.byteLength;
+  const match=/^bytes=(\d*)-(\d*)$/.exec(request.headers.get('range'));
+  if(!match||(!match[1]&&!match[2]))return fetch(request);
+  const start=match[1]?Number(match[1]):Math.max(0,length-Number(match[2]));
+  const end=match[1]&&match[2]?Math.min(length-1,Number(match[2])):length-1;
+  if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start>end||start>=length)return new Response(null,{status:416,headers:{'Content-Range':`bytes */${length}`}});
+  return new Response(bytes.slice(start,end+1),{status:206,headers:{'Content-Type':'audio/mpeg','Accept-Ranges':'bytes','Content-Range':`bytes ${start}-${end}/${length}`,'Content-Length':String(end-start+1)}});
 }

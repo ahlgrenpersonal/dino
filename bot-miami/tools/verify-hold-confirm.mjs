@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {HoldConfirmation,bindHoldConfirmation} from '../hold-confirm.js?v=world96';
+import {HoldConfirmation,bindHoldConfirmation} from '../hold-confirm.js?v=world97';
 function fixture(){
   const button=new EventTarget();button.disabled=false;button.style={setProperty(){}};button.setPointerCapture=()=>{};button.getBoundingClientRect=()=>({left:0,top:0,right:100,bottom:70});
   const callbacks=new Map(),window=new EventTarget(),document=new EventTarget();document.hidden=false;let time=0,id=0,confirmed=0;

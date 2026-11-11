@@ -1,5 +1,5 @@
-import {AREAS,BRIDGES,ROADS,KEY_LOOP,PRIVATE_ZONES,LANDMARKS} from './miami-geography.js?v=world96';
-import {PANTHEON,inPantheon} from './pantheon.js?v=world96';
+import {AREAS,BRIDGES,ROADS,KEY_LOOP,PRIVATE_ZONES,LANDMARKS} from './miami-geography.js?v=world97';
+import {PANTHEON,inPantheon} from './pantheon.js?v=world97';
 export const SCALE=3,WORLD_W=612,WORLD_H=588;
 export const point=p=>({x:Math.floor(p.x*SCALE)+.5,y:Math.floor(p.y*SCALE)+.5});
 export const HOME=point({x:94,y:81});
