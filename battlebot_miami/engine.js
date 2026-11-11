@@ -1,4 +1,4 @@
-import {AREAS,HOME,weaponFor,dist,regionAt,canWalk,pathfind,visibleAreas,FINAL_AREA,allBossesCleared,isPrivate,safeAt,visibleLandmarks,EQUIPMENT,item,available,equipmentStats,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter,powerStats,equipmentClaimed} from './world.js?v=world18';
+import {AREAS,HOME,weaponFor,dist,regionAt,canWalk,pathfind,visibleAreas,FINAL_AREA,allBossesCleared,isPrivate,safeAt,visibleLandmarks,EQUIPMENT,item,available,equipmentStats,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter,powerStats,equipmentClaimed} from './world.js?v=world19';
 export const AUTO_DAMAGE=.6,TAP_DAMAGE=2,TAP_COOLDOWN=1.5;
 export class MiamiAdventure{
  constructor(save){this.save=save;this.player={...save.position,hp:save.hp,angle:0,cd:0,hit:0,swing:0,invincible:2};this.time=0;this.paused=false;this.route=[];this.effects=[];this.projectiles=[];this.enemies=[];this.target=null;this.powerCd=0;this.powerTime=0;this.tapCd=0;this.shieldCd=0;this.buddyCd=0;this.powerTarget=null;this.drops=save.drops||[];this.onEvent=()=>{};this.populate();}

@@ -1,6 +1,6 @@
 // Shared Adventure robot and equipment artwork.
-import {miamiWeapon} from './miami-weapon-art.js?v=world18';
-import {robotCostume} from './costumes.js?v=world18';
+import {miamiWeapon} from './miami-weapon-art.js?v=world19';
+import {robotCostume} from './costumes.js?v=world19';
 export function rounded(c,x,y,w,h,r,fill,stroke,line=2) {
   c.beginPath();c.roundRect(x,y,w,h,r);if(fill){c.fillStyle=fill;c.fill();}if(stroke){c.strokeStyle=stroke;c.lineWidth=line;c.stroke();}
 }

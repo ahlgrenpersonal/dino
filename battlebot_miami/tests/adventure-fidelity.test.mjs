@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import vm from 'node:vm';
-import {freshSave,readSave,EQUIPMENT,STARTERS,COLORS,equipmentStats,visibleEquipment,HOME} from '../world.js?v=world18';
-import {MiamiAdventure} from '../engine.js?v=world18';
-import {MiamiPainter,adventureZoom} from '../painter.js?v=world18';
-import {workshopHTML,drawWorkshop} from '../workshop.js?v=world18';
-import {adventureAudio} from '../audio.js?v=world18';
-import {bindPowerControl} from '../power-control.js?v=world18';
+import {freshSave,readSave,EQUIPMENT,STARTERS,COLORS,equipmentStats,visibleEquipment,HOME} from '../world.js?v=world19';
+import {MiamiAdventure} from '../engine.js?v=world19';
+import {MiamiPainter,adventureZoom,playerPixelSize} from '../painter.js?v=world19';
+import {workshopHTML,drawWorkshop} from '../workshop.js?v=world19';
+import {adventureAudio} from '../audio.js?v=world19';
+import {bindPowerControl} from '../power-control.js?v=world19';
 import {createPreviewServer} from '../tools/serve.mjs';
 const read=f=>readFile(new URL('../'+f,import.meta.url),'utf8');
 
@@ -18,8 +18,8 @@ test('Miami instrumental is pinned and loops with Adventure playback controls',a
 });
 
 test('world camera is twenty percent farther out while the player keeps its previous screen size',()=>{
- for(const w of [320,390,599,600,844,1200]){const expected=(w<600?Math.max(55,Math.min(76,w/6.3)):85)*.648;assert.equal(adventureZoom(w),expected);}
- const p=new MiamiPainter({getContext:()=>({})});p.baseScale=adventureZoom(390);for(const scale of [p.baseScale,p.baseScale*.55]){p.scale=scale;assert(Math.abs(p.playerRenderSize()*scale-58.66714285714286)<1e-8);}
+ for(const w of [320,390,599,600,844,1200]){const expected=(w<600?Math.max(55,Math.min(76,w/6.3)):85)*.5184;assert.equal(adventureZoom(w),expected);assert(Math.abs(playerPixelSize(w)-(w<600?Math.max(55,Math.min(76,w/6.3)):85)*.81*1.17)<1e-8);}
+ const p=new MiamiPainter({getContext:()=>({})});p.width=390;p.baseScale=adventureZoom(390);for(const scale of [p.baseScale,p.baseScale*.55]){p.scale=scale;assert(Math.abs(p.playerRenderSize()*scale-58.66714285714286)<1e-8);}
 });
 
 test('the first Adventure bumper camp can be cleared without boosts or a rescue',()=>{

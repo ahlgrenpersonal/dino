@@ -1,10 +1,12 @@
-import {AREAS,BRIDGES,ROADS,LANDMARKS,HOME,KEY_LOOP,PRIVATE_ZONES,isPrivate,visibleAreas,weaponFor,regionAt,inside,onLine,dist,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter,canWalk,equipmentClaimed} from './world.js?v=world18';
-import {bot,rounded,atlasBot,equipmentIcon} from './bot-art.js?v=world18';
-import {peacock} from './wildlife-art.js?v=world18';
-import {drawLandmark} from './landmark-art.js?v=world18';
+import {AREAS,BRIDGES,ROADS,LANDMARKS,HOME,KEY_LOOP,PRIVATE_ZONES,isPrivate,visibleAreas,weaponFor,regionAt,inside,onLine,dist,CHARGING_STATIONS,HOME_SAFE_RADIUS,nextChapter,canWalk,equipmentClaimed} from './world.js?v=world19';
+import {bot,rounded,atlasBot,equipmentIcon} from './bot-art.js?v=world19';
+import {peacock} from './wildlife-art.js?v=world19';
+import {drawLandmark} from './landmark-art.js?v=world19';
 const ink='#244647';
 // A wider world with the previous build’s player size preserved in screen pixels.
-export const adventureZoom=width=>(width<600?Math.max(55,Math.min(76,width/6.3)):85)*.648;
+const viewportScale=width=>width<600?Math.max(55,Math.min(76,width/6.3)):85;
+export const adventureZoom=width=>viewportScale(width)*.5184;
+export const playerPixelSize=width=>viewportScale(width)*.81*1.17;
 function line(c,points,color,width){c.beginPath();points.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.strokeStyle=color;c.lineWidth=width;c.lineJoin='round';c.lineCap='round';c.stroke();}
 function poly(c,points,fill,stroke,width=.1){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=width;c.stroke();}}
 function oval(c,x,y,rx,ry,fill){c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fillStyle=fill;c.fill();}
@@ -15,7 +17,7 @@ function building(c,x,y,h,color){poly(c,[[x-.6,y],[x+.6,y],[x+.8,y-.22],[x+.8,y-
 export class MiamiPainter{
  constructor(canvas){this.canvas=canvas;this.c=canvas.getContext('2d');this.camera={...HOME};this.scale=76.5;this.baseScale=76.5;this.width=0;this.height=0;}
  resize(){const b=this.canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),previous=this.baseScale,first=!this.width;if(this.canvas.width!==Math.round(b.width*d)||this.canvas.height!==Math.round(b.height*d)){this.canvas.width=Math.round(b.width*d);this.canvas.height=Math.round(b.height*d);}if(b.width!==this.width){this.baseScale=adventureZoom(Math.max(1,b.width));this.scale=first?this.baseScale:this.scale*this.baseScale/previous;}this.width=b.width;this.height=b.height;this.dpr=d;}
- playerRenderSize(){return 1.17*this.baseScale/(.8*this.scale);}
+ playerRenderSize(){return playerPixelSize(this.width)/this.scale;}
  worldPoint(x,y){return {x:(x-this.width/2)/this.scale+this.camera.x,y:(y-this.height*.51)/this.scale+this.camera.y};}
  follow(g,dt){const p=g.player,bosses=g.enemies.filter(e=>e.boss&&e.hp>0&&g.awake(e)&&dist(e,p)<8);let target={x:p.x,y:p.y},zoom=this.baseScale;if(bosses.length){const left=Math.min(p.x-1.2,...bosses.map(e=>e.x-1.9)),right=Math.max(p.x+1.2,...bosses.map(e=>e.x+1.9)),top=Math.min(p.y-1.1,...bosses.map(e=>e.y-1.8)),bottom=Math.max(p.y+.8,...bosses.map(e=>e.y+1.1));zoom=Math.max(this.baseScale*.55,Math.min(this.baseScale,(this.width-32)/(right-left),(this.height-110)/(bottom-top)));target={x:(left+right)/2,y:(top+bottom)/2-30/zoom};}const smooth=1-Math.exp(-Math.max(0,dt)*5);this.scale+=(zoom-this.scale)*smooth;this.camera.x+=(target.x-this.camera.x)*smooth;this.camera.y+=(target.y-this.camera.y)*smooth;g.viewBounds={left:this.camera.x-this.width/this.scale/2,right:this.camera.x+this.width/this.scale/2,top:this.camera.y-this.height/this.scale*.51,bottom:this.camera.y+this.height/this.scale*.49};}
  terrain(c,save,t=0,map=false){
