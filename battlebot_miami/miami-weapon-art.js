@@ -1,7 +1,8 @@
 // Miami rewards use the same artwork in the workshop, on bots and in celebrations.
 const ink='#20363a';
-function box(c,x,y,w,h,r,color){c.beginPath();c.roundRect(x,y,w,h,r);c.fillStyle=color;c.fill();c.strokeStyle=ink;c.lineWidth=2.5;c.stroke();}
-function shape(c,points,color){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fillStyle=color;c.fill();c.strokeStyle=ink;c.lineWidth=2;c.stroke();}
+function paint(c,color,x,y,h){const n=parseInt(color.slice(1),16),shade=a=>`rgb(${[(n>>16)&255,(n>>8)&255,n&255].map(v=>Math.min(255,Math.max(0,v+a))).join(',')})`,g=c.createLinearGradient(x,y,x+8,y+h);g.addColorStop(0,shade(32));g.addColorStop(.5,color);g.addColorStop(1,shade(-22));return g;}
+function box(c,x,y,w,h,r,color){c.beginPath();c.roundRect(x,y,w,h,r);c.fillStyle=paint(c,color,x,y,h);c.fill();c.strokeStyle=ink;c.lineWidth=2.5;c.stroke();}
+function shape(c,points,color){c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fillStyle=paint(c,color,0,-25,50);c.fill();c.strokeStyle=ink;c.lineWidth=2;c.stroke();}
 function oval(c,x,y,rx,ry,color){c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fillStyle=color;c.fill();c.strokeStyle=ink;c.lineWidth=2;c.stroke();}
 function line(c,x,y,tx,ty,color,w=3){c.beginPath();c.moveTo(x,y);c.lineTo(tx,ty);c.strokeStyle=color;c.lineWidth=w;c.stroke();}
 export function miamiWeapon(c,id,t=0,action=0){

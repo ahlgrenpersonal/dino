@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {LANDMARKS,EQUIPMENT,freshSave,readSave,visibleEquipment,equipmentClaimed,powerStats} from '../world.js?v=world20';
-import {MiamiAdventure} from '../engine.js?v=world20';
-import {paintPictures} from '../ui-art.js?v=world20';
-import {drawWorkshop} from '../workshop.js?v=world20';
+import {LANDMARKS,EQUIPMENT,freshSave,readSave,visibleEquipment,equipmentClaimed,powerStats} from '../world.js?v=world21';
+import {MiamiAdventure} from '../engine.js?v=world21';
+import {paintPictures} from '../ui-art.js?v=world21';
+import {drawWorkshop} from '../workshop.js?v=world21';
 
 test('every playground and former exploration-reward place gives a distinct real nonstarter equipment item',()=>{
  const ids=['city-centre','hammock','1814-park','key-park','domino','riverside-play','cocowalk','peacock','regatta','dinner-key','hobie','north-point','cape-florida','crandon-play','crandon','bayfront','fountain','bayside','miamarina','skyviews','museum-park','bayfront-play','frost','south-pointe'];
@@ -39,7 +39,8 @@ test('Beach Scout fires real helper shots without awarding or changing a weapon'
  const s=freshSave();s.unlocked=5;s.position={x:95,y:45};const g=new MiamiAdventure(s);g.awardEquipment('gadget','scout');g.enemies=[{id:'target',area:5,x:96,y:45,hp:200,maxHp:200,cd:100,home:{x:96,y:45}}];g.player.cd=100;g.update(.01);assert(g.projectiles.some(p=>p.weapon==='drone'&&p.damage===12*.6));assert.equal(s.weapon,'bumper');assert.equal(g.buddyCd,1.5);
 });
 
-function picture(id,type){const ops=[],target={measureText:s=>({width:String(s).length*10}),createLinearGradient:()=>({addColorStop(){}})},c=new Proxy(target,{get:(o,k)=>k in o?o[k]:(...args)=>ops.push([k,...args]),set:(o,k,v)=>{o[k]=v;ops.push(['style',k,v]);return true;}});return {width:136,height:136,dataset:{equipment:id,type,item:id},getContext:()=>c,ops};}
+function gradientStop(offset,color){this.stops.push([offset,color]);}
+function picture(id,type){const ops=[],target={measureText:s=>({width:String(s).length*10}),createLinearGradient:(...bounds)=>({kind:'linear',bounds,stops:[],addColorStop:gradientStop})},c=new Proxy(target,{get:(o,k)=>k in o?o[k]:(...args)=>ops.push([k,...args]),set:(o,k,v)=>{o[k]=v;ops.push(['style',k,v]);return true;}});return {width:136,height:136,dataset:{equipment:id,type,item:id},getContext:()=>c,ops};}
 
 test('pickup and workshop use identical equipment drawing operations for every assigned item',()=>{
  for(const l of LANDMARKS.filter(l=>l.equipment)){const {type,id}=l.equipment,find=picture(id,type),menu=picture(id,type);paintPictures({querySelectorAll:selector=>selector==='canvas[data-equipment]'?[find]:[]},freshSave());drawWorkshop({querySelector:()=>null,querySelectorAll:selector=>selector==='canvas[data-item]'?[menu]:[]},freshSave(),type);

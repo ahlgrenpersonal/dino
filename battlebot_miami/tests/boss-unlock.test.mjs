@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {AREAS,HOME,freshSave,readSave,canWalk,campEnemyId,reconcileCampProgress} from '../world.js?v=world20';
-import {MiamiAdventure} from '../engine.js?v=world20';
-import {MiamiPainter} from '../painter.js?v=world20';
+import {AREAS,HOME,freshSave,readSave,canWalk,campEnemyId,reconcileCampProgress} from '../world.js?v=world21';
+import {MiamiAdventure} from '../engine.js?v=world21';
+import {MiamiPainter} from '../painter.js?v=world21';
 
 const openingIds=()=>Array.from({length:3},(_,i)=>Array.from({length:4},(_,j)=>campEnemyId(1,i,j))).flat();
 function stale(camps=[]){return {...freshSave(),position:{x:119.8,y:65.5},hp:44,scrap:77,gears:9,defeated:openingIds(),camps};}

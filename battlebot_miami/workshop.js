@@ -1,5 +1,5 @@
-import {COLORS,EQUIPMENT,visibleEquipment,equipmentStats,weaponFor} from './world.js?v=world20';
-import {equipmentIcon,categoryIcon,bot,rounded} from './bot-art.js?v=world20';
+import {COLORS,EQUIPMENT,visibleEquipment,equipmentStats,weaponFor} from './world.js?v=world21';
+import {equipmentIcon,categoryIcon,bot,rounded} from './bot-art.js?v=world21';
 
 // Standard Adventure workshop: same tabs, vertical item rows and separate actions.
 export function workshopHTML(save,tab,details,head){
@@ -11,7 +11,7 @@ export function workshopHTML(save,tab,details,head){
  }).join('')}</div><div class="panel-foot"><button class="primary pictorial-action" data-action="depart" aria-label="Go adventuring"><span>▶</span><small class="adult-copy">Adventure</small></button></div>`;
 }
 export function drawWorkshop(root,save,tab){
- const preview=root.querySelector('#botPreview');if(preview){const r=preview.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);if(preview.width!==Math.round(r.width*dpr))preview.width=Math.round(r.width*dpr);if(preview.height!==Math.round(r.height*dpr))preview.height=Math.round(r.height*dpr);const c=preview.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,r.width,r.height);const width=r.width,size=Math.min(102,(width*.6-8)/.98);rounded(c,12,137,width-24,13,5,'#43615b');rounded(c,17,131,width-34,9,3,'#829f8a');bot(c,width*.38,132-size*.39,size,{color:save.color,armor:save.build.armor,wheels:save.build.wheels,gun:weaponFor(save.weapon).art,gadget:save.build.gadget,angle:-.25,reducedMotion:true});}
+ const preview=root.querySelector('#botPreview');if(preview){const r=preview.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);if(preview.width!==Math.round(r.width*dpr))preview.width=Math.round(r.width*dpr);if(preview.height!==Math.round(r.height*dpr))preview.height=Math.round(r.height*dpr);const c=preview.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,r.width,r.height);const width=r.width,size=Math.min(102,(width-18)/1.8);rounded(c,12,137,width-24,13,5,'#43615b');rounded(c,17,131,width-34,9,3,'#829f8a');bot(c,width*.32+6,132-size*.39,size,{color:save.color,armor:save.build.armor,wheels:save.build.wheels,gun:weaponFor(save.weapon).art,gadget:save.build.gadget,angle:-.25,reducedMotion:true});}
  for(const el of root.querySelectorAll('canvas[data-item]')){const c=el.getContext('2d');c.clearRect(0,0,el.width,el.height);c.save();c.scale(2,2);equipmentIcon(c,tab,tab==='weapon'?weaponFor(el.dataset.item).art:el.dataset.item);c.restore();}
  for(const el of root.querySelectorAll('canvas[data-category]')){const c=el.getContext('2d');c.clearRect(0,0,88,72);c.save();c.scale(2,2);categoryIcon(c,el.dataset.category);c.restore();}
 }
