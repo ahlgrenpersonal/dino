@@ -10,9 +10,9 @@
  <link rel="icon" href="icon.svg" type="image/svg+xml">
  <link rel="apple-touch-icon" href="icon-192.png">
  <link rel="manifest" href="manifest.webmanifest">
- <link rel="stylesheet" href="adventure.css?v=world22">
- <link rel="stylesheet" href="adventure-layout.css?v=world22">
- <link rel="stylesheet" href="styles.css?v=world22">
+ <link rel="stylesheet" href="adventure.css?v=world23">
+ <link rel="stylesheet" href="adventure-layout.css?v=world23">
+ <link rel="stylesheet" href="styles.css?v=world23">
 </head>
 <body data-details="false">
  <main id="game">
@@ -33,7 +33,7 @@
    <div class="health-row"><span class="heart">♥</span><div class="health-track"><i id="healthFill"></i></div><b id="healthText" class="adult-copy">110 / 110</b><canvas id="weaponBadge" width="120" height="70" aria-hidden="true"></canvas><span id="weaponLabel" class="adult-copy">Bumper Blaster</span></div>
    <nav class="tools" aria-label="Adventure controls">
     <button id="home" aria-label="Home" hidden><span>⌂</span><b class="adult-copy">Home</b></button>
-    <button id="map" aria-label="Map"><span>◇</span><b class="adult-copy">Map</b></button>
+    <button id="map" aria-label="Map"><span aria-hidden="true"><img class="map-icon" src="assets/map.svg" alt=""></span><b class="adult-copy">Map</b></button>
     <button id="power" class="boost" aria-label="Power"><span>ϟ</span><b id="powerLabel" class="adult-copy">Power</b></button>
     <button id="build" aria-label="Build"><span>⚙</span><b class="adult-copy">Build</b></button>
     <button id="sound" aria-label="Turn sound on"><span>♪</span><b id="soundLabel" class="adult-copy">Sound off</b></button>
@@ -42,6 +42,6 @@
  </main>
  <dialog id="panel" aria-labelledby="panelTitle"><div id="panelContent"></div></dialog>
  <audio id="music" src="assets/miami-theme.mp3" preload="auto" loop hidden></audio>
- <script type="module" src="app.js?v=world22"></script>
+ <script type="module" src="app.js?v=world23"></script>
 </body>
 </html>

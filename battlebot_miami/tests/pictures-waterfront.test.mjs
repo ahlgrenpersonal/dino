@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {AREAS,LANDMARKS,HOME,MAP_LAYOUT,BRIDGES,WEAPONS,freshSave,readSave,canWalk,pathfind,dist,walkSegment} from '../world.js?v=world22';
-import {MiamiAdventure} from '../engine.js?v=world22';
-import {MiamiPainter} from '../painter.js?v=world22';
-import {placePicture,areaPicture,enemyPicture,weaponPicture,paintPictures} from '../ui-art.js?v=world22';
+import {AREAS,LANDMARKS,HOME,MAP_LAYOUT,BRIDGES,WEAPONS,freshSave,readSave,canWalk,pathfind,dist,walkSegment} from '../world.js?v=world23';
+import {MiamiAdventure} from '../engine.js?v=world23';
+import {MiamiPainter} from '../painter.js?v=world23';
+import {placePicture,areaPicture,enemyPicture,weaponPicture,paintPictures} from '../ui-art.js?v=world23';
 
 function canvas(){const words=[],ops=[];const target={showLabels:false,createLinearGradient:()=>({addColorStop(){}}),measureText:s=>({width:s.length*10}),fillText:s=>words.push(String(s)),strokeText:s=>words.push(String(s))};const c=new Proxy(target,{get:(o,k)=>k in o?o[k]:(...args)=>ops.push([k,...args])});return {width:420,height:500,words,ops,getContext:()=>c,getBoundingClientRect:()=>({width:420,height:500})};}
 
