@@ -1,9 +1,10 @@
 // Adventure supplies all combat, equipment and progression rules.
 // This adapter relocates its content into the Miami play geography.
-import * as original from './adventure-data.js?v=world97';
-import * as geo from './miami-layout.js?v=world97';
-import {PANTHEON,buildPantheon} from './pantheon.js?v=world97';
-export * from './adventure-data.js?v=world97';
+import * as original from './adventure-data.js?v=world99';
+import * as geo from './miami-layout.js?v=world99';
+import {PANTHEON,buildPantheon} from './pantheon.js?v=world99';
+import {makeMiamiScenery} from './miami-scenery.js?v=world99';
+export * from './adventure-data.js?v=world99';
 export {PANTHEON};
 export const WORLD_W=geo.WORLD_W,WORLD_H=geo.WORLD_H,HOME=geo.HOME,MAIN_Y=HOME.y;
 export const REGIONS=original.REGIONS.map((reg,r)=>({...reg,name:geo.names[r],subtitle:'A Miami adventure',ground:geo.coastColor(r),path:'#e3d5b0',water:'#66b8c6'}));
@@ -54,9 +55,8 @@ export function makeWorld(save){
    return {...e,x:e.x+dx,y:e.y+dy,homeX:e.homeX+dx,homeY:e.homeY+dy};
  });
  const chests=source.chests.map(p=>({...p,...pickups.get(p.id)})),stations=source.stations.map(p=>({...p,...pickups.get(p.id)})),arenas=source.arenas.map(p=>relocate(p));
- const props=[],important=[...sites,...chests,...stations,...WORKSHOPS,...arenas];
- const clearance=p=>important.some(q=>dist(p,q)<(q.radius||3.2));
- for(const p of source.props){if(p.type==='mountain'||p.type==='landmark')continue;const moved=relocate(p);if(!geo.isLand(moved.x,moved.y)||regionAt(moved.x,moved.y)!==p.r||clearance(moved)||geo.isRoad(moved.x,moved.y))continue;const k=`${Math.floor(moved.x)},${Math.floor(moved.y)}`;if(blocks.has(k))continue;props.push(moved);if(source.blocks.has(`${Math.floor(p.x)},${Math.floor(p.y)}`))blocks.add(k);}
+ const important=[...sites,...chests,...stations,...WORKSHOPS,...arenas];
+ const props=makeMiamiScenery(important);
  const world={...source,sites,enemies,chests,stations,arenas,props,blocks,water};
  for(const p of [...important,...enemies])for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const x=Math.floor(p.x)+dx,y=Math.floor(p.y)+dy;if(geo.isLand(x+.5,y+.5))blocks.delete(`${x},${y}`);}
  for(const k of geo.roadCells)if(!water.has(k)&&!geo.privateCells.has(k))blocks.delete(k);

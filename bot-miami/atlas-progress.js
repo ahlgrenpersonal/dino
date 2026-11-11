@@ -1,6 +1,6 @@
-import {bounds as geographicBounds} from './miami-layout.js?v=world97';
-import {currentMission} from './data.js?v=world97';
-import {REGIONS,REGION_TILES,REGION_W,REGION_H,RETURNS,PANTHEON,areaUnlocked,pantheonUnlocked,returnActive,unlockedRegion} from './data.js?v=world97';
+import {bounds as geographicBounds} from './miami-layout.js?v=world99';
+import {currentMission} from './data.js?v=world99';
+import {REGIONS,REGION_TILES,REGION_W,REGION_H,RETURNS,PANTHEON,areaUnlocked,pantheonUnlocked,returnActive,unlockedRegion} from './data.js?v=world99';
 
 export function atlasProgress(save){
   const visible=new Set(REGIONS.map((_,r)=>r).filter(r=>areaUnlocked(save,r)||save.bosses.includes(r)));

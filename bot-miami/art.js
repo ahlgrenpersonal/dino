@@ -1,16 +1,16 @@
-import {miamiGround,environmentObjects,drawLandmark,miamiMapBase} from './miami-environment.js?v=world97';
-import {robotCostume,halloweenProp} from './halloween-art.js?v=world97';
-import {mausoleum} from './mausoleum-art.js?v=world97';
-import {regionHalloween,halloweenTheme,halloweenActive} from './halloween.js?v=world97';
-import { REGIONS, WORLD_W, WORLD_H, HOME, hash, regionAt, cellsIn, unlockedRegion, REGION_W, REGION_H, REGION_TILES, regionOrigin, relayFor, atlasLayout, isRoad, requiredCells, GATES } from './data.js?v=world97';
-import {atlasProgress,regionEdges} from './atlas-progress.js?v=world97';
-import {atlasSiteVisible} from './quiet-ui.js?v=world97';
-import {boatArt,dockArt} from './boat-art.js?v=world97';
-import {PANTHEON,areaInfo,pantheonUnlocked} from './data.js?v=world97';
-import {COURT} from './pantheon.js?v=world97';
-import {templeGround,templeFloor,templeArchitecture,templeColumns,templeSeal,sleepingRoyal,pantheonMarker} from './pantheon-art.js?v=world97';
-import * as worldData from './data.js?v=world97';
-import {replayPalette} from './replay-colors.js?v=world97';
+import {miamiGround,environmentObjects,drawLandmark,miamiMapBase,drawMiamiProp,environmentBounds,drawWorldDetails} from './miami-environment.js?v=world99';
+import {robotCostume,halloweenProp} from './halloween-art.js?v=world99';
+import {mausoleum} from './mausoleum-art.js?v=world99';
+import {regionHalloween,halloweenTheme,halloweenActive} from './halloween.js?v=world99';
+import { REGIONS, WORLD_W, WORLD_H, HOME, hash, regionAt, cellsIn, unlockedRegion, REGION_W, REGION_H, REGION_TILES, regionOrigin, relayFor, atlasLayout, isRoad, requiredCells, GATES } from './data.js?v=world99';
+import {atlasProgress,regionEdges} from './atlas-progress.js?v=world99';
+import {atlasSiteVisible} from './quiet-ui.js?v=world99';
+import {boatArt,dockArt} from './boat-art.js?v=world99';
+import {PANTHEON,areaInfo,pantheonUnlocked} from './data.js?v=world99';
+import {COURT} from './pantheon.js?v=world99';
+import {templeGround,templeFloor,templeArchitecture,templeColumns,templeSeal,sleepingRoyal,pantheonMarker} from './pantheon-art.js?v=world99';
+import * as worldData from './data.js?v=world99';
+import {replayPalette} from './replay-colors.js?v=world99';
 
 export function rounded(c,x,y,w,h,r,fill,stroke,line=2) {
   c.beginPath();c.roundRect(x,y,w,h,r);if(fill){c.fillStyle=fill;c.fill();}if(stroke){c.strokeStyle=stroke;c.lineWidth=line;c.stroke();}
@@ -525,6 +525,7 @@ export class Painter {
     c.save();c.translate(w/2-this.camera.x*s+sx,h*.51-this.camera.y*s+sy);c.scale(s,s);
     const x0=Math.max(0,Math.floor(this.camera.x-w/s/2)-2),x1=Math.min(WORLD_W,Math.ceil(this.camera.x+w/s/2)+2),y0=Math.max(0,Math.floor(this.camera.y-h/s*.51)-2),y1=Math.min(WORLD_H,Math.ceil(this.camera.y+h/s*.49)+2);
     for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++)this.ground(x,y,t,g);
+    drawWorldDetails(c,x0,y0,x1,y1,unlockedRegion(g.save));
     if(halloweenActive(g.save)){c.fillStyle='#6e477a14';c.fillRect(x0,y0,x1-x0,y1-y0);}
     const courtVisible=x1>517&&x0<548&&y1>176&&y0<216;
     if(courtVisible){templeFloor(c,t);if(halloweenActive(g.save))mausoleum(c,t,{phase:g.royals.phase,opening:g.time-g.royals.openedAt});else templeArchitecture(c);if(!pantheonUnlocked(g.save)){c.save();c.translate(PANTHEON.entry.x,PANTHEON.entry.y);c.rotate(Math.PI/2);this.gate(0,0,t);c.restore();}}
@@ -544,16 +545,16 @@ export class Painter {
       if(fx.type==='meteor')this.effect({...fx,type:'meteor-ground'},t,g.reducedMotion);
       else if(fx.type==='slam'||fx.type==='vortex'||fx.type==='nova')this.effect(fx,t,g.reducedMotion);
     }
-    const objects=g.world.props.filter(p=>p.x>x0-2&&p.x<x1+2&&p.y>y0-2&&p.y<y1+2).map(p=>({...p,kind:'prop'}));
+    const objects=g.world.props.filter(p=>{const b=environmentBounds(p);return p.x+b.width>x0&&p.x-b.width<x1&&p.y+1>y0&&p.y-b.height<y1;}).map(p=>({...p,kind:'prop'}));
     for(const b of g.boats?.visible()||[])if((b!==g.boats.riding||g.boats.boarding||g.route[0]?.land)&&b.x>x0-2&&b.x<x1+2&&b.y>y0-2&&b.y<y1+2)objects.push({...b,kind:'boat'});
     if(courtVisible)for(const p of g.royals.figures())objects.push({...p,kind:'royal'});
-    for(const shop of workshops())if(shop.r<=unlockedRegion(g.save)&&shop.x>x0-4&&shop.x<x1+4&&shop.y>y0-4&&shop.y<y1+4)objects.push({...shop,y:shop.y-.6,kind:'home'});
+    for(const shop of workshops())if(shop.id!=='valley'&&shop.r<=unlockedRegion(g.save)&&shop.x>x0-4&&shop.x<x1+4&&shop.y>y0-4&&shop.y<y1+4)objects.push({...shop,y:shop.y-.6,kind:'home'});
     for(const e of g.enemies)if(!e.royal&&returnVisible(g.save,e)&&e.hp>0&&!e.dormant&&e.x>x0-2&&e.x<x1+2&&e.y>y0-2&&e.y<y1+2)objects.push({...e,kind:'enemy'});
-    objects.push(...environmentObjects(x0,y0,x1,y1,unlockedRegion(g.save)));objects.push({...g.player,kind:'player'});objects.sort((a,b)=>a.y-b.y);
+    objects.push(...environmentObjects(x0,y0,x1,y1,unlockedRegion(g.save),g.boats?.visible()||[]));objects.push({...g.player,kind:'player'});objects.sort((a,b)=>a.y-b.y);
     const units=objects.filter(obj=>obj.kind==='player'||obj.kind==='enemy');
     for(const obj of objects){
       if(obj.kind==='prop'){
-        const miami=obj.type==='miami-landmark',tall=miami||['tree','landmark','mountain'].includes(obj.type),height=miami?9:obj.type==='landmark'?2.7:obj.type==='mountain'?3:1.6,width=miami?3:obj.type==='landmark'?1.2:obj.type==='mountain'?1.1:.85;
+        const miami=obj.type.startsWith('miami-'),b=miami?environmentBounds(obj):null,tall=miami||['tree','landmark','mountain'].includes(obj.type),height=b?.height||(obj.type==='landmark'?2.7:obj.type==='mountain'?3:1.6),width=b?.width||(obj.type==='landmark'?1.2:obj.type==='mountain'?1.1:.85);
         // Keep faces readable behind tall foreground scenery without changing collision geometry.
         const covering=tall?units.filter(unit=>obj.y>=unit.y-.1&&obj.y-unit.y<height&&Math.abs(obj.x-unit.x)<width):[];
         c.save();
@@ -648,9 +649,9 @@ export class Painter {
     }
     c.restore();
   }
-  ground(x,y,t,g){if(regionAt(x,y)===PANTHEON.r){templeGround(this.c,x,y);return;}miamiGround(this.c,x,y,t,g);}
+  ground(x,y,t,g){if(regionAt(x,y)===PANTHEON.r&&!g.world.water.has(`${x},${y}`)){templeGround(this.c,x,y);return;}miamiGround(this.c,x,y,t,g);}
 
-  prop(p,t){if(p.type==='miami-landmark'){drawLandmark(this.c,p,t);return;}const c=this.c,reg=REGIONS[p.r];c.save();c.translate(p.x,p.y);
+  prop(p,t){if(p.type==='miami-landmark'){drawLandmark(this.c,p,t);return;}if(p.type.startsWith('miami-')){drawMiamiProp(this.c,p,t);return;}const c=this.c,reg=REGIONS[p.r];c.save();c.translate(p.x,p.y);
     if(p.r>=5&&reg?.theme){themeProp(c,p,reg,t);c.restore();return;}
     if(p.type==='landmark'){
       ellipse(c,.2,.2,.9,.3,'#294b4833');rounded(c,-.4,-.4,.8,.65,.07,'#78958a','#456c65',.04);
@@ -860,7 +861,7 @@ export class Painter {
       else{ring(c,0,0,13,'#e4c7ff',3);line(c,0,8,0,-14,'#fff0dd',2);polygon(c,[[0,-14],[14,-10],[0,-5]],'#9e6ace','#f3dfff',1.5);}
       c.restore();
     }
-    for(const shop of workshops())if(shop.r<=unlockedRegion(g.save)){c.save();c.translate(ox+shop.x*s,oy+shop.y*s);c.scale(markerScale,markerScale);workshopMarker(c,0,0);c.restore();}
+    for(const shop of workshops())if(shop.id!=='valley'&&shop.r<=unlockedRegion(g.save)){c.save();c.translate(ox+shop.x*s,oy+shop.y*s);c.scale(markerScale,markerScale);workshopMarker(c,0,0);c.restore();}
     if(visible.has(PANTHEON.r))pantheonMarker(c,ox+PANTHEON.viewpoint.x*s,oy+PANTHEON.viewpoint.y*s,markerScale,true);
     const playerX=ox+g.player.x*s,playerY=oy+g.player.y*s;
     if(showPlayer)atlasBot(c,playerX,playerY,g.save);
